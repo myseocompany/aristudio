@@ -16,9 +16,7 @@ class TimerController extends Controller
     {
         $tasks = Task::with(['project:id,name,color', 'status:id,name,pending'])
             ->where('user_id', Auth::id())
-            ->whereHas('status', fn ($q) => $q->where('pending', 1))
-            ->orderByRaw('CASE WHEN due_date IS NULL THEN 1 ELSE 0 END')
-            ->orderBy('due_date')
+            ->where('status_id', 1)
             ->orderByDesc('created_at')
             ->take(50)
             ->get();

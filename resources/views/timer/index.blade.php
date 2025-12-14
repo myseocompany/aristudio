@@ -13,20 +13,15 @@
             <div class="bg-white border border-gray-100 rounded-lg shadow-sm p-4 sm:p-6">
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
-                        <p class="text-sm text-gray-500">Selecciona una tarea y ejecuta el cronómetro</p>
+                        <p class="text-sm text-gray-500">Selecciona una tarea de la lista y ejecuta el cronómetro</p>
                         <div class="flex items-center gap-2 text-sm">
                             <span class="px-2 py-1 rounded-full bg-indigo-50 text-indigo-700 font-semibold">Recordatorio cada 20 min</span>
                             <span class="px-2 py-1 rounded-full bg-emerald-50 text-emerald-700 font-semibold">Máximo 2 horas</span>
                         </div>
                     </div>
-                    <div class="w-full sm:w-72">
-                        <label class="text-sm text-gray-600">Tarea</label>
-                        <select x-model="selectedTask" class="mt-1 w-full rounded border-gray-300 text-sm px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500">
-                            <option value="">Selecciona tarea</option>
-                            @foreach($tasks as $task)
-                                <option value="{{ $task->id }}">{{ $task->name }}</option>
-                            @endforeach
-                        </select>
+                    <div class="w-full sm:w-72 text-sm bg-gray-50 border border-gray-200 rounded px-3 py-2">
+                        <p class="text-gray-500">Tarea seleccionada</p>
+                        <p class="font-semibold text-gray-900 truncate" x-text="taskLabel || 'Ninguna'"></p>
                     </div>
                 </div>
 
@@ -84,7 +79,7 @@
                                     <p class="text-xs text-gray-500">{{ $task->project->name ?? 'Sin proyecto' }}</p>
                                 </div>
                             </div>
-                            <button type="button" class="text-sm text-indigo-600 hover:text-indigo-800" @click="selectedTask = '{{ $task->id }}'">Usar</button>
+                            <button type="button" class="text-xl text-indigo-600 hover:text-indigo-800" @click="setTask('{{ $task->id }}', '{{ addslashes($task->name) }}')">▶</button>
                         </div>
                     @empty
                         <p class="text-sm text-gray-500">No tienes tareas pendientes asignadas.</p>
@@ -101,6 +96,7 @@
                 elapsed: 0,
                 intervalId: null,
                 selectedTask: '',
+                selectedTaskLabel: '',
                 maxSeconds: 7200,
                 beepEvery: 1200,
                 lastBeepAt: 0,
@@ -118,8 +114,11 @@
                     return `${mins}m ${secs}s`;
                 },
                 get taskLabel() {
-                    const option = document.querySelector(`select[x-model='selectedTask'] option[value='${this.selectedTask}']`);
-                    return option ? option.textContent : 'Ninguna';
+                    return this.selectedTaskLabel || 'Ninguna';
+                },
+                setTask(id, label) {
+                    this.selectedTask = id;
+                    this.selectedTaskLabel = label;
                 },
                 start() {
                     if (!this.selectedTask || this.running || this.elapsed >= this.maxSeconds) return;

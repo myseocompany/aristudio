@@ -19,9 +19,11 @@
 /storage/*.key
 /storage/pail
 /vendor
+/oldLaravel
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
 
 
 www_2025_12_14.zip
