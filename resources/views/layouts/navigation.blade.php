@@ -11,10 +11,31 @@
                 </div>
 
                 <!-- Navigation Links -->
-                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                @php
+                    $moduleLinks = [];
+                    if (Auth::check()) {
+                        $moduleLinks = \Illuminate\Support\Facades\DB::table('modules')
+                            ->join('role_modules', 'role_modules.module_id', '=', 'modules.id')
+                            ->where('role_modules.role_id', Auth::user()->role_id)
+                            ->orderBy('modules.weight')
+                            ->orderBy('modules.name')
+                            ->select('modules.name', 'modules.slug')
+                            ->get();
+                    }
+                @endphp
+                <div class="hidden space-x-4 sm:-my-px sm:ms-10 sm:flex items-center">
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
+                    @foreach($moduleLinks as $module)
+                        @php
+                            $link = $module->slug ? url($module->slug) : '#';
+                            $active = $module->slug ? request()->is(trim($module->slug, '/').'*') : false;
+                        @endphp
+                        <x-nav-link :href="$link" :active="$active">
+                            {{ $module->name }}
+                        </x-nav-link>
+                    @endforeach
                 </div>
             </div>
 
@@ -70,6 +91,15 @@
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
+            @foreach($moduleLinks as $module)
+                @php
+                    $link = $module->slug ? url($module->slug) : '#';
+                    $active = $module->slug ? request()->is(trim($module->slug, '/').'*') : false;
+                @endphp
+                <x-responsive-nav-link :href="$link" :active="$active">
+                    {{ $module->name }}
+                </x-responsive-nav-link>
+            @endforeach
         </div>
 
         <!-- Responsive Settings Options -->

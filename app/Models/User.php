@@ -72,4 +72,9 @@ class User extends Authenticatable
             'hourly_rate' => 'decimal:2',
         ];
     }
+
+    public function projects()
+    {
+        return $this->belongsToMany(Project::class, 'project_users', 'user_id', 'project_id')->withTimestamps();
+    }
 }
