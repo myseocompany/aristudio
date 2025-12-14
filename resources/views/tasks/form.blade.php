@@ -70,7 +70,7 @@
             </div>
                 <div>
                     <x-input-label for="points" value="Puntos" />
-                    <x-text-input id="points" name="points" type="number" step="0.1" min="0" class="mt-1 block w-full" value="{{ old('points', $task->points) }}" />
+                    <x-text-input id="points" name="points" type="number" step="0.01" min="0" class="mt-1 block w-full" value="{{ old('points', $task->points) }}" />
                     <x-input-error :messages="$errors->get('points')" class="mt-2" />
                 </div>
             </div>
@@ -79,7 +79,7 @@
         <div class="grid gap-4 md:grid-cols-2">
             <div>
                 <x-input-label for="estimated_points" value="Estimado" />
-                <x-text-input id="estimated_points" name="estimated_points" type="number" step="0.1" min="0" class="mt-1 block w-full" value="{{ old('estimated_points', $task->estimated_points) }}" />
+                <x-text-input id="estimated_points" name="estimated_points" type="number" step="0.01" min="0" class="mt-1 block w-full" value="{{ old('estimated_points', $task->estimated_points) }}" />
                 <x-input-error :messages="$errors->get('estimated_points')" class="mt-2" />
             </div>
         </div>

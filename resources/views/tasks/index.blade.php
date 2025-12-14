@@ -460,13 +460,13 @@
                                 </div>
                                 <div>
                                     <x-input-label for="quick_points" value="Puntos" />
-                                    <x-text-input id="quick_points" name="points" type="number" step="0.1" min="0" class="mt-1 block w-full" />
+                                    <x-text-input id="quick_points" name="points" type="number" step="0.01" min="0" class="mt-1 block w-full" />
                                 </div>
                             </div>
                             <div class="grid grid-cols-2 gap-3">
                                 <div>
                                     <x-input-label for="quick_estimated_points" value="Estimado" />
-                                    <x-text-input id="quick_estimated_points" name="estimated_points" type="number" step="0.1" min="0" class="mt-1 block w-full" />
+                                    <x-text-input id="quick_estimated_points" name="estimated_points" type="number" step="0.01" min="0" class="mt-1 block w-full" />
                                 </div>
                                 <div>
                                     <x-input-label for="quick_due_date" value="Fecha de vencimiento" />

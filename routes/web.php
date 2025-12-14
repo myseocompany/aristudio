@@ -32,6 +32,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('modules', ModuleController::class);
     Route::resource('tasks', TaskController::class);
     Route::get('timer', [TimerController::class, 'index'])->name('timer.index');
+    Route::post('timer', [TimerController::class, 'store'])->name('timer.store');
 });
 
 require __DIR__.'/auth.php';

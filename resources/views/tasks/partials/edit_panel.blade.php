@@ -66,12 +66,12 @@
             <div class="grid grid-cols-2 gap-3">
                 <div>
                     <x-input-label for="panel_points" value="Puntos" />
-                    <x-text-input id="panel_points" name="points" type="number" step="0.1" min="0" class="mt-1 block w-full" value="{{ old('points', $task->points) }}" />
+                    <x-text-input id="panel_points" name="points" type="number" step="0.01" min="0" class="mt-1 block w-full" value="{{ old('points', $task->points) }}" />
                     <x-input-error :messages="$errors->get('points')" class="mt-1" />
                 </div>
                 <div>
                     <x-input-label for="panel_estimated_points" value="Estimado" />
-                    <x-text-input id="panel_estimated_points" name="estimated_points" type="number" step="0.1" min="0" class="mt-1 block w-full" value="{{ old('estimated_points', $task->estimated_points) }}" />
+                    <x-text-input id="panel_estimated_points" name="estimated_points" type="number" step="0.01" min="0" class="mt-1 block w-full" value="{{ old('estimated_points', $task->estimated_points) }}" />
                     <x-input-error :messages="$errors->get('estimated_points')" class="mt-1" />
                 </div>
             </div>

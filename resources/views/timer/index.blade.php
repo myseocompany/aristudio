@@ -11,17 +11,38 @@
     <div class="py-6" x-data="timerApp()">
         <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4">
             <div class="bg-white border border-gray-100 rounded-lg shadow-sm p-4 sm:p-6">
-                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                    <div>
-                        <p class="text-sm text-gray-500">Selecciona una tarea de la lista y ejecuta el cronómetro</p>
-                        <div class="flex items-center gap-2 text-sm">
-                            <span class="px-2 py-1 rounded-full bg-indigo-50 text-indigo-700 font-semibold">Recordatorio cada 20 min</span>
-                            <span class="px-2 py-1 rounded-full bg-emerald-50 text-emerald-700 font-semibold">Máximo 2 horas</span>
+                <div class="flex flex-col gap-4">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                        <div>
+                            <p class="text-sm text-gray-500">Selecciona de la lista o escribe una tarea y ejecuta el cronómetro</p>
+                            <div class="flex items-center gap-2 text-sm">
+                                <span class="px-2 py-1 rounded-full bg-indigo-50 text-indigo-700 font-semibold">Recordatorio cada 20 min</span>
+                                <span class="px-2 py-1 rounded-full bg-emerald-50 text-emerald-700 font-semibold">Máximo 2 horas</span>
+                            </div>
+                        </div>
+                        <div class="w-full sm:w-72 text-sm bg-gray-50 border border-gray-200 rounded px-3 py-2">
+                            <p class="text-gray-500">Tarea seleccionada</p>
+                            <p class="font-semibold text-gray-900 truncate" x-text="taskLabel || 'Ninguna'"></p>
                         </div>
                     </div>
-                    <div class="w-full sm:w-72 text-sm bg-gray-50 border border-gray-200 rounded px-3 py-2">
-                        <p class="text-gray-500">Tarea seleccionada</p>
-                        <p class="font-semibold text-gray-900 truncate" x-text="taskLabel || 'Ninguna'"></p>
+                    <div class="grid sm:grid-cols-2 gap-3">
+                        <div>
+                            <label class="text-sm text-gray-600">Nombre de la tarea</label>
+                            <input type="text" x-model="manualTaskName" placeholder="Ej: Llamada con cliente" class="mt-1 w-full rounded border-gray-300 text-sm px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500">
+                        </div>
+                        <div>
+                            <label class="text-sm text-gray-600">Proyecto</label>
+                            <select x-model="manualProjectId" class="mt-1 w-full rounded border-gray-300 text-sm px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500">
+                                <option value="">Sin proyecto</option>
+                                @foreach($projects as $project)
+                                    <option value="{{ $project->id }}">{{ $project->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="sm:col-span-2 flex items-center justify-end gap-3">
+                            <button type="button" class="px-4 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 text-sm" @click="clearManual()">Limpiar</button>
+                            <button type="button" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-500 text-sm" @click="applyManual()">Usar datos escritos</button>
+                        </div>
                     </div>
                 </div>
 
@@ -30,9 +51,9 @@
                         <div class="text-sm uppercase tracking-wide">Tiempo transcurrido</div>
                         <div class="text-5xl font-mono" x-text="formattedTime"></div>
                         <div class="flex gap-3">
-                            <button type="button" @click="start()" :disabled="!selectedTask || running || elapsed >= maxSeconds" class="px-4 py-2 rounded bg-white text-indigo-700 font-semibold shadow hover:bg-indigo-50 disabled:opacity-50">Iniciar</button>
-                            <button type="button" @click="stop()" :disabled="!running" class="px-4 py-2 rounded bg-amber-100 text-amber-800 font-semibold hover:bg-amber-200 disabled:opacity-50">Pausar</button>
-                            <button type="button" @click="reset()" class="px-4 py-2 rounded bg-gray-100 text-gray-700 font-semibold hover:bg-gray-200">Reset</button>
+                            <button type="button" @click="start()" :disabled="!taskLabel.trim() || running || elapsed >= maxSeconds" class="px-4 py-2 rounded bg-white text-indigo-700 font-semibold shadow hover:bg-indigo-50 disabled:opacity-50">Iniciar</button>
+                            <button type="button" @click="pause()" :disabled="!running" class="px-4 py-2 rounded bg-amber-100 text-amber-800 font-semibold hover:bg-amber-200 disabled:opacity-50">Pausar</button>
+                            <button type="button" @click="stop()" class="px-4 py-2 rounded bg-red-100 text-red-800 font-semibold hover:bg-red-200">Detener</button>
                         </div>
                         <div class="text-xs text-indigo-100">
                             Próximo aviso en <span class="font-semibold" x-text="nextBeepIn"></span>
@@ -56,6 +77,10 @@
                             <span class="text-gray-600">Tarea seleccionada</span>
                             <span class="font-semibold text-gray-800 truncate max-w-[200px]" x-text="taskLabel"></span>
                         </div>
+                        <div class="flex items-center justify-between text-sm">
+                            <span class="text-gray-600">Proyecto</span>
+                            <span class="font-semibold text-gray-800 truncate max-w-[200px]" x-text="projectLabel || 'Sin proyecto'"></span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -75,16 +100,62 @@
                                     {{ collect(explode(' ', trim($task->project->name ?? '?')))->filter()->map(fn($w) => mb_substr($w, 0, 1))->take(2)->implode('') ?: '?' }}
                                 </div>
                                 <div>
-                                    <p class="font-semibold text-gray-900">{{ $task->name }}</p>
-                                    <p class="text-xs text-gray-500">{{ $task->project->name ?? 'Sin proyecto' }}</p>
+                                    <button type="button" class="font-semibold text-gray-900 text-left hover:underline" @click="loadPanel('{{ route('tasks.show', $task) }}?sidebar=1')">
+                                        {{ $task->name }}
+                                    </button>
+                                    <div class="flex items-center gap-2 text-xs text-gray-500">
+                                        <span>{{ $task->project->name ?? 'Sin proyecto' }}</span>
+                                        @if($task->status)
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-gray-100 text-gray-700 text-[11px]">
+                                                {{ $task->status->name }}
+                                            </span>
+                                        @endif
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 text-[11px]">{{ $task->points ?? '—' }} pts</span>
+                                    </div>
                                 </div>
                             </div>
-                            <button type="button" class="text-xl text-indigo-600 hover:text-indigo-800" @click="setTask('{{ $task->id }}', '{{ addslashes($task->name) }}')">▶</button>
+                            <button type="button" class="text-xl text-indigo-600 hover:text-indigo-800" @click="setTask('{{ $task->id }}', '{{ addslashes($task->name) }}', '{{ $task->project_id }}', '{{ addslashes($task->project->name ?? '') }}')">▶</button>
                         </div>
                     @empty
                         <p class="text-sm text-gray-500">No tienes tareas pendientes asignadas.</p>
                     @endforelse
                 </div>
+
+                <div class="mt-4">
+                    <p class="text-sm font-semibold text-gray-800">Tareas creadas con el timer</p>
+                    <div class="space-y-2 mt-2" x-show="recentCreated.length">
+                        <template x-for="item in recentCreated" :key="item.at">
+                            <div class="flex items-center justify-between rounded border border-gray-100 px-3 py-2 bg-emerald-50">
+                                <div>
+                                    <p class="font-semibold text-gray-900" x-text="item.name"></p>
+                                    <p class="text-xs text-gray-600">Puntos: <span x-text="item.points"></span></p>
+                                </div>
+                                <span class="text-xs text-gray-500" x-text="item.at"></span>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div x-cloak x-show="showTaskPanel" class="fixed inset-0 z-40">
+            <div class="absolute inset-0 bg-gray-900/50" @click="showTaskPanel = false" x-transition.opacity></div>
+            <div class="absolute inset-y-0 right-0 w-full max-w-xl bg-white shadow-2xl border-l border-gray-200 flex flex-col" x-transition>
+                <div class="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-500">Detalle de tarea</p>
+                    </div>
+                    <button type="button" class="text-sm text-gray-600 hover:text-gray-800" @click="showTaskPanel = false">Cerrar</button>
+                </div>
+                <div class="flex-1 overflow-y-auto" x-ref="taskPanelBody" x-html="taskPanelHtml" x-init="
+                    const body = $refs.taskPanelBody;
+                    body.addEventListener('click', (e) => {
+                        const link = e.target.closest('[data-task-panel-url]');
+                        if (link) {
+                            e.preventDefault();
+                            loadPanel(link.getAttribute('data-task-panel-url'));
+                        }
+                    });
+                "></div>
             </div>
         </div>
     </div>
@@ -97,6 +168,13 @@
                 intervalId: null,
                 selectedTask: '',
                 selectedTaskLabel: '',
+                manualTaskName: '',
+                manualProjectId: '',
+                manualProjectName: '',
+                projectLabel: '',
+                recentCreated: [],
+                showTaskPanel: false,
+                taskPanelHtml: '',
                 maxSeconds: 7200,
                 beepEvery: 1200,
                 lastBeepAt: 0,
@@ -116,12 +194,45 @@
                 get taskLabel() {
                     return this.selectedTaskLabel || 'Ninguna';
                 },
-                setTask(id, label) {
+                setTask(id, label, projectId = '', projectName = '') {
                     this.selectedTask = id;
                     this.selectedTaskLabel = label;
+                    this.manualTaskName = '';
+                    this.manualProjectId = projectId || '';
+                    this.manualProjectName = projectName || '';
+                    this.projectLabel = projectName || '';
+                },
+                applyManual() {
+                    if (!this.manualTaskName.trim()) return;
+                    this.selectedTask = '';
+                    this.selectedTaskLabel = this.manualTaskName.trim();
+                    const projSelect = document.querySelector('select[x-model=\"manualProjectId\"]');
+                    const label = projSelect && this.manualProjectId ? projSelect.selectedOptions[0]?.textContent || '' : '';
+                    this.projectLabel = label;
+                    this.manualProjectName = label;
+                },
+                clearManual() {
+                    this.manualTaskName = '';
+                    this.manualProjectId = '';
+                    this.manualProjectName = '';
+                    this.projectLabel = '';
+                    this.selectedTaskLabel = '';
+                    this.selectedTask = '';
+                },
+                loadPanel(url) {
+                    if (!url) return;
+                    this.showTaskPanel = true;
+                    this.taskPanelHtml = '<div class="p-4 text-sm text-gray-600">Cargando...</div>';
+                    fetch(url)
+                        .then(r => r.text())
+                        .then(html => { this.taskPanelHtml = html || '<div class="p-4 text-sm text-gray-600">Sin contenido.</div>'; })
+                        .catch(() => {
+                            this.showTaskPanel = false;
+                            this.taskPanelHtml = '';
+                        });
                 },
                 start() {
-                    if (!this.selectedTask || this.running || this.elapsed >= this.maxSeconds) return;
+                    if (!this.taskLabel.trim() || this.running || this.elapsed >= this.maxSeconds) return;
                     this.running = true;
                     if (this.elapsed === 0) {
                         this.lastBeepAt = 0;
@@ -139,17 +250,59 @@
                         }
                     }, 1000);
                 },
-                stop() {
+                pause() {
                     if (this.intervalId) {
                         clearInterval(this.intervalId);
                         this.intervalId = null;
                     }
                     this.running = false;
                 },
-                reset() {
-                    this.stop();
+                stop() {
+                    if (this.intervalId) {
+                        clearInterval(this.intervalId);
+                        this.intervalId = null;
+                    }
+                    const payload = {
+                        name: this.taskLabel.trim(),
+                        project_id: this.manualProjectId || null,
+                        seconds: this.elapsed,
+                        _token: document.querySelector('meta[name=\"csrf-token\"]').getAttribute('content'),
+                    };
+                    if (payload.name && payload.seconds > 0) {
+                        fetch('{{ route('timer.store') }}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': payload._token,
+                                'Accept': 'application/json',
+                            },
+                            body: JSON.stringify(payload),
+                        })
+                            .then(r => r.json().catch(() => null))
+                            .then(data => {
+                                if (data && data.ok) {
+                                    this.recentCreated.unshift({
+                                        name: payload.name,
+                                        points: data.points,
+                                        at: new Date().toLocaleTimeString(),
+                                    });
+                                    this.recentCreated = this.recentCreated.slice(0, 5);
+                                }
+                            })
+                            .catch(() => {});
+                    }
+                    this.running = false;
                     this.elapsed = 0;
                     this.lastBeepAt = 0;
+                },
+                reset() {
+                    this.stop();
+                    this.selectedTask = '';
+                    this.selectedTaskLabel = '';
+                    this.manualTaskName = '';
+                    this.manualProjectId = '';
+                    this.manualProjectName = '';
+                    this.projectLabel = '';
                 },
                 playBeep() {
                     const audio = new Audio('data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEAIlYAAESsAAACABAAZGF0YYgAAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA=');
