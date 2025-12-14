@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Project extends Model
 {
@@ -26,12 +28,12 @@ class Project extends Model
         'color',
     ];
 
-    public function users()
+    public function users(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'project_users', 'project_id', 'user_id')->withTimestamps();
     }
 
-    public function logins()
+    public function logins(): HasMany
     {
         return $this->hasMany(ProjectLogin::class);
     }

@@ -26,6 +26,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('users', UserLegacyController::class);
     Route::resource('projects', ProjectController::class);
     Route::resource('projects.logins', ProjectLoginController::class)->except(['index', 'show']);
+    Route::get('logins', [ProjectLoginController::class, 'index'])->name('logins.index');
     Route::resource('roles', RoleController::class);
     Route::post('roles/{role}/permissions', [RoleController::class, 'updatePermissions'])->name('roles.permissions');
     Route::post('modules/reorder', [ModuleController::class, 'reorder'])->name('modules.reorder');
