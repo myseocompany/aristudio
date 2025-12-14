@@ -1,0 +1,13 @@
+<?php
+
+namespace App;
+
+use Illuminate\Database\Eloquent\Model;
+
+class ModelMyAgency extends Model
+{
+    //
+    public function getDateInput($date){
+    	return date('Y-m-d',strtotime($date))
+    }
+}

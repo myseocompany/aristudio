@@ -1,0 +1,2274 @@
+[
+ {
+   "name": "BW BARRANQUILLA 1",
+   "address": "CALLE  98 # 52-115 CENTRO COMERCIAL  Buenavista, Local 101",
+   "cellphone": "573164663970",
+   "city": "Barranquilla",
+   "latitude": "11.0133042",
+   "longitude": "-74.8271394"
+ },
+ {
+   "name": "BW NEIVA 1",
+   "address": " Carrera 8 # 38-42  CENTRO COMERCIAL  San Pedro, Local 276",
+   "cellphone": "573184219363",
+   "city": "Neiva",
+   "latitude": "2.9507968",
+   "longitude": "-75.2904208"
+ },
+ {
+   "name": "BW ARMENIA 1",
+   "address": "AVENIDA  Bolívar # 02 CENTRO COMERCIAL  Unicentro, Local 132",
+   "cellphone": "573184761579",
+   "city": "Armenia",
+   "latitude": "4.5404777",
+   "longitude": "-75.6658846"
+ },
+ {
+   "name": "BW FLORENCIA 1",
+   "address": " CALLE 3 Bis #  6a  14  CENTRO COMERCIAL Gran Plaza Florencia, Local 129",
+   "cellphone": "573162480058",
+   "city": "Florencia",
+   "latitude": "1.6245552",
+   "longitude": "-75.6082381"
+ },
+ {
+   "name": "BW CALI 1",
+   "address": "CENTRO COMERCIAL  Unicentro, Local 238",
+   "cellphone": "573164659437",
+   "city": "Cali",
+   "latitude": "1.6245552",
+   "longitude": "-75.6082381"
+ },
+ {
+   "name": "BW MANIZALES 1",
+   "address": "AVENIDA  Kevin Ángel # 55 D – 251 CENTRO COMERCIAL  Mall Plaza, local A1080B",
+   "cellphone": "",
+   "city": "Manizales",
+   "latitude": "5.0664662",
+   "longitude": "-75.4937707"
+ },
+ {
+   "name": "BW CALI 2",
+   "address": "CALLE  38 NORTE . #  6N – 45 ,CENTRO COMERCIAL  Chipichape, local 3-13",
+   "cellphone": "573164659437",
+   "city": "Cali",
+   "latitude": "3.4759573",
+   "longitude": "-76.5300056"
+ },
+ {
+   "name": "BW BARRANQUILLA 2 ",
+   "address": "CALLE . 74 #  38D 113 CENTRO COMERCIAL UNICO LOCAL 106",
+   "cellphone": "",
+   "city": "Barranquilla",
+   "latitude": "10.9893788",
+   "longitude": "-74.8146679"
+ },
+ {
+   "name": "BARRANQUILLA 9",
+   "address": "CARRERA 50 CALLE 53  CENTRO COMERCIAL  PORTAL DEL PRADO Local  51-52-5",
+   "cellphone": "573146452411",
+   "city": "Barranquilla",
+   "latitude": "10.9897309",
+   "longitude": "-74.7907138"
+ },
+ {
+   "name": "CARTAGENA 5",
+   "address": "AVENIDA  SAN PEDRO HEREDIA CENTRO COMERCIAL  MALL PLAZA Local 128 A 131",
+   "cellphone": "573136616232",
+   "city": "Cartagena",
+   "latitude": "10.4249883",
+   "longitude": "-75.5426027"
+ },
+ {
+   "name": "CALI 6",
+   "address": "CALLE  12 # 6-22 ,COSMOCENTRO LOCAL  019",
+   "cellphone": "573103904107",
+   "city": "Cali",
+   "latitude": "3.4516521",
+   "longitude": "-76.5341741"
+ },
+ {
+   "name": "BUCARAMANGA 10",
+   "address": "CALLE  30 # 25-71 CENTRO COMERCIAL  CAÑAVERAL FLORIDA BLANCA LOCAL 214",
+   "cellphone": "573103849125",
+   "city": "Bucaramanga",
+   "latitude": "7.070881",
+   "longitude": "-73.1091474"
+ },
+ {
+   "name": "BOGOTA 5",
+   "address": "CARRERA  71 D #. 6-94 Sur  CENTRO COMERCIAL  PLAZA DE LAS AMERICAS Local 12-05/12-07",
+   "cellphone": "573104591556",
+   "city": "Bogotá DC",
+   "latitude": "4.6189377",
+   "longitude": "-74.13653448"
+ },
+ {
+   "name": "BOGOTA 35",
+   "address": "Avenida Carrera 45 # 185 CENTRO COMERCIAL  SANTAFE Local  1-55",
+   "cellphone": "573136616188",
+   "city": "Bogotá DC",
+   "latitude": "4.7622573",
+   "longitude": "-74.0485052"
+ },
+ {
+   "name": "BUCARAMANGA 11",
+   "address": "CALLE  30 # 25-71 CENTRO COMERCIAL  CAÑAVERAL FLORIDA BLANCA LOCAL 214",
+   "cellphone": "573146452410",
+   "city": "Bucaramanga",
+   "latitude": "7.070881",
+   "longitude": "-73.1091474"
+ },
+ {
+   "name": "CALI 27",
+   "address": "CALLE  38 NORTE. #  6N – 45 ,CENTRO COMERCIAL  Chipichape, local 3-13",
+   "cellphone": "573136616218",
+   "city": "Cali",
+   "latitude": "3.4759573",
+   "longitude": "-76.5300056"
+ },
+ {
+   "name": "ARMENIA 9",
+   "address": "CARRERA  14 No 19-02",
+   "cellphone": "573217011402",
+   "city": "Armenia",
+   "latitude": "4.5591385",
+   "longitude": "-75.6554784"
+ },
+ {
+   "name": "MANIZALES 14",
+   "address": " CALLLE 33b # 20 -03 CENTRO COMERCIAL  FUNDADORES LOCAL 118",
+   "cellphone": "573217469165",
+   "city": "Manizales",
+   "latitude": "5.0693844",
+   "longitude": "-75.5117241"
+ },
+ {
+   "name": "BOGOTA 53",
+   "address": "CENTRO COMERCIAL  LA 14   CALLE 19 No 28-80 LOCAL A-36",
+   "cellphone": "573206192369",
+   "city": "Bogotá DC",
+   "latitude": "4.6184605",
+   "longitude": "-74.0880724"
+ },
+ {
+   "name": "ARMENIA 10",
+   "address": "CALLE 18 #13 83 CENTRO COMERCIAL  ACUARIO LOCALES 2, 3, 4  y 5",
+   "cellphone": "573148234115",
+   "city": "Armenia",
+   "latitude": "4.5338303",
+   "longitude": "-75.6742132"
+ },
+ {
+   "name": "PALMIRA 7",
+   "address": "CALLE  31 # 44-231, CENTRO COMERCIAL  LLANOGRANDE PLAZA LOCAL No 412- 417",
+   "cellphone": "573108973598",
+   "city": "Palmira",
+   "latitude": "3.5286982",
+   "longitude": "-76.3193077"
+ },
+ {
+   "name": "BOGOTA 57",
+   "address": "CENTRO COMERCIAL DIVER PLAZA LOCAL 111",
+   "cellphone": "573127121175",
+   "city": "Bogotá DC",
+   "latitude": "4.6822744",
+   "longitude": "-74.13779934"
+ },
+ {
+   "name": "FLORENCIA 4",
+   "address": "CENTRO COMERCIAL  GRAN PLAZA LOCALES 157 - 161",
+   "cellphone": "573207923021",
+   "city": "Florencia",
+   "latitude": "1.6111346",
+   "longitude": "-75.60347678"
+ },
+ {
+   "name": "VALLEDUPAR 3",
+   "address": "CALLE  37 # 23 53, MAYALES PLAZA COMERCIAL LOCAL 53",
+   "cellphone": "573145077942",
+   "city": "Valledupar",
+   "latitude": "10.4552921",
+   "longitude": "-73.2446343"
+ },
+ {
+   "name": "MOSQUERA 1",
+   "address": "CARRERA  3 Este  # 15 A-57  CENTO COMERCIAL ECOPLAZA Local 136-137",
+   "cellphone": "573108982245",
+   "city": "Mosquera",
+   "latitude": "4.7127949",
+   "longitude": "-74.2236143"
+ },
+ {
+   "name": "VILLAVICENCIO 7",
+   "address": "Calle 7 # 45-185 CENTRO COMERCIAL  VIVA EXITO LOCAL 119",
+   "cellphone": "573145072883",
+   "city": "Villavicencio",
+   "latitude": "4.1238249",
+   "longitude": "-73.6361677"
+ },
+ {
+   "name": "IBAGUE 9 ",
+   "address": "CARRERA 5 No 61 -41 CENTRO COMERCIAL MULTICENTRO Local 118 - 119",
+   "cellphone": "573136616234",
+   "city": "Ibague",
+   "latitude": "4.4364746",
+   "longitude": "-75.2038054"
+ },
+ {
+   "name": "BOGOTA 63",
+   "address": "CALLE  38 A SUR # 34 D 51 CENTRO COMERCIAL  CENTRO MAYOR  LOCAl L-1 14",
+   "cellphone": "573104591547",
+   "city": "Bogotá DC",
+   "latitude": "4.5919768",
+   "longitude": "-74.1259293"
+ },
+ {
+   "name": "MANIZALES 15",
+   "address": "Carrera 23 # 65-11, CENTRO COMERCIAL  Cable Plaza, Local 112",
+   "cellphone": "573206909430",
+   "city": "Manizales",
+   "latitude": "5.0560858",
+   "longitude": "-75.4878233"
+ },
+ {
+   "name": "BOGOTA 60",
+   "address": "Centro Comercial Plaza Central, Local 1-50",
+   "cellphone": "573145836638",
+   "city": "Bogotá DC",
+   "latitude": "4.6318219",
+   "longitude": "-74.1183977"
+ },
+ {
+   "name": "POPAYAN 5",
+   "address": "Carrera 9 # 24 A Norte - 21  Centro Comercial Campanario, Local 124, ",
+   "cellphone": "3108247253",
+   "city": "Popayán",
+   "latitude": "2.459482",
+   "longitude": "-76.5970164"
+ },
+ {
+   "name": "CUCUTA 1",
+   "address": "AVENIDA  Libertadores con Canal Bogotá CENTRO COMERCIAL UNICENTRO LOCAL 1-95+M12",
+   "cellphone": "573146452408",
+   "city": "Cúcuta",
+   "latitude": "7.9168459",
+   "longitude": "-72.4957464"
+ },
+ {
+   "name": "BOGOTA 33",
+   "address": "AVENIDA 80 # 100 - 52 CENTRO COMERCIAL PORTAl DE LA 80 LOCAL 1-12",
+   "cellphone": "573136616189",
+   "city": "Bogotá DC",
+   "latitude": "4.7107977",
+   "longitude": "-74.1137926"
+ },
+ {
+   "name": "PALMIRA 5",
+   "address": "CALLE 31 # 44-231 CENTRO COMERCIAL  LLANOGRANDE LA 14 PALMIRA",
+   "cellphone": "573136616172",
+   "city": "Palmira",
+   "latitude": "3.5286982",
+   "longitude": "-76.3193077"
+ },
+ {
+   "name": "ARMENIA 7",
+   "address": "AVENIDA Bolivar # 19 Norte # 46-05 CENTRO COMERCIAL  PORTAL DEL QUINDIO LOCALES 33-34",
+   "cellphone": "573136616258",
+   "city": "Armenia",
+   "latitude": "4.5585743",
+   "longitude": "-75.6578874"
+ },
+ {
+   "name": "NEIVA 6",
+   "address": " CENTRO COMERCIAL  SAN PEDRO PLAZA LOCAL 109-110",
+   "cellphone": "573136616173",
+   "city": "Neiva",
+   "latitude": "2.9507968",
+   "longitude": "-75.2904208"
+ },
+ {
+   "name": "PASTO 9",
+   "address": "CALLE 11 # 34 - 78 - local 137 y 138",
+   "cellphone": "573113487305",
+   "city": "Pasto",
+   "latitude": "1.2158292",
+   "longitude": "-77.2910526"
+ },
+ {
+   "name": "BOGOTA 68",
+   "address": "calle 20 sur # 82 - 52 CENTRO COMERCIAL  Ayuelos , local 179",
+   "cellphone": "573177024468",
+   "city": "Bogotá DC",
+   "latitude": "4.6638545",
+   "longitude": "-74.1329011"
+ },
+ {
+   "name": "POPAYAN 6",
+   "address": "Carrera 9 #74 N-2 a 74 N-376 CENTRO COMERCIAL  Terra plaza - Local 160",
+   "cellphone": "573186779299",
+   "city": "Popayán",
+   "latitude": "3.5743228",
+   "longitude": "-76.4294328"
+ },
+ {
+   "name": "BARRANCABERMEJA 3",
+   "address": "Diagonal 56 # 18A 88 CENTRO COMERCIAL  San Silvestre - Local 122",
+   "cellphone": "573186781555",
+   "city": "Barrancabermeja",
+   "latitude": "7.0673453",
+   "longitude": "-73.8603187"
+ },
+ {
+   "name": "TUNJA 4",
+   "address": "AVENIDA  Universitaria # 39-77 CENTRO COMERCIAL  UNICENTRO TUNJA LOCAL 1-004",
+   "cellphone": "573178899025",
+   "city": "Tunja",
+   "latitude": "5.5460195",
+   "longitude": "-73.351225"
+ },
+ {
+   "name": "MANIZALES 16",
+   "address": "AVENIDA  Kevin Ángel # 55 D – 251 CENTRO COMERCIAL  Mall Plaza, local A1080B",
+   "cellphone": "",
+   "city": "Manizales",
+   "latitude": "5.0664662",
+   "longitude": "-75.4937707"
+ },
+ {
+   "name": "IBAGUE 10",
+   "address": "CAllE 60 # 12 - 224 CENTRO COMERCIAL  La Estacion, , Local 220",
+   "cellphone": "",
+   "city": "Ibague",
+   "latitude": "4.4461263",
+   "longitude": "-75.2078407"
+ },
+ {
+   "name": "CHIA 2",
+   "address": "CENTRO COMERCIAL CHIA LOCAL 1155",
+   "cellphone": "573146452414",
+   "city": "Chía",
+   "latitude": "4.8677773",
+   "longitude": "-74.06816584"
+ },
+ {
+   "name": "PEREIRA 17",
+   "address": "AVENIDA  Circunvalar entre call 5 y 6 CENTRO COMERCIAL  Parque  Arboleda ",
+   "cellphone": "573116374953",
+   "city": "Pereira",
+   "latitude": "4.8070645",
+   "longitude": "-75.6859718"
+ },
+ {
+   "name": "MEDELLIN 25",
+   "address": "CARRERA  48 # 32B sur 139 Local 257 - CENTRO COMERCIAL  Viva Envigado",
+   "cellphone": "",
+   "city": "Medellin",
+   "latitude": "6.1751683",
+   "longitude": "-75.5945206"
+ },
+ {
+   "name": "MEDELLIN 6",
+   "address": "CARRERA  66 B No 34 A CENTRO COMERCIAL  UNICENTRO LOCAL 130/131",
+   "cellphone": "573103904145",
+   "city": "Medellin",
+   "latitude": "6.2407804",
+   "longitude": "-75.5892957"
+ },
+ {
+   "name": "MEDELLIN 12",
+   "address": "CALLE 34 No 43-66 CENTRO COMERCIAL  SAN DIEGO LOCAL  1158",
+   "cellphone": "573104591551",
+   "city": "Medellin",
+   "latitude": "6.2348166",
+   "longitude": "-75.5716143"
+ },
+ {
+   "name": "BARRANQUILLA 10",
+   "address": "CALLE  74  # 38 D 113 CENTRO COMERCIAL  UNICO LOCAL 20 BARRANQUILLA",
+   "cellphone": "573136616255",
+   "city": "Barranquilla",
+   "latitude": "10.9888375",
+   "longitude": "-74.8146322"
+ },
+ {
+   "name": "DOSQUEBRADAS 2",
+   "address": "CALLE 24  #16-25 CENTRO COMERCIAL  UNICO DOSQUEBRADAS",
+   "cellphone": "573136616263",
+   "city": "Dosquebradas",
+   "latitude": "4.829324",
+   "longitude": "-75.6802392"
+ },
+ {
+   "name": "YUMBO 1",
+   "address": " CARRERA 5 No 14 -100  CENTRO COMERCIAL  UNICO LOCAL 10",
+   "cellphone": "573113487317",
+   "city": "Yumbo",
+   "latitude": "3.5813114",
+   "longitude": "-76.4892947"
+ },
+ {
+   "name": "VILLAVICENCIO 6",
+   "address": "CARRERA 22 No 8-285 CENTRO COMERCIAL UNICO OUTLET ",
+   "cellphone": "573113009930",
+   "city": "Villavicencio",
+   "latitude": "4.1287787",
+   "longitude": "-73.6262063"
+ },
+ {
+   "name": "NEIVA 7",
+   "address": "CARRERA 2 # 59 15 CENTRO COMERCIAL UNICO LOCAL 01",
+   "cellphone": "573162386103",
+   "city": "Neiva",
+   "latitude": "2.9619009",
+   "longitude": "-75.2955809"
+ },
+ {
+   "name": "PASTO 7",
+   "address": " CARRERA  22 #61  CENTRO COMERCIAL  UNICO LOCAL 38",
+   "cellphone": "573104648958",
+   "city": "Pasto",
+   "latitude": "1.2056939",
+   "longitude": "-77.2624739"
+ },
+ {
+   "name": "CALI 12",
+   "address": " Calle 52 # 3-29 CENTRO COMERCIAL  UNICO local 49",
+   "cellphone": "573136616243",
+   "city": "Cali",
+   "latitude": "3.4404705",
+   "longitude": "-76.53325014"
+ },
+ {
+   "name": "CALI 19",
+   "address": "Calle 52 # 3-29  CENTRO COMERCIAL  UNICO LOCAL 254",
+   "cellphone": "573136616200",
+   "city": "Cali",
+   "latitude": "3.4404705",
+   "longitude": "-76.53325014"
+ },
+ {
+   "name": "CHINCHINA 1",
+   "address": "SALIDA A PALESTINA (ANTIGUA PLANTA MANISOL)",
+   "cellphone": "573103849106",
+   "city": "Chinchina",
+   "latitude": "5.0447224",
+   "longitude": "-75.61791043"
+ },
+ {
+   "name": "BOGOTA 42",
+   "address": "CARRERA 30 # 12-43",
+   "cellphone": "573136616252",
+   "city": "Bogotá DC",
+   "latitude": "4.5979075",
+   "longitude": "-74.10757"
+ },
+ {
+   "name": "CARPA BUCARAMAN",
+   "address": "DIAGONAL 15 # 45 -198",
+   "cellphone": "573136616254",
+   "city": "Bucaramanga",
+   "latitude": "7.1083686",
+   "longitude": "-73.1185013"
+ },
+ {
+   "name": "TULUA 1",
+   "address": "CARRERA 40. # 37-51 CONCESION LA 14",
+   "cellphone": "573136616265",
+   "city": "Tuluá",
+   "latitude": "4.0733513",
+   "longitude": "-76.1926367"
+ },
+ {
+   "name": "CALI 17 PASO AN",
+   "address": "CALLE 13  CARRERA 81 A",
+   "cellphone": "573136616198",
+   "city": "Cali",
+   "latitude": "3.4503189",
+   "longitude": "-76.5337637"
+ },
+ {
+   "name": "CALI 5",
+   "address": "Calle 5 # 50 – 103 AVENIDA ROOSEVELT COSMOCENTRO LA 14",
+   "cellphone": "573136616242",
+   "city": "Cali",
+   "latitude": "3.4137867",
+   "longitude": "-76.549615"
+ },
+ {
+   "name": "CALI 15",
+   "address": "CARRERA 1 CALLE 66 CENTRO COMERCIAL   LA 14 CALIMA LOCAL 8",
+   "cellphone": "573104591553",
+   "city": "Cali",
+   "latitude": "3.4850302",
+   "longitude": "-76.4999469"
+ },
+ {
+   "name": "BUENAVENTURA 2",
+   "address": "CENTRO COMERCIAL  BELLAVISTA LA 14",
+   "cellphone": "573136616212",
+   "city": "Buenaventura",
+   "latitude": "3.882842",
+   "longitude": "-77.0225153"
+ },
+ {
+   "name": "CALI 23",
+   "address": "LA 14 VALLE DE LILI AUTO SERVICIO  SIMON BOLIVAR ENTRE CARRERA 98",
+   "cellphone": "573136616203",
+   "city": "Cali",
+   "latitude": "3.3688265",
+   "longitude": "-76.5256544"
+ },
+ {
+   "name": "CALI 13",
+   "address": "CARRERAA 1 CALLE 66 LA 14 CALIMA SOTANO",
+   "cellphone": "573136616245",
+   "city": "Cali",
+   "latitude": "3.48502",
+   "longitude": "-76.5003732"
+ },
+ {
+   "name": "CALI 2",
+   "address": "CARRERA  4 # 14-37 LA 14 PISO 6",
+   "cellphone": "573136616201",
+   "city": "Cali",
+   "latitude": "3.4532019",
+   "longitude": "-76.5324599"
+ },
+ {
+   "name": "BATA FLAMINGO SOLEDAD",
+   "address": "CARRERA  37 # 30-15 CENTRO COMERCIAL  GRAN PLAZA EL SOL",
+   "cellphone": "573003333746-573003081596",
+   "city": "Soledad",
+   "latitude": "10.9266092",
+   "longitude": "-74.7824943"
+ },
+ {
+   "name": "BATA FLAMINGO MONTERIA",
+   "address": "CALLE  29 # 20-337 ANTIGUO BATIGAS CENTRO COMERCIAL  NUESTRO MONTERIA",
+   "cellphone": "573207465608",
+   "city": "Monteria",
+   "latitude": "8.7435402",
+   "longitude": "-75.8699304"
+ },
+ {
+   "name": "BATA FLAMINGO SINCELEJO",
+   "address": "CARRERA 25 # 22-133 AVENIDA  LAS PEÑITAS CENTRO COMERCIAL  VIVA SINCELEJO",
+   "cellphone": "573209290340",
+   "city": "Sincelejo",
+   "latitude": "9.3033521",
+   "longitude": "-75.390162"
+ },
+ {
+   "name": "BATA FLAMINGO ARMENIA",
+   "address": "CARRERA 16 # 21-47",
+   "cellphone": "573233845791",
+   "city": "Armenia",
+   "latitude": "4.5332311",
+   "longitude": "-75.6768618"
+ },
+ {
+   "name": "BATA FLAMINGO BELLO",
+   "address": "DIAGONAL  55 # 34-67 CENTRO COMERCIAL  PUERTA DEL NORTE",
+   "cellphone": "573127312482",
+   "city": "Medellin",
+   "latitude": "6.3397106",
+   "longitude": "-75.5453295"
+ },
+ {
+   "name": "BATA FLAMINGO BOLIVAR",
+   "address": "CARRERA  51 # 48-31",
+   "cellphone": "573006441859",
+   "city": "Medellin",
+   "latitude": "5.8498497",
+   "longitude": "-76.0242645"
+ },
+ {
+   "name": "BATA FLAMINGO BUENOS AIRES",
+   "address": "CAllE 49 # 21 - 38, Buenos Aires",
+   "cellphone": "",
+   "city": "Medellin",
+   "latitude": "6.2386571",
+   "longitude": "-75.5508732"
+ },
+ {
+   "name": "BATA FLAMINGO CENTRO MAYOR",
+   "address": "AUTOPISTA  SUR CALLE  38 A SUR # 34D-25 ESQUINA CENTRO COMERCIAL CENTRO MAYOR  Local 1-145",
+   "cellphone": "573122357412",
+   "city": "Bogotá DC",
+   "latitude": "4.591718",
+   "longitude": "-74.1260119"
+ },
+ {
+   "name": "BATA FLAMINGO IBAGUE",
+   "address": "CARRERA  3 # 16-42",
+   "cellphone": "573219202914",
+   "city": "Ibague",
+   "latitude": "4.4412659",
+   "longitude": "-75.2393269"
+ },
+ {
+   "name": "BATA FLAMINGO ITAGÜI",
+   "address": "CALLE 49 # 50-01 CERCA PARQUE PRINCIPAL ",
+   "cellphone": "573007206899",
+   "city": "Medellin",
+   "latitude": "6.1714984",
+   "longitude": "-75.6126073"
+ },
+ {
+   "name": "BATA FLAMINGO MAYORCA",
+   "address": "CALLE 51 Sur  # 48-57 CENTRO COMERCIAL  MAYORCA",
+   "cellphone": "573506249582",
+   "city": "Envigado",
+   "latitude": "6.1604859",
+   "longitude": "-75.6068423"
+ },
+ {
+   "name": "BATA FLAMINGO PARQUE",
+   "address": "CALLE 51 # 50-34",
+   "cellphone": "573115290840",
+   "city": "Medellin",
+   "latitude": "6.250456",
+   "longitude": "-75.5700367"
+ },
+ {
+   "name": "BATA FLAMINGO PEREIRA",
+   "address": "CALLE 21 # 5-55 ",
+   "cellphone": "573136545501",
+   "city": "Pereira",
+   "latitude": "4.8161233",
+   "longitude": "-75.6978293"
+ },
+ {
+   "name": "BATA FLAMINGO PIEDECUESTA",
+   "address": "CARRERA 15 # 3AN - 40 CENTRO COMERCIAL  DE LA CUESTA",
+   "cellphone": "573222146557",
+   "city": "Pie de Cuesta",
+   "latitude": "6.9987258",
+   "longitude": "-73.0569828"
+ },
+ {
+   "name": "BATA FLAMINGO SUCRE",
+   "address": "CARRERA  47 # 52-41",
+   "cellphone": "573136417812",
+   "city": "Medellin",
+   "latitude": "6.2499811",
+   "longitude": "-75.5677882"
+ },
+ {
+   "name": "EXITO SAN FRANCISCO",
+   "address": "Carrera 38 # 70 B 177",
+   "cellphone": "573145832586",
+   "city": "Barranquilla",
+   "latitude": "10.9851439",
+   "longitude": "-74.8126958"
+ },
+ {
+   "name": "EXITO ALAMEDAS DEL SINU MONTERIA",
+   "address": "Calle 48 Carrera 13 y 14",
+   "cellphone": "573145835644",
+   "city": "Monteria",
+   "latitude": "8.7606317",
+   "longitude": "-75.91698983"
+ },
+ {
+   "name": "EXITO CASTELLANA CARTAGENA (CV",
+   "address": "AVENIDA  PEDRO HEREDIA SECTOR VILLA SANDRA 30-14 Local 100",
+   "cellphone": "573145833605",
+   "city": "Cartagena",
+   "latitude": "10.3939427",
+   "longitude": "-75.4885428"
+ },
+ {
+   "name": "EXITO BELLO",
+   "address": "Diagonal 55 # 35 - 120",
+   "cellphone": "573145832594",
+   "city": "Bello",
+   "latitude": "6.3401051",
+   "longitude": "-75.5462116"
+ },
+ {
+   "name": "EXITO ENVIGADO",
+   "address": "Calle 43 sur # 48 -27",
+   "cellphone": "573145833613",
+   "city": "Medellin",
+   "latitude": "6.1687241",
+   "longitude": "-75.6001068"
+ },
+ {
+   "name": "EXITO POBLADO",
+   "address": "Calle 10 # 43 e 135",
+   "cellphone": "573145834644",
+   "city": "Medellin",
+   "latitude": "6.2117649",
+   "longitude": "-75.57482688"
+ },
+ {
+   "name": "EXITO AMERICAS",
+   "address": "Avenida Americas # 68 a 94 ",
+   "cellphone": "573145834645",
+   "city": "Bogotá DC",
+   "latitude": "4.6301374",
+   "longitude": "-74.125368"
+ },
+ {
+   "name": "EXITO VILLAMAYOR",
+   "address": "AUTOPISTA SUR # 38 A SUR 07                       ",
+   "cellphone": "573145834646",
+   "city": "Bogotá DC",
+   "latitude": "4.5945665",
+   "longitude": "-74.16707544"
+ },
+ {
+   "name": "EXITO IBAGUE",
+   "address": "Carrera 5 # 80 - 60",
+   "cellphone": "573145832570",
+   "city": "Ibague",
+   "latitude": "4.4393532",
+   "longitude": "-75.1898047"
+ },
+ {
+   "name": "EXITO SUBA",
+   "address": "AVENIDA  Suba con AVENIDA city de Cali",
+   "cellphone": "573145831587",
+   "city": "Bogotá DC",
+   "latitude": "4.7223141",
+   "longitude": "-74.11377523"
+ },
+ {
+   "name": "EXITO SAN PEDRO NEIVA",
+   "address": "AVENIDA 26 CALLE 39 ESQUINA       ",
+   "cellphone": "573145832581",
+   "city": "Neiva",
+   "latitude": "2.950168",
+   "longitude": "-75.2907866"
+ },
+ {
+   "name": "EXITO SAN FERNANDO",
+   "address": "CALLE 5 # 38 D 35       ",
+   "cellphone": "573145832590",
+   "city": "Cali",
+   "latitude": "3.4259925",
+   "longitude": "-76.5482167"
+ },
+ {
+   "name": "EXITO SAN ANTONIO",
+   "address": "CALLE 48 # 46 -115        ",
+   "cellphone": "573145835607",
+   "city": "Medellin",
+   "latitude": "6.2489299",
+   "longitude": "-75.59110034"
+ },
+ {
+   "name": "EXITO PEREIRA",
+   "address": "Carrera 10 # 14 - 71",
+   "cellphone": "573145835614",
+   "city": "Pereira",
+   "latitude": "4.8117456",
+   "longitude": "-75.6930379"
+ },
+ {
+   "name": "EXITO NORTE",
+   "address": "Carrera 43 # 173 - 98",
+   "cellphone": "573145835623",
+   "city": "Bogotá DC",
+   "latitude": "4.7542003",
+   "longitude": "-74.0471227"
+ },
+ {
+   "name": "EXITO LA SABANA VILLAVICENCIO",
+   "address": "CALLE 7 A AVENIDA 40                 ",
+   "cellphone": "573145831603",
+   "city": "Bogotá DC",
+   "latitude": "4.6822708",
+   "longitude": "-74.15833982"
+ },
+ {
+   "name": "EXITO LA FLORA",
+   "address": "AVENIDA  3 F NORTE # 52 N 46     ",
+   "cellphone": "573145831601",
+   "city": "Cali",
+   "latitude": "3.4872481",
+   "longitude": "-76.5188807"
+ },
+ {
+   "name": "EXITO LA COLINA",
+   "address": "TRANSVERSAL  46 # 146 a 25",
+   "cellphone": "573145832602",
+   "city": "Bogotá DC",
+   "latitude": "4.7343785",
+   "longitude": "-74.0675929"
+ },
+ {
+   "name": "EXITO FLORESTA (CAF)",
+   "address": "AVENIDA  68 # 90 -88      ",
+   "cellphone": "573145832606",
+   "city": "Bogotá DC",
+   "latitude": "4.6861605",
+   "longitude": "-74.076527"
+ },
+ {
+   "name": "EXITO COLOMBIA",
+   "address": "CARRERA 66 # 49 -01    ",
+   "cellphone": "573145832620",
+   "city": "Medellin",
+   "latitude": "6.2559687",
+   "longitude": "-75.5845511"
+ },
+ {
+   "name": "EXITO CHAPINERO",
+   "address": "CALLE 52 # 13 -70  ",
+   "cellphone": "573145835630",
+   "city": "Bogotá DC",
+   "latitude": "4.6390976",
+   "longitude": "-74.0684141"
+ },
+ {
+   "name": "EXITO BUCARAMANGA",
+   "address": "Carrera 17 # 45 - 77",
+   "cellphone": "573145835642",
+   "city": "Bucaramanga",
+   "latitude": "7.1149804",
+   "longitude": "-73.124615"
+ },
+ {
+   "name": "EXITO BUENAVENTURA",
+   "address": "Calle 2 # 66 - 86 KILOMETRO 11 Via Cabal Pombo",
+   "cellphone": "573145833577",
+   "city": "Buenaventura",
+   "latitude": "3.867963",
+   "longitude": "-76.9996202"
+ },
+ {
+   "name": "EXITO MAYORCA",
+   "address": "CARRERA 48 CON CALLE 50 SUR 128 CENTRO COMERCIAL  MAYORCA",
+   "cellphone": "573145833610",
+   "city": "Sabaneta",
+   "latitude": "6.1604859",
+   "longitude": "-75.6068423"
+ },
+ {
+   "name": "EXITO LAS FLORES VALLEDUPAR CV",
+   "address": "CALLE 16 con 19 ESQUINA BARRIO FLORES",
+   "cellphone": "573145832591",
+   "city": "Valledupar",
+   "latitude": "10.4696763",
+   "longitude": "-73.2601624"
+ },
+ {
+   "name": "EXITO FLORENCIA",
+   "address": "CALLE 15 # 10-23",
+   "cellphone": "573156517896",
+   "city": "Florencia",
+   "latitude": "1.6157226",
+   "longitude": "-75.6143617"
+ },
+ {
+   "name": "EXITO FONTIBON",
+   "address": "AVENIDA centenario con 106,  al frente de zona franca",
+   "cellphone": "",
+   "city": "Bogotá DC",
+   "latitude": "4.6718442",
+   "longitude": "-74.1564621"
+ },
+ {
+   "name": "EXITO SINCELEJO",
+   "address": "CARRERA 25 #  22 -133 VIA LAS PEÑITAS             ",
+   "cellphone": "",
+   "city": "Sincelejo",
+   "latitude": "9.3029367",
+   "longitude": "-75.3903623"
+ },
+ {
+   "name": "EXITO GRAN ESTACION",
+   "address": "AVENIDA LA ESPERANZA # 62- 49            ",
+   "cellphone": "",
+   "city": "Bogotá DC",
+   "latitude": "4.6219485",
+   "longitude": "-74.1233693"
+ },
+ {
+   "name": "EXITO MOSQUERA",
+   "address": "CARRERA 3 # 15 A 57 ",
+   "cellphone": "",
+   "city": "Mosquera",
+   "latitude": "4.7043369",
+   "longitude": "-74.2338279"
+ },
+ {
+   "name": "EXITO BUENA VISTA SANTA MARTA",
+   "address": "AVENIDA  LIBERTADOR PARQUE LOS TRUPILLOS FRENTE A LA QUI",
+   "cellphone": "",
+   "city": "Santa Marta",
+   "latitude": "11.2287343",
+   "longitude": "-74.1744525"
+ },
+ {
+   "name": "EXITO ALAMOS",
+   "address": "TRANSVERSAL  99  # 70 A 89 BARRIO ALAMOS          ",
+   "cellphone": "",
+   "city": "Bogotá DC",
+   "latitude": "4.701156",
+   "longitude": "-74.1174646"
+ },
+ {
+   "name": "BARRANQUILLA 6",
+   "address": " CARRERA  30 # 7A-121 CENTRO COMERCIAL  Panorama Local  -53-54",
+   "cellphone": "573146452412",
+   "city": "Barranquilla",
+   "latitude": "10.945306",
+   "longitude": "-74.7873149"
+ },
+ {
+   "name": "BARRANQUILLA 7",
+   "address": "CENTRO COMERCIAL  EXITO METROPOLITANO LOCAL 210",
+   "cellphone": "573136616176",
+   "city": "Barranquilla",
+   "latitude": "10.9453529",
+   "longitude": "-74.80263594"
+ },
+ {
+   "name": "BARRANQUILLA 3",
+   "address": "CALLE 72 # 48 - 69",
+   "cellphone": "573042125605-573103904173",
+   "city": "Barranquilla",
+   "latitude": "10.9962749",
+   "longitude": "-74.8065988"
+ },
+ {
+   "name": "SANTA MARTA 3",
+   "address": "CARRERA 5 #14 - 28",
+   "cellphone": "573136616178",
+   "city": "Santa Marta",
+   "latitude": "11.2443996",
+   "longitude": "-74.2125987"
+ },
+ {
+   "name": "BARRANQUILLA 11",
+   "address": "CARRERA 43 # 34-40 LOCAL 4",
+   "cellphone": "573136861578",
+   "city": "Barranquilla",
+   "latitude": "10.9813104",
+   "longitude": "-74.7807428"
+ },
+ {
+   "name": "RIOHACHA 1",
+   "address": "Calle 15 # 8 - 56 CENTRO COMERCIAL SUCHIMA RIOHACHA",
+   "cellphone": "573136861577",
+   "city": "Riohacha",
+   "latitude": "11.5436906",
+   "longitude": "-72.911005"
+ },
+ {
+   "name": "SOLEDAD",
+   "address": "CARRERA 37 #  30-33 LOCAL 109 -110",
+   "cellphone": "573216765011",
+   "city": "Soledad",
+   "latitude": "10.9270702",
+   "longitude": "-74.7815438"
+ },
+ {
+   "name": "RIOHACHA 2",
+   "address": "CALLE 15 # 18-274 CENTRO COMERCIAL  VIVA WAJIRA LOCal 157",
+   "cellphone": "573168300483",
+   "city": "Riohacha",
+   "latitude": "11.5364089",
+   "longitude": "-72.924123"
+ },
+ {
+   "name": "SANTA MARTA 5",
+   "address": "CARRERA 5 #  18-11 l - 3",
+   "cellphone": "573103904131",
+   "city": "Santa Marta",
+   "latitude": "11.2425333",
+   "longitude": "-74.2128884"
+ },
+ {
+   "name": "SANTA MARTA 6",
+   "address": "AVENIDA DEL FERROCARRIL CON AVENIDA DEL RIO CENTRO COMERCIAL  OCEAN",
+   "cellphone": "573136616179",
+   "city": "Santa Marta",
+   "latitude": "11.2313997",
+   "longitude": "-74.2026415"
+ },
+ {
+   "name": "SOLEDAD 2",
+   "address": "CALLE  63 #13-71 CENTRO COMERCIAL Nuestro Atlantico - local 1049 - 1050",
+   "cellphone": "573128041284",
+   "city": "Soledad",
+   "latitude": "10.9045914",
+   "longitude": "-74.803948"
+ },
+ {
+   "name": "SINCELEJO",
+   "address": "CARRERA 19 # 22- 27",
+   "cellphone": "573137397376",
+   "city": "Sincelejo",
+   "latitude": "9.3015186",
+   "longitude": "-75.3965883"
+ },
+ {
+   "name": "MONTERIA 2",
+   "address": "CARRERA 2  # 34-61",
+   "cellphone": "573137399355",
+   "city": "Monteria",
+   "latitude": "8.7602996",
+   "longitude": "-75.8861675"
+ },
+ {
+   "name": "CARTAGENA 6",
+   "address": "TRANSVERSAL  53 A DIAGONAL  29 CENTRO COMERCIAL  OUTLET DEL BOSQUE LOCALES 14 Y 15",
+   "cellphone": "573113553917",
+   "city": "Cartagena",
+   "latitude": "10.3889392",
+   "longitude": "-75.506696"
+ },
+ {
+   "name": "SINCELEJO 2",
+   "address": "Carrera 20 # 21-29, edificio Majestic, Local 2",
+   "cellphone": "573113519118",
+   "city": "Sincelejo",
+   "latitude": "9.3024187",
+   "longitude": "-75.396159"
+ },
+ {
+   "name": "CARTAGENA 1",
+   "address": "ESQQUINA  CALLE BADILLO  CON VICENTE GARCIA N",
+   "cellphone": "573136616248",
+   "city": "Cartagena",
+   "latitude": "10.4244257",
+   "longitude": "-75.5511884"
+ },
+ {
+   "name": "CARTAGENA 4",
+   "address": "CALLE DE LA MONEDA # 7-123",
+   "cellphone": "573103904194",
+   "city": "Cartagena",
+   "latitude": "10.4254311",
+   "longitude": "-75.5500601"
+ },
+ {
+   "name": "MONTERIA 4",
+   "address": "TRANSVERAL  29 # 29-69 Centro Comercial Nuestro Monteria - Local 02",
+   "cellphone": "573188096294",
+   "city": "Monteria",
+   "latitude": "8.7429886",
+   "longitude": "-75.8708269"
+ },
+ {
+   "name": "PEREIRA 12",
+   "address": "CARRERA 8 # 18-10",
+   "cellphone": "573136494595",
+   "city": "Pereira",
+   "latitude": "4.8137605",
+   "longitude": "-75.6956891"
+ },
+ {
+   "name": "AGUACHICA 1",
+   "address": "CAllE 5 # 13 - 67",
+   "cellphone": "573136616231",
+   "city": "Aguachica",
+   "latitude": "8.3097303",
+   "longitude": "-73.6230687"
+ },
+ {
+   "name": "MEDELLIN 16",
+   "address": "CARRERA 49 # 52-35",
+   "cellphone": "573146828158",
+   "city": "Medellin",
+   "latitude": "6.2825926",
+   "longitude": "-75.5581914"
+ },
+ {
+   "name": "ARMENIA 1",
+   "address": "CARRERA  17  # 19 - 11",
+   "cellphone": "573104591533",
+   "city": "Armenia",
+   "latitude": "4.5348388",
+   "longitude": "-75.6760399"
+ },
+ {
+   "name": "MANIZALES 1",
+   "address": "CARRERA A 22  # 19-11",
+   "cellphone": "573103849168",
+   "city": "Manizales",
+   "latitude": "5.0676568",
+   "longitude": "-75.5217002"
+ },
+ {
+   "name": "MANIZALES 5",
+   "address": "CARRERA  22  # 29 -29 CENTRO COMERCIAL  PARQUE CALDAS   Local   I 14",
+   "cellphone": "573103904102",
+   "city": "Manizales",
+   "latitude": "5.068191",
+   "longitude": "-75.5149575"
+ },
+ {
+   "name": "MANIZALES 7",
+   "address": "CARRERA  27 a #  66-30  CENTRO COMERCIAL SANCANCIO LOCAL 816",
+   "cellphone": "573136616170",
+   "city": "Manizales",
+   "latitude": "5.0536316",
+   "longitude": "-75.4912928"
+ },
+ {
+   "name": "PEREIRA 1",
+   "address": "CARRERA  8 # 17 - 31",
+   "cellphone": "573104591535",
+   "city": "Pereira",
+   "latitude": "4.8136785",
+   "longitude": "-75.695044"
+ },
+ {
+   "name": "BOGOTA 46",
+   "address": "CARRERA 78 B # 37-16 SUR",
+   "cellphone": "573206954116",
+   "city": "Bogotá DC",
+   "latitude": "4.6215879",
+   "longitude": "-74.1535477"
+ },
+ {
+   "name": "ARMENIA 4",
+   "address": "CARRERA  15 # 17 -22",
+   "cellphone": "573136616260",
+   "city": "Armenia",
+   "latitude": "4.5437095",
+   "longitude": "-75.70142053"
+ },
+ {
+   "name": "ARMENIA 6",
+   "address": "CALLE 19 # 16 - 13",
+   "cellphone": "573136616259",
+   "city": "Armenia",
+   "latitude": "4.5438789",
+   "longitude": "-75.70142063"
+ },
+ {
+   "name": "TULUA 2",
+   "address": "CALLE 27  # 24 - 71",
+   "cellphone": "573103904152",
+   "city": "Tuluá",
+   "latitude": "4.0845679",
+   "longitude": "-76.2003597"
+ },
+ {
+   "name": "BOGOTA 48",
+   "address": "Carrera   13 # 59-45  BARRIO CHAPINERO",
+   "cellphone": "573104591536",
+   "city": "Bogotá DC",
+   "latitude": "4.646329",
+   "longitude": "-74.0662601"
+ },
+ {
+   "name": "PALMIRA 2",
+   "address": "CALLE 30  # 26-02",
+   "cellphone": "573103904228",
+   "city": "Palmira",
+   "latitude": "3.5267457",
+   "longitude": "-76.2993945"
+ },
+ {
+   "name": "CALI 11",
+   "address": "CALLE   12 # 6-22 AVENIDA . ROOSEVELT COSMOCENTRO NIVEL 1 LOCALES 2S/2T",
+   "cellphone": "573136616246",
+   "city": "Cali",
+   "latitude": "3.4516521",
+   "longitude": "-76.5341741"
+ },
+ {
+   "name": "BUGA 1",
+   "address": "CALLE 8 # 13 - 35",
+   "cellphone": "573103904233",
+   "city": "Buga",
+   "latitude": "3.9008682",
+   "longitude": "-76.3027654"
+ },
+ {
+   "name": "CALI 1",
+   "address": "CARRERA  1 CALLE 66  CENTRO COMERCIAL  CALIMA LOCAL 121 A",
+   "cellphone": "573136616247",
+   "city": "Cali",
+   "latitude": "4.6184605",
+   "longitude": "-74.0880724"
+ },
+ {
+   "name": "CALDAS",
+   "address": "CALLE 130 SUR # 51-26",
+   "cellphone": "573137399356",
+   "city": "Caldas",
+   "latitude": "6.0914423",
+   "longitude": "-75.6392095"
+ },
+ {
+   "name": "ITAGUI 1",
+   "address": "CARRERA 50 # 49 -36",
+   "cellphone": "573113486239",
+   "city": "Itagui",
+   "latitude": "6.1717287",
+   "longitude": "-75.6124144"
+ },
+ {
+   "name": "MEDELLIN 17",
+   "address": "CALLE 49 # 47 -31",
+   "cellphone": "573206953957",
+   "city": "Medellin",
+   "latitude": "6.2505649",
+   "longitude": "-75.5683019"
+ },
+ {
+   "name": "BOGOTA 39",
+   "address": " CARRERA 20 # 16-55 SUR BARRIO RESTREPO",
+   "cellphone": "573136616187",
+   "city": "Bogotá DC",
+   "latitude": "4.5868168",
+   "longitude": "-74.1036036"
+ },
+ {
+   "name": "BUCARAMANGA 1",
+   "address": "CALLE 34 # 16-79",
+   "cellphone": "573136616214",
+   "city": "Bucaramanga",
+   "latitude": "7.1189688",
+   "longitude": "-73.1296085"
+ },
+ {
+   "name": "BUCARAMANGA 2",
+   "address": "CALLE 36 # 17 - 02",
+   "cellphone": "573104591534",
+   "city": "Bucaramanga",
+   "latitude": "7.1184715",
+   "longitude": "-73.1270884"
+ },
+ {
+   "name": "BUCARAMANGA 5",
+   "address": "CARRERA  33 # 48-69",
+   "cellphone": "573136616253",
+   "city": "Bucaramanga",
+   "latitude": "7.1160454",
+   "longitude": "-73.1130958"
+ },
+ {
+   "name": "BUCARAMANGA 9",
+   "address": "CALLE 51 # 35-42 LOCAL 35 CENTRO COMERCIAL  CABECERA",
+   "cellphone": "573103904151",
+   "city": "Bucaramanga",
+   "latitude": "5.0672758",
+   "longitude": "-75.517745"
+ },
+ {
+   "name": "POPAYAN",
+   "address": "CARRERA 6 #   5-56",
+   "cellphone": "573136616162",
+   "city": "Popayán",
+   "latitude": "2.4408629",
+   "longitude": "-76.6083615"
+ },
+ {
+   "name": "BUCARAMANGA 7",
+   "address": "CARRERA 16 # 36-48  ESQUINA",
+   "cellphone": "573136616211",
+   "city": "Bucaramanga",
+   "latitude": "7.1177449",
+   "longitude": "-73.1276426"
+ },
+ {
+   "name": "BOGOTA 24",
+   "address": "CARRERA 20 # 17-58 SUR",
+   "cellphone": "573136616236",
+   "city": "Bogotá DC",
+   "latitude": "4.586217",
+   "longitude": "-74.1048662"
+ },
+ {
+   "name": "BOGOTA 26",
+   "address": "CARRERA 60 # 9-11",
+   "cellphone": "573103848987",
+   "city": "Bogotá DC",
+   "latitude": "4.6285817",
+   "longitude": "-74.1175693"
+ },
+ {
+   "name": "BOGOTA 9",
+   "address": "TRASNVERSAL  96 # 70 A 85 CENTRO COMERCIAL   Alamos diver plaza ",
+   "cellphone": "573136616213",
+   "city": "Bogotá DC",
+   "latitude": "4.7006504",
+   "longitude": "-74.1174194"
+ },
+ {
+   "name": "PITALITO 2",
+   "address": "CALLE 7 # 3-56",
+   "cellphone": "573136616175",
+   "city": "Pitalito",
+   "latitude": "1.8520511",
+   "longitude": "-76.0476527"
+ },
+ {
+   "name": "NEIVA 5",
+   "address": "CALLE 9 # 5-40",
+   "cellphone": "573136616228",
+   "city": "Neiva",
+   "latitude": "2.9280621",
+   "longitude": "-75.2911768"
+ },
+ {
+   "name": "IBAGUE 1",
+   "address": "CARRERA  3 # 12-92",
+   "cellphone": "573136616204",
+   "city": "Ibague",
+   "latitude": "4.4507305",
+   "longitude": "-75.2510348"
+ },
+ {
+   "name": "IBAGUE 6",
+   "address": "CALLE 13 # 2-51",
+   "cellphone": "573104591544",
+   "city": "Ibague",
+   "latitude": "4.4425644",
+   "longitude": "-75.2424038"
+ },
+ {
+   "name": "BOGOTA 27",
+   "address": "AVENIDA  Boyacá # 80-94 CENTRO COMERCIAL  TINTAL PLAZA,  LOCAL 168",
+   "cellphone": "573136616167",
+   "city": "Bogotá DC",
+   "latitude": "4.6947133",
+   "longitude": "-74.0883767"
+ },
+ {
+   "name": "BOGOTA 29",
+   "address": "CALLE 37 SUR  # 77-07 BARRIO KENEDY",
+   "cellphone": "573136616193",
+   "city": "Bogotá DC",
+   "latitude": "4.5768668",
+   "longitude": "-74.19662583"
+ },
+ {
+   "name": "BOGOTA 30",
+   "address": "CALLE 17 SUR # 20-51",
+   "cellphone": "573136616194",
+   "city": "Bogotá DC",
+   "latitude": "4.586793",
+   "longitude": "-74.1041177"
+ },
+ {
+   "name": "CHIQUINQUIRA 2",
+   "address": "CALLE 17  #  10-66  10-67",
+   "cellphone": "573136616182",
+   "city": "Chiquinquirá",
+   "latitude": "5.6172669",
+   "longitude": "-73.8188474"
+ },
+ {
+   "name": "BOGOTA 36",
+   "address": "CENTRO COMERCIAL  EL TUNAL LOCAL 2083-2084",
+   "cellphone": "573136616190",
+   "city": "Bogotá DC",
+   "latitude": "4.5783222",
+   "longitude": "-74.1331866"
+ },
+ {
+   "name": "MEDELLIN 1",
+   "address": "CARRERA  47 # 52-109 LOCAL 101",
+   "cellphone": "573103904130",
+   "city": "Medellin",
+   "latitude": "6.2505951",
+   "longitude": "-75.5674696"
+ },
+ {
+   "name": "BUGA 2",
+   "address": "Calle 4 # 23 - 86  CENTRO COMERCIAL  BUGA PLAZA LOCALES  49-50-51",
+   "cellphone": "573146452409",
+   "city": "Buga",
+   "latitude": "3.8990825",
+   "longitude": "-76.3134248"
+ },
+ {
+   "name": "BOGOTA 43",
+   "address": "CARRERA  1 # 65 D - 58 SUR CENTRO COMERCIAL  ALTAVISTA AVENIDA CARACAS",
+   "cellphone": "573146452413",
+   "city": "Bogotá DC",
+   "latitude": "4.5871458",
+   "longitude": "-74.22828052"
+ },
+ {
+   "name": "BOGOTA 44",
+   "address": "CALLE 13 No 5-41 CENTRO COMERCIAL  SANTA MARIA PLAZA  SOACHA",
+   "cellphone": "573136616171",
+   "city": "Bogotá DC",
+   "latitude": "4.5803592",
+   "longitude": "-74.2209197"
+ },
+ {
+   "name": "MEDELLIN 26",
+   "address": "CALLE  49 # 21 - 38 CENTRO COMERCIAL  La Central, Local 216 y 217",
+   "cellphone": "",
+   "city": "Medellin",
+   "latitude": "6.2386571",
+   "longitude": "-75.5508732"
+ },
+ {
+   "name": "CARTAGO",
+   "address": "CARRERA 5 # 13-14",
+   "cellphone": "573103904113",
+   "city": "Cartago",
+   "latitude": "4.7490931",
+   "longitude": "-75.9171144"
+ },
+ {
+   "name": "BOGOTA 47",
+   "address": "CARRERA 19 D - 62 SUR BARRIO SAN FRANCISCO",
+   "cellphone": "573136616240",
+   "city": "Bogotá DC",
+   "latitude": "4.5616998",
+   "longitude": "-74.1413388"
+ },
+ {
+   "name": "VALLEDUPAR 2",
+   "address": "CALLE 16 # 8 -67",
+   "cellphone": "573147403651",
+   "city": "Valledupar",
+   "latitude": "10.4738782",
+   "longitude": "-73.2481392"
+ },
+ {
+   "name": "DORADA 2",
+   "address": "CALLE 15 #  3 - 27",
+   "cellphone": "573136616215",
+   "city": "La Dorada",
+   "latitude": "5.4538439",
+   "longitude": "-74.6660013"
+ },
+ {
+   "name": "BARRANCABERMEJA 1",
+   "address": "CALLE 49 # 6 -46",
+   "cellphone": "573136616180",
+   "city": "Barrancabermeja",
+   "latitude": "7.0600203",
+   "longitude": "-73.8725782"
+ },
+ {
+   "name": "BARRANCABERMEJA 2",
+   "address": "Calle 50 # 10 a - 41 CENTRO COMERCIAL IWANA LOCAL 2-05",
+   "cellphone": "573104591568",
+   "city": "Barrancabermeja",
+   "latitude": "7.060556",
+   "longitude": "-73.8683791"
+ },
+ {
+   "name": "IBAGUE 7",
+   "address": "CARRERA 3 # 14-02 EDIFICIO  QUIJANO GUTIERREZ L 2",
+   "cellphone": "573104591594",
+   "city": "Ibague",
+   "latitude": "4.4507121",
+   "longitude": "-75.2510282"
+ },
+ {
+   "name": "VILLAVICENCIO 4",
+   "address": "CARRERA 30 A # 38-66",
+   "cellphone": "573147403649",
+   "city": "Villavicencio",
+   "latitude": "4.5399964",
+   "longitude": "-74.9959408"
+ },
+ {
+   "name": "CUCUTA 2",
+   "address": "CALLE 9 # 4-90 CENTRO COMERCIAL RIVER PLAZA ",
+   "cellphone": "573217011401",
+   "city": "Cúcuta",
+   "latitude": "7.8880921",
+   "longitude": "-72.5056595"
+ },
+ {
+   "name": "DUITAMA 2",
+   "address": "CARRERA 17 # 16-39",
+   "cellphone": "573136616208",
+   "city": "Duitama",
+   "latitude": "5.8270031",
+   "longitude": "-73.0348321"
+ },
+ {
+   "name": "POPAYAN 3",
+   "address": "CALLE 6 # 6 - 44",
+   "cellphone": "573217603662",
+   "city": "Popayán",
+   "latitude": "2.440512",
+   "longitude": "-76.6088513"
+ },
+ {
+   "name": "BOGOTA 50",
+   "address": "CALLE 72 A # 69 P 37 LAS FERIAS",
+   "cellphone": "573217603661",
+   "city": "Bogotá DC",
+   "latitude": "4.6842089",
+   "longitude": "-74.0930858"
+ },
+ {
+   "name": "CUCUTA 3",
+   "address": "AVENIDA 6 # 11-26 CENTRO",
+   "cellphone": "573217997036",
+   "city": "Cúcuta",
+   "latitude": "7.9079228",
+   "longitude": "-72.52018664"
+ },
+ {
+   "name": "BUGA 3",
+   "address": "CALLE 7 # 12 - 65  CENTRO",
+   "cellphone": "573217997035",
+   "city": "Buga",
+   "latitude": "3.8996949",
+   "longitude": "-76.3024474"
+ },
+ {
+   "name": "PEREIRA 16",
+   "address": "CARRERA 7 # 17-59 CENTRO",
+   "cellphone": "573217997034",
+   "city": "Pereira",
+   "latitude": "4.8145677",
+   "longitude": "-75.6951652"
+ },
+ {
+   "name": "BOGOTA 51",
+   "address": "CENTRO COMERCIAL TINTAL PLAZA LOCAL 125",
+   "cellphone": "573116359839",
+   "city": "Bogotá DC",
+   "latitude": "4.6428648",
+   "longitude": "-74.158578"
+ },
+ {
+   "name": "BOGOTA 52",
+   "address": "CARRERA 19 # 17-57 SUR BARRIO RESTREPO",
+   "cellphone": "573116359829",
+   "city": "Bogotá DC",
+   "latitude": "4.5856268",
+   "longitude": "-74.1037343"
+ },
+ {
+   "name": "LA CEJA 1",
+   "address": "Calle 15 # 18 - 274 lote A CENTRO COMERCIAL  Viva la Ceja, local 127",
+   "cellphone": "573145849648",
+   "city": "La Ceja",
+   "latitude": "6.0353125",
+   "longitude": "-75.4228687"
+ },
+ {
+   "name": "BOGOTA 54",
+   "address": "DIAGONAL 150 # 31-56 CENTRO  COMERCIAL  CEDRITOS LOCALES  113-116",
+   "cellphone": "573206954117",
+   "city": "Bogotá DC",
+   "latitude": "4.7318827",
+   "longitude": "-74.0443633"
+ },
+ {
+   "name": "GIRARDOT 1",
+   "address": "CARRERA 10 # 13-01",
+   "cellphone": "573116374980",
+   "city": "Girardot",
+   "latitude": "4.2933746",
+   "longitude": "-74.8099762"
+ },
+ {
+   "name": "TULUA 3",
+   "address": "CALLE 27 # 25 - 8O",
+   "cellphone": "573147012152",
+   "city": "Tuluá",
+   "latitude": "4.0844128",
+   "longitude": "-76.2000897"
+ },
+ {
+   "name": "PALMIRA 6",
+   "address": "CARRERA 28 # 30-34",
+   "cellphone": "573147012153",
+   "city": "Palmira",
+   "latitude": "3.5272632",
+   "longitude": "-76.3010709"
+ },
+ {
+   "name": "YOPAL 1",
+   "address": "CALLE  30  # 26-29 Centro Comercial Alcaraván local 26",
+   "cellphone": "573137374082",
+   "city": "Yopal",
+   "latitude": "5.3405033",
+   "longitude": "-72.40432055"
+ },
+ {
+   "name": "RIONEGRO",
+   "address": "CENTRO COMERCIAL  SAN NICOLAS  LOCAL 113 Y 114",
+   "cellphone": "573136616209",
+   "city": "Rionegro",
+   "latitude": "6.1481886",
+   "longitude": "-75.3795228"
+ },
+ {
+   "name": "BOGOTA 56",
+   "address": "CARRERA 10 #  16- 67",
+   "cellphone": "573137586028",
+   "city": "Bogotá DC",
+   "latitude": "4.6047933",
+   "longitude": "-74.0771698"
+ },
+ {
+   "name": "ESPINAL 2",
+   "address": "CALLE 9 # 4 - 37",
+   "cellphone": "573137579714",
+   "city": "Espinal",
+   "latitude": "4.1525002",
+   "longitude": "-74.887168"
+ },
+ {
+   "name": "ZIPAQUIRA 1",
+   "address": "CARRERA 10 # 4-65",
+   "cellphone": "573122576929",
+   "city": "Zipaquirá",
+   "latitude": "5.0225309",
+   "longitude": "-74.0044049"
+ },
+ {
+   "name": "CALARCA 1",
+   "address": "CARRERA 25 # 37-40",
+   "cellphone": "573122582455",
+   "city": "Calarcá",
+   "latitude": "4.5294507",
+   "longitude": "-75.64355"
+ },
+ {
+   "name": "IBAGUE 8",
+   "address": "CARRERA 3 # 15 -38",
+   "cellphone": "573128041280",
+   "city": "Ibague",
+   "latitude": "4.4421114",
+   "longitude": "-75.2402714"
+ },
+ {
+   "name": "PAMPLONA",
+   "address": "CARRERA 6 # 6 -79",
+   "cellphone": "573148232804",
+   "city": "Pamplona",
+   "latitude": "7.3756315",
+   "longitude": "-72.6503629"
+ },
+ {
+   "name": "PITALITO 3",
+   "address": "Carrera 15 # 19A 01 CENTRO COMERCIAL  SAN ANTONIO LOCAL 204",
+   "cellphone": "573104648959",
+   "city": "Pitalito",
+   "latitude": "1.8501864",
+   "longitude": "-76.0668067"
+ },
+ {
+   "name": "SANTA ROSA DE CABAL  2",
+   "address": "CARRERA 14 # 13 AVENIDA PRINCIPAL CERCA AL PARQUE",
+   "cellphone": "573127119992",
+   "city": "Santa Rosa De Cabal",
+   "latitude": "4.8657822",
+   "longitude": "-75.6232749"
+ },
+ {
+   "name": "PUERTO ASIS 2",
+   "address": "Carrera 20 # 10-72 Avenida Paincipal",
+   "cellphone": "573127119991",
+   "city": "Puerto Asís",
+   "latitude": "0.4959953",
+   "longitude": "-76.5051816"
+ },
+ {
+   "name": "FLORENCIA 3",
+   "address": "CARRERA 12 # 15-24",
+   "cellphone": "573148817534",
+   "city": "Florencia",
+   "latitude": "1.6153843",
+   "longitude": "-75.6160072"
+ },
+ {
+   "name": "BUENAVENTURA 3",
+   "address": "CALLE 3 #  4 -33 AVENIDA PRINCIPAL CENTRO",
+   "cellphone": "573148817513",
+   "city": "Buenaventura",
+   "latitude": "3.8882275",
+   "longitude": "-77.0786254"
+ },
+ {
+   "name": "GIRARDOT 2",
+   "address": "CALLE 16 # 10 - 18 CENTRO",
+   "cellphone": "573148817578",
+   "city": "Girardot",
+   "latitude": "4.2951425",
+   "longitude": "-74.8091281"
+ },
+ {
+   "name": "BOGOTA 58",
+   "address": "CARRERA 92 # 145 - 03 SUBA",
+   "cellphone": "573122576919",
+   "city": "Bogotá DC",
+   "latitude": "4.738152",
+   "longitude": "-74.0878665"
+ },
+ {
+   "name": "MEDELLIN 4",
+   "address": "CARRERA  50 # 48-10",
+   "cellphone": "573103904156",
+   "city": "Medellin",
+   "latitude": "6.2479242",
+   "longitude": "-75.5705443"
+ },
+ {
+   "name": "BOGOTA 59",
+   "address": "CARRERA 51 # 46 -00 SUR BARRIO VENECIA",
+   "cellphone": "573113486241",
+   "city": "Bogotá DC",
+   "latitude": "4.5937043",
+   "longitude": "-74.1401337"
+ },
+ {
+   "name": "POPAYAN 4",
+   "address": "CARRERA 6 # 6 - 44/48",
+   "cellphone": "573113744156",
+   "city": "Popayán",
+   "latitude": "2.4400751",
+   "longitude": "-76.6086455"
+ },
+ {
+   "name": "PITALITO 4",
+   "address": "CALLE 7 # 3 -67/69",
+   "cellphone": "573113744168",
+   "city": "Pitalito",
+   "latitude": "1.8511005",
+   "longitude": "-76.05428976"
+ },
+ {
+   "name": "GARZON 2",
+   "address": "CARRERA 10 #  7 -39",
+   "cellphone": "573207724741",
+   "city": "Garzón",
+   "latitude": "2.1997793",
+   "longitude": "-75.6287465"
+ },
+ {
+   "name": "PASTO 8",
+   "address": "CALLE 17 #  24-17 CENTRO",
+   "cellphone": "573136616184",
+   "city": "Pasto",
+   "latitude": "1.2137485",
+   "longitude": "-77.2816255"
+ },
+ {
+   "name": "CUCUTA 4",
+   "address": "CALLE 10 # 3 -60 CENTRO",
+   "cellphone": "573103475210",
+   "city": "Cúcuta",
+   "latitude": "7.901197",
+   "longitude": "-72.51648274"
+ },
+ {
+   "name": "BUCARAMANGA 12",
+   "address": "CALLE 36 # 15-73",
+   "cellphone": "573217809467",
+   "city": "Bucaramanga",
+   "latitude": "7.1182692",
+   "longitude": "-73.1280548"
+ },
+ {
+   "name": "SOGAMOSO 2",
+   "address": "CARRERA  11 # 13-68",
+   "cellphone": "573136616181",
+   "city": "Sogamoso",
+   "latitude": "5.7169192",
+   "longitude": "-72.929449"
+ },
+ {
+   "name": "IPIALES 4",
+   "address": "CALLE 2 # 6 - 120 CENTRO COMERCIAL  GRAN PLAZA IPIALES L 134",
+   "cellphone": "573136616239",
+   "city": "Ipiales",
+   "latitude": "0.8300071",
+   "longitude": "-77.6510893"
+ },
+ {
+   "name": "NEIVA 8",
+   "address": "CARRERA 3 # 8 -27 LOCAL 4       ",
+   "cellphone": "573116405036",
+   "city": "Neiva",
+   "latitude": "2.9508797",
+   "longitude": "-75.2903969"
+ },
+ {
+   "name": "PALMIRA 8",
+   "address": "CALLE 30 # 27-04",
+   "cellphone": "573106829426",
+   "city": "Palmira",
+   "latitude": "3.526836",
+   "longitude": "-76.3002681"
+ },
+ {
+   "name": "GARZON 3",
+   "address": "CALLE 7 # 8 - 68 ",
+   "cellphone": "573206953961",
+   "city": "Garzón",
+   "latitude": "2.1968655",
+   "longitude": "-75.6302062"
+ },
+ {
+   "name": "MOCOA 1",
+   "address": " calle 7 # 5-59 Local 104 el local es en calle ",
+   "cellphone": "573136616183",
+   "city": "Mocoa",
+   "latitude": "1.1458729",
+   "longitude": "-76.6496771"
+ },
+ {
+   "name": "ESPINAL 3",
+   "address": "CARRERA  6 # 8-54",
+   "cellphone": "573103849029",
+   "city": "Espinal",
+   "latitude": "4.1510281",
+   "longitude": "-74.885989"
+ },
+ {
+   "name": "BOGOTA 67",
+   "address": "Carrera 78 B # 35A - 56, Sur - Kenedy",
+   "cellphone": "573113523018",
+   "city": "Bogotá DC",
+   "latitude": "4.6232033",
+   "longitude": "-74.1517418"
+ },
+ {
+   "name": "BOGOTA 66",
+   "address": "Carrera 100 # 20 - 33, Local 2, Fontibon",
+   "cellphone": "573145849657",
+   "city": "Bogotá DC",
+   "latitude": "4.6754333",
+   "longitude": "-74.1450511"
+ },
+ {
+   "name": "SOACHA 1",
+   "address": "Centro Comercial Antares, Local 1-103 y 1-104",
+   "cellphone": "573145836639",
+   "city": "Soacha",
+   "latitude": "4.5827007",
+   "longitude": "-74.2036986"
+ },
+ {
+   "name": "CALI 14 SAN NICOLAS",
+   "address": "CALLE 24 # 6-109",
+   "cellphone": "573136616244",
+   "city": "Cali",
+   "latitude": "3.4546407",
+   "longitude": "-76.5227524"
+ },
+ {
+   "name": "CALI 32",
+   "address": "CALLE 12 # 6 - 05",
+   "cellphone": "573136616202",
+   "city": "Cali",
+   "latitude": "3.4507767",
+   "longitude": "-76.5339281"
+ },
+ {
+   "name": "CALI 35",
+   "address": "CALLE 12 # 6 -60",
+   "cellphone": "573207722215",
+   "city": "Cali",
+   "latitude": "3.4505945",
+   "longitude": "-76.5339831"
+ },
+ {
+   "name": "NEIVA 2",
+   "address": "CALLE 8 #  5 - 19",
+   "cellphone": "573136616230",
+   "city": "Neiva",
+   "latitude": "2.9308486",
+   "longitude": "-75.2913618"
+ },
+ {
+   "name": "CALI 37",
+   "address": "CALLE 13 # 6 -29   ",
+   "cellphone": "573163623284",
+   "city": "Cali",
+   "latitude": "5.6515369",
+   "longitude": "-76.7671931"
+ },
+ {
+   "name": "DOSQUEBRADAS",
+   "address": "PORTAL DEL PARQUE   LOCAL  43 ",
+   "cellphone": "573136616226",
+   "city": "Dosquebradas",
+   "latitude": "4.8229095",
+   "longitude": "-75.6856915"
+ },
+ {
+   "name": "IBAGUE 2",
+   "address": "CARRERA   1  #  15 - 21",
+   "cellphone": "573136616205",
+   "city": "Ibague",
+   "latitude": "4.4408006",
+   "longitude": "-75.2416708"
+ },
+ {
+   "name": "MANIZALES 2",
+   "address": "calle 9 # 4 61 AVENIDA  VILLAPILAR",
+   "cellphone": "573136616206",
+   "city": "Manizales",
+   "latitude": "5.0805069",
+   "longitude": "-75.52531919"
+ },
+ {
+   "name": "MEDELLIN 8",
+   "address": "Carrera 43 # 35 sur 09 Envigado",
+   "cellphone": "573136616186",
+   "city": "Medellin",
+   "latitude": "6.1716112",
+   "longitude": "-75.6122791"
+ },
+ {
+   "name": "SOGAMOSO 1",
+   "address": "CALLE 11 # 11-03",
+   "cellphone": "573116374972",
+   "city": "Sogamoso",
+   "latitude": "5.7146731",
+   "longitude": "-72.9306529"
+ },
+ {
+   "name": "BOGOTA 31",
+   "address": "CALLE 146 A # 106 -20 CENTRO COMERCIAL  PLAZA IMPERIAL LOCALES 150 -151 ",
+   "cellphone": "573136616165",
+   "city": "Bogotá DC",
+   "latitude": "4.4778475",
+   "longitude": "-74.89456290"
+ },
+ {
+   "name": "IPIALES 2",
+   "address": "CARRERA 7 # 13-11",
+   "cellphone": "573136616251",
+   "city": "Ipiales",
+   "latitude": "0.8248626",
+   "longitude": "-77.641175"
+ },
+ {
+   "name": "PASTO 5",
+   "address": "CARRERA 24   CALLE 18 ESQUINA",
+   "cellphone": "573147403647",
+   "city": "Pasto",
+   "latitude": "1.2140476",
+   "longitude": "-77.2807249"
+ },
+ {
+   "name": "IPIALES 3",
+   "address": "CARRERA 6 # 11-66",
+   "cellphone": "573104591554",
+   "city": "Ipiales",
+   "latitude": "0.8243403",
+   "longitude": "-77.6394316"
+ },
+ {
+   "name": "PASTO 6",
+   "address": "CALLE 17 # 21 A 31",
+   "cellphone": "573147012155",
+   "city": "Pasto",
+   "latitude": "1.211478",
+   "longitude": "-77.28330615"
+ },
+ {
+   "name": "MANIZALES 4",
+   "address": "CARRERA  23 # 25 -07",
+   "cellphone": "573103904162",
+   "city": "Manizales",
+   "latitude": "5.0737742",
+   "longitude": "-75.52947585"
+ },
+ {
+   "name": "ARMENIA 3",
+   "address": "CALLE 18 # 16 - 33",
+   "cellphone": "573136616261",
+   "city": "Armenia",
+   "latitude": "4.5350961",
+   "longitude": "-75.6753113"
+ },
+ {
+   "name": "BELLO 1",
+   "address": "Diagonal 55 # 34-67 CENTRO COMERCIAL  PUERTA DEL NORTE II  BELLO   LOCAL  19",
+   "cellphone": "573206953958",
+   "city": "Bello",
+   "latitude": "6.3396088",
+   "longitude": "-75.5454952"
+ },
+ {
+   "name": "BOGOTA 28",
+   "address": "CARRERA 51 #  47-02 SUR BARRIO VENECIA",
+   "cellphone": "573136616166",
+   "city": "Bogotá DC",
+   "latitude": "4.6166955",
+   "longitude": "-74.1166844"
+ },
+ {
+   "name": "BOGOTA 34",
+   "address": "AUTOPISTA  SUR CALLE 33 CENTRO COMERCIAL MERCURIO SOACHA - LOCALES  118-119-120  ",
+   "cellphone": "573136616191",
+   "city": "Bogotá DC",
+   "latitude": "4.5879814",
+   "longitude": "-74.2058813"
+ },
+ {
+   "name": "PEREIRA 4",
+   "address": "CARRERA 9 # 17 - 47",
+   "cellphone": "573136616227",
+   "city": "Pereira",
+   "latitude": "4.8127276",
+   "longitude": "-75.6952872"
+ },
+ {
+   "name": "BOGOTA 45",
+   "address": "CARRERA 100 # 18-26 BARRIO FONTIBON",
+   "cellphone": "573136616192",
+   "city": "Bogotá DC",
+   "latitude": "4.6741498",
+   "longitude": "-74.1467083"
+ },
+ {
+   "name": "FACATATIVA 2",
+   "address": "Carrera 3 # 7-41",
+   "cellphone": "573116417683",
+   "city": "Facatativa",
+   "latitude": "4.811236",
+   "longitude": "-74.3574775"
+ },
+ {
+   "name": "LA HORMIGA 1",
+   "address": "calle 9 # 8 - 52",
+   "cellphone": "573136616241",
+   "city": "La Hormiga",
+   "latitude": "3.4317823",
+   "longitude": "-76.45748432"
+ },
+ {
+   "name": "CUCUTA 5",
+   "address": "Calle 10 # 1 - 80 - Centro",
+   "cellphone": "573113487304",
+   "city": "Cúcuta",
+   "latitude": "7.8875372",
+   "longitude": "-72.502593"
+ },
+ {
+   "name": "OCAÑA 2",
+   "address": "calle 10 # 12-87, local 2",
+   "cellphone": "573183089234",
+   "city": "Ocaña",
+   "latitude": "8.2358585",
+   "longitude": "-73.3563705"
+ },
+ {
+   "name": "APARTADO 1",
+   "address": "Carrera 100 calle 1 kilometro 1 salida a Carepa, CENTRO COMERCIAL  Nuestro Urabá, locales 228 y 230",
+   "cellphone": "573177024387",
+   "city": "Apartadó",
+   "latitude": "7.8785142",
+   "longitude": "-76.63760556"
+ },
+ {
+   "name": "VALLEDUPAR 5",
+   "address": "Carrera 7 # 16B - 32 - Piso 1 y 2",
+   "cellphone": "573187947049",
+   "city": "Valledupar",
+   "latitude": "10.4749884",
+   "longitude": "-73.2465249"
+ },
+ {
+   "name": "BOGOTA 69",
+   "address": "calle 65 # 78 H 51 CENTRO CCOMERCIAL  Gran Plaza Bosa - Local 127",
+   "cellphone": "573175027347",
+   "city": "Bogotá DC",
+   "latitude": "4.6047555",
+   "longitude": "-74.1868087"
+ },
+ {
+   "name": "SOACHA 2",
+   "address": "Carrera 1 # 38 - 89 CENTRO COMERCIAL  Ventura Terreros - Local 1-12",
+   "cellphone": "573186778646",
+   "city": "Soacha",
+   "latitude": "4.5890769",
+   "longitude": "-74.1976566"
+ },
+ {
+   "name": "LA PLATA 1",
+   "address": "Calle 6 # 4 - 24",
+   "cellphone": "573186777732",
+   "city": "La Plata",
+   "latitude": "2.3890439",
+   "longitude": "-75.8906271"
+ },
+ {
+   "name": "SAN GIL 1",
+   "address": "Carrera 9 # 11 - 23/27",
+   "cellphone": "573186780674",
+   "city": "San Gil",
+   "latitude": "6.5630764",
+   "longitude": "-73.1497163"
+ },
+ {
+   "name": "CALI 38",
+   "address": "CARRERA 80 CAllE 13, CENTRO COMERCIAL  Paso Ancho, local 104",
+   "cellphone": "",
+   "city": "Cali",
+   "latitude": "3.411855",
+   "longitude": "-76.56878213"
+ },
+ {
+   "name": "CALI 39",
+   "address": "CARRERA  98 B # 25 - 130, CENTRO COMERCIAL  Valle de Lili, Local 16",
+   "cellphone": "",
+   "city": "Cali",
+   "latitude": "3.3694188",
+   "longitude": "-76.52486578"
+ },
+ {
+   "name": "SOLEDAD 3",
+   "address": " AVENIDA  30 con via gran abastos CENTRO COMERCIAL  Carnaval,, local 1090 - 1092",
+   "cellphone": "",
+   "city": "Soledad",
+   "latitude": "10.897272",
+   "longitude": "-74.79440645"
+ },
+ {
+   "name": "MEDELLIN 24",
+   "address": "CALLE  16  # 59 -01 CENTRO COMERCIAL  D'Moda, Local 111",
+   "cellphone": "",
+   "city": "Medellin",
+   "latitude": "6.2197477",
+   "longitude": "-75.5854171"
+ },
+ {
+   "name": "QUIBDO 1",
+   "address": "Centro de servicios, aeropuerto del Caraño, local 39 y 40",
+   "cellphone": "",
+   "city": "Quibdo",
+   "latitude": "5.6909988",
+   "longitude": "-76.6441839"
+ },
+ {
+   "name": "MEDELLIN 15",
+   "address": "CALLE 51 SUR #48-57 CENTRO COMERCIAL  MAYORCA LOCAL  306  SABANE",
+   "cellphone": "573136616185",
+   "city": "Medellin",
+   "latitude": "6.1604859",
+   "longitude": "-75.6068423"
+ },
+ {
+   "name": "TUNJA 3",
+   "address": "CALLE 20  # 10-13",
+   "cellphone": "573133960812 - 573136616250",
+   "city": "Tunja",
+   "latitude": "5.5331588",
+   "longitude": "-73.3642357"
+ },
+ {
+   "name": "MANIZALES 12",
+   "address": "Calle  19 carrera  22 esquina",
+   "cellphone": "573103904128",
+   "city": "Manizales",
+   "latitude": "5.067501",
+   "longitude": "-75.52053771"
+ },
+ {
+   "name": "PEREIRA 7",
+   "address": "carrera  11 bis # 17 -20 Centro Comercial . LA 14 FRENTA TERMINAL LOCAL 11-12",
+   "cellphone": "573103904139",
+   "city": "Pereira",
+   "latitude": "4.8090527",
+   "longitude": "-75.6809577"
+ },
+ {
+   "name": "MEDELLIN 13",
+   "address": "CALLE 30 CRA 82-84 Centro Comercial  LOS MOLINOS  Local  10 -19",
+   "cellphone": "573136616197",
+   "city": "Medellin",
+   "latitude": "6.2329718",
+   "longitude": "-75.606626"
+ },
+ {
+   "name": "MEDELLIN 2",
+   "address": "carrera 49 JUNIN # 52-62 ",
+   "cellphone": "573103848971",
+   "city": "Medellin",
+   "latitude": "6.2502249",
+   "longitude": "-75.5682102"
+ },
+ {
+   "name": "APARTADO 2",
+   "address": "Centro Comercial  Plaza del Rio PH, Local 114",
+   "cellphone": "",
+   "city": "Apartadó",
+   "latitude": "7.8853706",
+   "longitude": "-76.6344545"
+ },
+ {
+   "name": "MEDELLIN 18",
+   "address": "CARRERA 49 # 53 - 04",
+   "cellphone": "573128040589",
+   "city": "Medellin",
+   "latitude": "6.2518594",
+   "longitude": "-75.567455"
+ },
+ {
+   "name": "BOGOTA 61",
+   "address": "Avenida calle 100 # 47A - 55",
+   "cellphone": "",
+   "city": "Bogotá DC",
+   "latitude": "4.6877657",
+   "longitude": "-74.0622874"
+ },
+ {
+   "name": "MEDELLIN 5",
+   "address": "Carrera  49 # 50 - 57",
+   "cellphone": "573103904167",
+   "city": "Medellin",
+   "latitude": "6.1712892",
+   "longitude": "-75.6110769"
+ },
+ {
+   "name": "TUNJA 5",
+   "address": "Avenida  Universitaria # 51-21,  Centro Comercial  Viva Tunja, Local 112",
+   "cellphone": "",
+   "city": "Tunja",
+   "latitude": "5.5569191",
+   "longitude": "-73.3479562"
+ },
+ {
+   "name": "BOGOTA 64",
+   "address": "Carrera 51 # 59 c Sur-93 a Centro Comercial  Gran Plaza El Ensueño, Local 107",
+   "cellphone": "",
+   "city": "Bogotá DC",
+   "latitude": "4.5822446",
+   "longitude": "-74.1588988"
+ },
+ {
+   "name": "BOGOTA 70",
+   "address": "Avenida  calle 19 # 34-40",
+   "cellphone": "",
+   "city": "Bogotá DC",
+   "latitude": "4.6219005",
+   "longitude": "-74.0943332"
+ },
+ {
+   "name": "CONCESION CAJASAN",
+   "address": "Carrera 27 # 61 - 78",
+   "cellphone": "",
+   "city": "Bucaramanga",
+   "latitude": "7.1057874",
+   "longitude": "-73.11520399"
+ },
+ {
+   "name": "BATA ALMACENES SI",
+   "address": "Calle 12 # 8 - 13",
+   "cellphone": "",
+   "city": "Cali",
+   "latitude": "3.4490624",
+   "longitude": "-76.5333935"
+ },
+ {
+   "name": "BOGOTA 71",
+   "address": "avenida carrera 1 # 75A - 01 Sur",
+   "cellphone": "",
+   "city": "Bogotá DC",
+   "latitude": "3.4491104",
+   "longitude": "-76.54871454"
+ }
+]

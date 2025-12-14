@@ -21,6 +21,28 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role_id',
+        'daily_goal',
+        'status_id',
+        'document',
+        'address',
+        'birth_date',
+        'hourly_rate',
+        'color',
+        'availability',
+        'enterprise_id',
+        'facebook_id',
+        'phone',
+        'image_url',
+        'position',
+        'entry_date',
+        'termination_date',
+        'contracted_hours',
+        'contract_type',
+        'blood_type',
+        'last_login',
+        'arl',
+        'eps',
     ];
 
     /**
@@ -43,6 +65,11 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'birth_date' => 'date',
+            'entry_date' => 'date',
+            'termination_date' => 'date',
+            'last_login' => 'datetime',
+            'hourly_rate' => 'decimal:2',
         ];
     }
 }
