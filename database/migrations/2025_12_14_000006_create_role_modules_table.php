@@ -19,9 +19,6 @@ return new class extends Migration
                 $table->unsignedTinyInteger('deleted')->nullable();
                 $table->unsignedTinyInteger('list')->nullable();
                 $table->timestamps();
-
-                $table->foreign('role_id')->references('id')->on('roles')->cascadeOnDelete();
-                $table->foreign('module_id')->references('id')->on('modules')->cascadeOnDelete();
             });
         }
     }
