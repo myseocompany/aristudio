@@ -23,14 +23,24 @@
                         <p class="text-sm text-gray-500">Listado de proyectos</p>
                         <p class="text-lg font-semibold text-gray-800">{{ $projects->total() }} registros</p>
                     </div>
-                    <form method="get" class="flex items-center gap-2">
-                        <label class="text-sm text-gray-600">Estado</label>
-                        <select name="status" onchange="this.form.submit()" class="border-gray-300 rounded px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500">
-                            <option value="">Todos</option>
-                            @foreach($statuses as $status)
-                                <option value="{{ $status->id }}" @selected((string)$statusFilter === (string)$status->id)>{{ $status->name }}</option>
-                            @endforeach
-                        </select>
+                    <form method="get" class="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto">
+                        <div class="flex items-center gap-2">
+                            <label class="text-sm text-gray-600">Estado</label>
+                            <select name="status" class="border-gray-300 rounded px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500">
+                                <option value="">Todos</option>
+                                @foreach($statuses as $status)
+                                    <option value="{{ $status->id }}" @selected((string)$statusFilter === (string)$status->id)>{{ $status->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <label class="text-sm text-gray-600">Proyecto</label>
+                            <input type="text" name="q" value="{{ $search }}" placeholder="Buscar por nombre" class="border-gray-300 rounded px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500">
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-500 text-sm">Filtrar</button>
+                            <a href="{{ route('projects.index') }}" class="px-4 py-2 border rounded text-sm text-gray-700 hover:bg-gray-50">Limpiar</a>
+                        </div>
                     </form>
                 </div>
 

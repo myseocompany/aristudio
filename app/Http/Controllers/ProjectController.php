@@ -23,12 +23,14 @@ class ProjectController extends Controller
 
         // Por defecto mostrar "running" (status_id = 3) salvo que se envíe ?status=
         $statusFilter = $request->has('status') ? $request->input('status') : 3;
+        $search = $request->input('q');
 
         $projects = Project::query()
             ->leftJoin('project_statuses', 'project_statuses.id', '=', 'projects.status_id')
             ->leftJoin('project_types', 'project_types.id', '=', 'projects.type_id')
             ->select('projects.*', 'project_statuses.name as status_name', 'project_types.name as type_name')
             ->when($statusFilter !== null && $statusFilter !== '', fn ($q) => $q->where('projects.status_id', $statusFilter))
+            ->when($search, fn ($q) => $q->where('projects.name', 'like', '%'.$search.'%'))
             ->withCount('users')
             ->orderBy('projects.weight')
             ->orderBy('projects.name')
@@ -41,6 +43,7 @@ class ProjectController extends Controller
             'types' => $types,
             'statusFilter' => $statusFilter,
             'users' => $users,
+            'search' => $search,
         ]);
     }
 
