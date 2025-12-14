@@ -2,19 +2,26 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Timer\TimerStartRequest;
+use App\Http\Requests\Timer\TimerStoreRequest;
 use App\Models\Project;
 use App\Models\Task;
-use Illuminate\Http\Request;
+use Carbon\Carbon;
+use Illuminate\Contracts\View\View;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 
 class TimerController extends Controller
 {
+    public const MAX_SECONDS = 7200;
+
     public function __construct()
     {
         $this->middleware('auth');
     }
 
-    public function index()
+    public function index(): View
     {
         $tasks = Task::with(['project:id,name,color', 'status:id,name,pending'])
             ->where('user_id', Auth::id())
@@ -31,22 +38,72 @@ class TimerController extends Controller
         return view('timer.index', [
             'tasks' => $tasks,
             'projects' => $projects,
+            'maxSeconds' => self::MAX_SECONDS,
         ]);
     }
 
-    public function store(Request $request)
+    public function status(): JsonResponse
     {
-        $data = $request->validate([
-            'name' => ['required', 'string', 'max:240'],
-            'project_id' => ['nullable', 'exists:projects,id'],
-            'seconds' => ['required', 'integer', 'min:1', 'max:7200'],
-        ]);
+        $session = $this->readSession();
 
-        $points = round($data['seconds'] / 3600, 2);
+        return response()->json($this->formatSession($session));
+    }
+
+    public function start(TimerStartRequest $request): JsonResponse
+    {
+        $session = $this->readSession();
+        $baseElapsed = $this->elapsedSeconds($session);
+        $validated = $request->validated();
+
+        $session = [
+            'running' => true,
+            'task_id' => $validated['task_id'] ?? null,
+            'task_label' => $validated['task_label'],
+            'project_id' => $validated['project_id'] ?? null,
+            'project_name' => $validated['project_name'] ?? '',
+            'started_at' => Carbon::now(),
+            'elapsed_seconds' => $baseElapsed,
+        ];
+
+        $this->storeSession($session);
+
+        return response()->json($this->formatSession($session));
+    }
+
+    public function pause(): JsonResponse
+    {
+        $session = $this->readSession();
+        $session['elapsed_seconds'] = $this->elapsedSeconds($session);
+        $session['started_at'] = null;
+        $session['running'] = false;
+
+        $this->storeSession($session);
+
+        return response()->json($this->formatSession($session));
+    }
+
+    public function reset(): JsonResponse
+    {
+        $this->clearSession();
+
+        return response()->json($this->formatSession($this->defaultSession()));
+    }
+
+    public function store(TimerStoreRequest $request): JsonResponse
+    {
+        $session = $this->readSession();
+        $validated = $request->validated();
+
+        $seconds = $this->elapsedSeconds($session);
+        if ($seconds === 0) {
+            $seconds = $validated['seconds'];
+        }
+
+        $points = round($seconds / 3600, 2);
 
         $task = Task::create([
-            'name' => $data['name'],
-            'project_id' => $data['project_id'] ?? null,
+            'name' => $validated['name'],
+            'project_id' => $validated['project_id'] ?? null,
             'user_id' => Auth::id(),
             'status_id' => 1,
             'points' => $points,
@@ -56,10 +113,73 @@ class TimerController extends Controller
             'value_generated' => true,
         ]);
 
+        $this->clearSession();
+
         return response()->json([
             'ok' => true,
             'task_id' => $task->id,
             'points' => $task->points,
+            'seconds' => $seconds,
         ]);
+    }
+
+    private function timerCacheKey(): string
+    {
+        return 'timer:session:user:'.Auth::id();
+    }
+
+    private function defaultSession(): array
+    {
+        return [
+            'running' => false,
+            'task_id' => null,
+            'task_label' => '',
+            'project_id' => null,
+            'project_name' => '',
+            'started_at' => null,
+            'elapsed_seconds' => 0,
+        ];
+    }
+
+    private function readSession(): array
+    {
+        return Cache::get($this->timerCacheKey(), $this->defaultSession());
+    }
+
+    private function storeSession(array $session): void
+    {
+        Cache::put($this->timerCacheKey(), $session, now()->addDay());
+    }
+
+    private function clearSession(): void
+    {
+        Cache::forget($this->timerCacheKey());
+    }
+
+    private function elapsedSeconds(array $session): int
+    {
+        $elapsed = (int) ($session['elapsed_seconds'] ?? 0);
+
+        if (($session['running'] ?? false) && ! empty($session['started_at'])) {
+            $elapsed += Carbon::parse($session['started_at'])->diffInSeconds(now());
+        }
+
+        return min($elapsed, self::MAX_SECONDS);
+    }
+
+    private function formatSession(array $session): array
+    {
+        $elapsed = $this->elapsedSeconds($session);
+
+        return [
+            'running' => (bool) ($session['running'] ?? false),
+            'elapsed' => $elapsed,
+            'task_id' => $session['task_id'] ?? null,
+            'task_label' => $session['task_label'] ?? '',
+            'project_id' => $session['project_id'] ?? null,
+            'project_name' => $session['project_name'] ?? '',
+            'started_at' => ! empty($session['started_at']) ? Carbon::parse($session['started_at'])->toIso8601String() : null,
+            'max_seconds' => self::MAX_SECONDS,
+        ];
     }
 }

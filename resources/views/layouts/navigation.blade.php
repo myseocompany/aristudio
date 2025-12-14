@@ -40,7 +40,12 @@
             </div>
 
             <!-- Settings Dropdown -->
-            <div class="hidden sm:flex sm:items-center sm:ms-6">
+            <div class="hidden sm:flex sm:items-center sm:ms-6 space-x-4" x-data="timerBadge()" x-init="init()">
+                <a x-cloak x-show="running" href="{{ route('timer.index') }}" class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-50 text-indigo-700 text-xs font-semibold border border-indigo-100 hover:bg-indigo-100">
+                    <span class="text-[11px] uppercase tracking-wide">Timer</span>
+                    <span class="font-mono text-sm" x-text="formatted"></span>
+                </a>
+
                 <x-dropdown align="right" width="48">
                     <x-slot name="trigger">
                         <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150">
@@ -100,6 +105,12 @@
                     {{ $module->name }}
                 </x-responsive-nav-link>
             @endforeach
+            <div class="px-4" x-data="timerBadge()" x-init="init()">
+                <a x-cloak x-show="running" href="{{ route('timer.index') }}" class="mt-2 inline-flex items-center gap-2 px-3 py-2 rounded-md bg-indigo-50 text-indigo-700 text-xs font-semibold border border-indigo-100 hover:bg-indigo-100">
+                    <span class="text-[11px] uppercase tracking-wide">Timer</span>
+                    <span class="font-mono text-sm" x-text="formatted"></span>
+                </a>
+            </div>
         </div>
 
         <!-- Responsive Settings Options -->
@@ -128,3 +139,66 @@
         </div>
     </div>
 </nav>
+
+<script>
+    function timerBadge() {
+        return {
+            running: false,
+            elapsedBaseline: 0,
+            sampledAt: null,
+            elapsed: 0,
+            maxSeconds: 7200,
+            tickId: null,
+            refreshId: null,
+            init() {
+                this.refresh();
+                this.tickId = setInterval(() => this.tick(), 1000);
+                this.refreshId = setInterval(() => this.refresh(), 20000);
+            },
+            async refresh() {
+                try {
+                    const response = await fetch('{{ route('timer.status') }}', {
+                        headers: { Accept: 'application/json' },
+                    });
+                    if (!response.ok) {
+                        return;
+                    }
+                    const data = await response.json();
+                    this.applyState(data);
+                } catch (e) {
+                    console.error(e);
+                }
+            },
+            applyState(data) {
+                this.maxSeconds = typeof data?.max_seconds === 'number' ? data.max_seconds : this.maxSeconds;
+                this.running = Boolean(data?.running);
+                this.elapsedBaseline = Number(data?.elapsed ?? 0);
+                this.elapsed = this.elapsedBaseline;
+                this.sampledAt = this.running ? Date.now() : null;
+                if (!this.running) {
+                    this.elapsedBaseline = 0;
+                }
+            },
+            tick() {
+                if (!this.running || !this.sampledAt) {
+                    return;
+                }
+                const diff = Math.floor((Date.now() - this.sampledAt) / 1000);
+                this.elapsed = Math.min(this.elapsedBaseline + diff, this.maxSeconds);
+                if (this.elapsed >= this.maxSeconds) {
+                    this.running = false;
+                }
+            },
+            formatSeconds(value) {
+                const secs = Math.max(0, Math.floor(value));
+                const hrs = Math.floor(secs / 3600);
+                const mins = Math.floor((secs % 3600) / 60);
+                const rest = secs % 60;
+                return `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(rest).padStart(2, '0')}`;
+            },
+            get formatted() {
+                return this.formatSeconds(this.elapsed);
+            },
+        };
+    }
+</script>

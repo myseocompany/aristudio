@@ -32,6 +32,10 @@ Route::middleware('auth')->group(function () {
     Route::resource('modules', ModuleController::class);
     Route::resource('tasks', TaskController::class);
     Route::get('timer', [TimerController::class, 'index'])->name('timer.index');
+    Route::get('timer/status', [TimerController::class, 'status'])->name('timer.status');
+    Route::post('timer/start', [TimerController::class, 'start'])->name('timer.start');
+    Route::post('timer/pause', [TimerController::class, 'pause'])->name('timer.pause');
+    Route::post('timer/reset', [TimerController::class, 'reset'])->name('timer.reset');
     Route::post('timer', [TimerController::class, 'store'])->name('timer.store');
 });
 

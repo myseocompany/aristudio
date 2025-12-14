@@ -8,7 +8,7 @@
         </div>
     </x-slot>
 
-    <div class="py-6" x-data="timerApp()">
+    <div class="py-6" x-data="timerApp()" x-init="init()">
         <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4">
             <div class="bg-white border border-gray-100 rounded-lg shadow-sm p-4 sm:p-6">
                 <div class="flex flex-col gap-4">
@@ -166,6 +166,8 @@
                 running: false,
                 elapsed: 0,
                 intervalId: null,
+                startedAt: null,
+                elapsedBaseline: 0,
                 selectedTask: '',
                 selectedTaskLabel: '',
                 manualTaskName: '',
@@ -175,9 +177,12 @@
                 recentCreated: [],
                 showTaskPanel: false,
                 taskPanelHtml: '',
-                maxSeconds: 7200,
+                maxSeconds: {{ $maxSeconds }},
                 beepEvery: 1200,
                 lastBeepAt: 0,
+                async init() {
+                    await this.loadStatus();
+                },
                 formattedTime() {
                     const hrs = Math.floor(this.elapsed / 3600);
                     const mins = Math.floor((this.elapsed % 3600) / 60);
@@ -206,7 +211,7 @@
                     if (!this.manualTaskName.trim()) return;
                     this.selectedTask = '';
                     this.selectedTaskLabel = this.manualTaskName.trim();
-                    const projSelect = document.querySelector('select[x-model=\"manualProjectId\"]');
+                    const projSelect = document.querySelector('select[x-model="manualProjectId"]');
                     const label = projSelect && this.manualProjectId ? projSelect.selectedOptions[0]?.textContent || '' : '';
                     this.projectLabel = label;
                     this.manualProjectName = label;
@@ -231,15 +236,39 @@
                             this.taskPanelHtml = '';
                         });
                 },
-                start() {
-                    if (!this.taskLabel.trim() || this.running || this.elapsed >= this.maxSeconds) return;
-                    this.running = true;
-                    if (this.elapsed === 0) {
-                        this.lastBeepAt = 0;
+                applyServerState(data) {
+                    if (typeof data?.max_seconds === 'number') {
+                        this.maxSeconds = data.max_seconds;
                     }
-                    const startedAt = Date.now() - this.elapsed * 1000;
+                    this.running = Boolean(data?.running);
+                    this.elapsed = Number(data?.elapsed ?? 0);
+                    this.elapsedBaseline = this.elapsed;
+                    this.selectedTask = data?.task_id ? String(data.task_id) : '';
+                    this.selectedTaskLabel = data?.task_label || '';
+                    this.manualTaskName = this.selectedTask ? '' : (data?.task_label || '');
+                    this.manualProjectId = data?.project_id ? String(data.project_id) : '';
+                    this.manualProjectName = data?.project_name || '';
+                    this.projectLabel = data?.project_name || '';
+                    this.lastBeepAt = Math.floor(this.elapsed / this.beepEvery) * this.beepEvery;
+                    this.clearTicker();
+                    if (this.running) {
+                        this.startedAt = Date.now();
+                        this.startTicker();
+                    } else {
+                        this.startedAt = null;
+                    }
+                },
+                startTicker() {
+                    if (!this.running) {
+                        return;
+                    }
+                    this.clearTicker();
+                    const startedAt = this.startedAt ?? Date.now();
+                    this.startedAt = startedAt;
+                    const base = this.elapsedBaseline ?? 0;
                     this.intervalId = setInterval(() => {
-                        this.elapsed = Math.floor((Date.now() - startedAt) / 1000);
+                        const total = Math.min(base + Math.floor((Date.now() - startedAt) / 1000), this.maxSeconds);
+                        this.elapsed = total;
                         if (this.elapsed - this.lastBeepAt >= this.beepEvery) {
                             this.playBeep();
                             this.lastBeepAt = this.elapsed;
@@ -250,26 +279,41 @@
                         }
                     }, 1000);
                 },
-                pause() {
+                clearTicker() {
                     if (this.intervalId) {
                         clearInterval(this.intervalId);
                         this.intervalId = null;
                     }
-                    this.running = false;
                 },
-                stop() {
-                    if (this.intervalId) {
-                        clearInterval(this.intervalId);
-                        this.intervalId = null;
+                async loadStatus() {
+                    try {
+                        const response = await fetch('{{ route('timer.status') }}', {
+                            headers: {
+                                'Accept': 'application/json',
+                            },
+                        });
+                        if (!response.ok) {
+                            return;
+                        }
+                        const data = await response.json();
+                        this.applyServerState(data);
+                    } catch (e) {
+                        console.error(e);
+                    }
+                },
+                async start() {
+                    if (!this.taskLabel.trim() || this.running || this.elapsed >= this.maxSeconds) {
+                        return;
                     }
                     const payload = {
-                        name: this.taskLabel.trim(),
+                        task_id: this.selectedTask || null,
+                        task_label: this.taskLabel.trim(),
                         project_id: this.manualProjectId || null,
-                        seconds: this.elapsed,
+                        project_name: this.projectLabel || '',
                         _token: document.querySelector('meta[name=\"csrf-token\"]').getAttribute('content'),
                     };
-                    if (payload.name && payload.seconds > 0) {
-                        fetch('{{ route('timer.store') }}', {
+                    try {
+                        const response = await fetch('{{ route('timer.start') }}', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
@@ -277,26 +321,101 @@
                                 'Accept': 'application/json',
                             },
                             body: JSON.stringify(payload),
-                        })
-                            .then(r => r.json().catch(() => null))
-                            .then(data => {
-                                if (data && data.ok) {
-                                    this.recentCreated.unshift({
-                                        name: payload.name,
-                                        points: data.points,
-                                        at: new Date().toLocaleTimeString(),
-                                    });
-                                    this.recentCreated = this.recentCreated.slice(0, 5);
-                                }
-                            })
-                            .catch(() => {});
+                        });
+                        if (!response.ok) {
+                            return;
+                        }
+                        const data = await response.json();
+                        this.applyServerState(data);
+                    } catch (e) {
+                        console.error(e);
                     }
+                },
+                async pause() {
+                    this.clearTicker();
+                    try {
+                        const response = await fetch('{{ route('timer.pause') }}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name=\"csrf-token\"]').getAttribute('content'),
+                                'Accept': 'application/json',
+                            },
+                        });
+                        if (!response.ok) {
+                            this.running = false;
+                            return;
+                        }
+                        const data = await response.json();
+                        this.applyServerState(data);
+                    } catch (e) {
+                        console.error(e);
+                        this.running = false;
+                    }
+                },
+                async stop() {
+                    this.clearTicker();
+                    await this.pause();
+                    const payload = {
+                        name: this.taskLabel.trim(),
+                        project_id: this.manualProjectId || null,
+                        seconds: this.elapsed,
+                        _token: document.querySelector('meta[name=\"csrf-token\"]').getAttribute('content'),
+                    };
+                    if (payload.name && payload.seconds > 0) {
+                        try {
+                            const response = await fetch('{{ route('timer.store') }}', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': payload._token,
+                                    'Accept': 'application/json',
+                                },
+                                body: JSON.stringify(payload),
+                            });
+                            const data = await response.json().catch(() => null);
+                            if (data && data.ok) {
+                                this.recentCreated.unshift({
+                                    name: payload.name,
+                                    points: data.points,
+                                    at: new Date().toLocaleTimeString(),
+                                });
+                                this.recentCreated = this.recentCreated.slice(0, 5);
+                            }
+                        } catch (e) {
+                            console.error(e);
+                        }
+                    }
+                    await this.resetRemote();
+                    this.resetLocalState();
+                },
+                async resetRemote() {
+                    try {
+                        await fetch('{{ route('timer.reset') }}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name=\"csrf-token\"]').getAttribute('content'),
+                                'Accept': 'application/json',
+                            },
+                        });
+                    } catch (e) {
+                        console.error(e);
+                    }
+                },
+                resetLocalState() {
+                    this.clearTicker();
                     this.running = false;
+                    this.elapsedBaseline = 0;
                     this.elapsed = 0;
                     this.lastBeepAt = 0;
+                    this.startedAt = null;
                 },
-                reset() {
-                    this.stop();
+                async reset() {
+                    await this.stop();
+                    this.resetSelection();
+                },
+                resetSelection() {
                     this.selectedTask = '';
                     this.selectedTaskLabel = '';
                     this.manualTaskName = '';
