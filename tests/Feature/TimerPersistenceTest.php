@@ -36,6 +36,7 @@ class TimerPersistenceTest extends TestCase
             $table->unsignedBigInteger('project_id')->nullable();
             $table->unsignedBigInteger('user_id');
             $table->unsignedBigInteger('status_id')->default(1);
+            $table->unsignedTinyInteger('priority')->nullable();
             $table->decimal('points', 8, 2)->nullable();
             $table->unsignedBigInteger('creator_user_id')->nullable();
             $table->unsignedBigInteger('updator_user_id')->nullable();

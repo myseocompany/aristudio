@@ -466,7 +466,7 @@
                                     <input id="quick_priority" name="priority" type="range" min="1" max="10" step="1" value="1" class="mt-2 w-full accent-indigo-600">
                                     <div class="text-xs text-gray-600 mt-1 flex justify-between">
                                         <span>Baja</span>
-                                        <span class="font-semibold">5</span>
+                                        <span class="font-semibold">1</span>
                                         <span>Alta</span>
                                     </div>
                                 </div>
@@ -482,7 +482,7 @@
                                 </div>
                                 <div>
                                     <x-input-label for="quick_due_date" value="Fecha de vencimiento" />
-                                    <x-text-input id="quick_due_date" name="due_date" type="datetime-local" class="mt-1 block w-full" />
+                                    <x-text-input id="quick_due_date" name="due_date" type="datetime-local" class="mt-1 block w-full" value="{{ $defaultDueDateTime }}" />
                                 </div>
                             </div>
                             <div class="grid grid-cols-2 gap-3">

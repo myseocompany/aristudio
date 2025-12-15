@@ -153,6 +153,8 @@ class TaskController extends Controller
             ->paginate(15)
             ->withQueryString();
 
+        $defaultDueDateTime = now()->format('Y-m-d\TH:i');
+
         return view('tasks.index', [
             'tasks' => $tasks,
             'statuses' => $statuses,
@@ -165,6 +167,7 @@ class TaskController extends Controller
             'selectedPointsTotal' => $selectedPointsTotal,
             'defaultFromDate' => $defaultFromDate->toDateString(),
             'defaultToDate' => $defaultToDate->toDateString(),
+            'defaultDueDateTime' => $defaultDueDateTime,
             'filters' => [
                 'status_id' => $statusId,
                 'project_id' => $projectId,
@@ -181,8 +184,13 @@ class TaskController extends Controller
     {
         $options = $this->formOptions();
 
+        $task = new Task([
+            'due_date' => now()->startOfDay(),
+            'priority' => 1,
+        ]);
+
         return view('tasks.create', array_merge($options, [
-            'task' => new Task,
+            'task' => $task,
             'submit' => 'Crear',
         ]));
     }
@@ -190,6 +198,10 @@ class TaskController extends Controller
     public function store(Request $request)
     {
         $data = $this->validateData($request);
+
+        if (! isset($data['priority'])) {
+            $data['priority'] = 1;
+        }
 
         $data['creator_user_id'] = Auth::id();
         $data['updator_user_id'] = Auth::id();

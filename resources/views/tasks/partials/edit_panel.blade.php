@@ -59,7 +59,7 @@
                 </div>
                 <div>
                     <x-input-label for="panel_priority" value="Prioridad (1 a 10)" />
-                    <input id="panel_priority" name="priority" type="range" min="1" max="10" step="1" value="{{ old('priority', $task->priority ?? 5) }}" class="mt-2 w-full accent-indigo-600">
+                    <input id="panel_priority" name="priority" type="range" min="1" max="10" step="1" value="{{ old('priority', $task->priority ?? 1) }}" class="mt-2 w-full accent-indigo-600">
                     <x-input-error :messages="$errors->get('priority')" class="mt-1" />
                 </div>
             </div>

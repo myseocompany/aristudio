@@ -5,6 +5,7 @@ use App\Http\Controllers\ModuleController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProjectLoginController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\TimerController;
@@ -33,6 +34,8 @@ Route::middleware('auth')->group(function () {
     Route::post('modules/reorder', [ModuleController::class, 'reorder'])->name('modules.reorder');
     Route::resource('modules', ModuleController::class);
     Route::resource('tasks', TaskController::class);
+    Route::view('reports', 'reports.index')->name('reports.index');
+    Route::get('report_users_by_month', [ReportController::class, 'usersByMonth'])->name('reports.users_by_month');
     Route::get('timer', [TimerController::class, 'index'])->name('timer.index');
     Route::get('timer/status', [TimerController::class, 'status'])->name('timer.status');
     Route::post('timer/start', [TimerController::class, 'start'])->name('timer.start');

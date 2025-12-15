@@ -60,10 +60,10 @@
             <div class="grid grid-cols-2 gap-3">
             <div>
                 <x-input-label for="priority" value="Prioridad (1 a 10)" />
-                <input id="priority" name="priority" type="range" min="1" max="10" step="1" value="{{ old('priority', $task->priority ?? 5) }}" class="mt-2 w-full accent-indigo-600">
+                <input id="priority" name="priority" type="range" min="1" max="10" step="1" value="{{ old('priority', $task->priority ?? 1) }}" class="mt-2 w-full accent-indigo-600">
                 <div class="text-xs text-gray-600 mt-1 flex justify-between">
                     <span>Baja</span>
-                    <span class="font-semibold">{{ old('priority', $task->priority ?? 5) }}</span>
+                    <span class="font-semibold">{{ old('priority', $task->priority ?? 1) }}</span>
                     <span>Alta</span>
                 </div>
                 <x-input-error :messages="$errors->get('priority')" class="mt-2" />
