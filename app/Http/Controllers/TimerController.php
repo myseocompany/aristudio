@@ -23,7 +23,10 @@ class TimerController extends Controller
 
     public function index(): View
     {
-        $tasks = Task::with(['project:id,name,color', 'status:id,name,pending'])
+        $tasks = Task::with([
+            'project:id,name,color',
+            'status:id,name,pending,color,background_color',
+        ])
             ->where('user_id', Auth::id())
             ->where('status_id', 1)
             ->orderByDesc('created_at')

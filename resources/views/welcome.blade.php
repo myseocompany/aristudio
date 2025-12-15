@@ -41,7 +41,7 @@
                     @else
                         <a href="{{ route('login') }}" class="px-5 py-3 bg-white text-[#0B1021] rounded-xl font-semibold shadow-lg shadow-black/10 hover:bg-white/90 transition">Iniciar sesión</a>
                         @if (Route::has('register'))
-                            <a href="{{ route('register') }}" class="px-5 py-3 border border-white/30 text-white rounded-xl font-semibold hover:bg-white/10 transition">Crear cuenta</a>
+                            <a href="{{ route('register') }}" class="px-5 py-3 border border-white/30 text-black rounded-xl font-semibold hover:bg-white/10 transition">Crear cuenta</a>
                         @endif
                     @endauth
                 </div>
@@ -73,11 +73,11 @@
                         @csrf
                         <div class="space-y-1 text-sm">
                             <label class="text-white/70" for="email">Correo electrónico</label>
-                            <input id="email" name="email" type="email" required value="{{ old('email') }}" class="w-full rounded-2xl border border-white/20 bg-white/5 px-4 py-3 text-white placeholder:text-white/50 focus:outline-none focus:border-white focus:bg-white/10">
+                            <input id="email" name="email" type="email" required value="{{ old('email') }}" class="w-full rounded-2xl border border-white/20 bg-white/5 px-4 py-3 text-black placeholder:text-white/50 focus:outline-none focus:border-white focus:bg-white/10">
                         </div>
                         <div class="space-y-1 text-sm">
                             <label class="text-white/70" for="password">Contraseña</label>
-                            <input id="password" name="password" type="password" required class="w-full rounded-2xl border border-white/20 bg-white/5 px-4 py-3 text-white placeholder:text-white/50 focus:outline-none focus:border-white focus:bg-white/10">
+                            <input id="password" name="password" type="password" required class="w-full rounded-2xl border border-white/20 bg-white/5 px-4 py-3 text-black placeholder:text-white/50 focus:outline-none focus:border-white focus:bg-white/10">
                         </div>
                         <div class="flex items-center justify-between text-xs text-white/70">
                             <label class="flex items-center gap-2">

@@ -92,38 +92,9 @@
                         <p class="text-lg font-semibold text-gray-800">{{ $tasks->count() }} tareas</p>
                     </div>
                 </div>
-                <div class="space-y-2">
-                    @forelse($tasks as $task)
-                        <div class="flex items-center justify-between rounded border border-gray-100 px-3 py-2 hover:bg-gray-50">
-                            <div class="flex items-center gap-3">
-                                <div class="h-9 w-9 rounded-full flex items-center justify-center text-xs font-semibold text-white" style="background: {{ $task->project->color ?? '#9ca3af' }}">
-                                    {{ collect(explode(' ', trim($task->project->name ?? '?')))->filter()->map(fn($w) => mb_substr($w, 0, 1))->take(2)->implode('') ?: '?' }}
-                                </div>
-                                <div>
-                                    <button type="button" class="font-semibold text-gray-900 text-left hover:underline" @click="loadPanel('{{ route('tasks.show', $task) }}?sidebar=1')">
-                                        {{ $task->name }}
-                                    </button>
-                                    <div class="flex items-center gap-2 text-xs text-gray-500">
-                                        <span>{{ $task->project->name ?? 'Sin proyecto' }}</span>
-                                        @if($task->status)
-                                            <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-gray-100 text-gray-700 text-[11px]">
-                                                {{ $task->status->name }}
-                                            </span>
-                                        @endif
-                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 text-[11px]">{{ $task->points ?? '—' }} pts</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <button type="button" class="text-xl text-indigo-600 hover:text-indigo-800" @click="setTask('{{ $task->id }}', '{{ addslashes($task->name) }}', '{{ $task->project_id }}', '{{ addslashes($task->project->name ?? '') }}')">▶</button>
-                        </div>
-                    @empty
-                        <p class="text-sm text-gray-500">No tienes tareas pendientes asignadas.</p>
-                    @endforelse
-                </div>
-
-                <div class="mt-4">
+                <div x-cloak x-show="recentCreated.length" class="mb-4">
                     <p class="text-sm font-semibold text-gray-800">Tareas creadas con el timer</p>
-                    <div class="space-y-2 mt-2" x-show="recentCreated.length">
+                    <div class="space-y-2 mt-2">
                         <template x-for="item in recentCreated" :key="item.at">
                             <div class="flex items-center justify-between rounded border border-gray-100 px-3 py-2 bg-emerald-50">
                                 <div>
@@ -134,6 +105,56 @@
                             </div>
                         </template>
                     </div>
+                </div>
+                <div class="space-y-3">
+                    @forelse($tasks as $task)
+                        <div class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+                            <div class="flex items-start justify-between gap-3">
+                                <div class="flex items-start gap-3">
+                                    <div class="h-11 w-11 rounded-full flex items-center justify-center text-xs font-semibold text-white ring-2 ring-white" style="background: {{ $task->project->color ?? '#9ca3af' }}">
+                                        {{ collect(explode(' ', trim($task->project->name ?? '?')))->filter()->map(fn($w) => mb_substr($w, 0, 1))->take(2)->implode('') ?: '?' }}
+                                    </div>
+                                    <div class="flex-1">
+                                        <div class="flex items-start justify-between gap-2">
+                                            <div>
+                                                <button type="button" class="font-semibold text-gray-900 text-left hover:underline" @click="loadPanel('{{ route('tasks.show', $task) }}?sidebar=1')">
+                                                    {{ $task->name }}
+                                                </button>
+                                                <p class="text-xs text-gray-500 mt-0.5">
+                                                    @if($task->project)
+                                                        <span class="inline-flex items-center gap-1">
+                                                            <span class="h-2 w-2 rounded-full" style="background: {{ $task->project->color ?? '#6366f1' }}"></span>
+                                                            {{ $task->project->name }}
+                                                        </span>
+                                                    @else
+                                                        Sin proyecto
+                                                    @endif
+                                                </p>
+                                            </div>
+                                            @if($task->status)
+                                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold" style="background: {{ $task->status->background_color ?? '#eef2ff' }}; color: {{ $task->status->color ?? '#312e81' }}">
+                                                    {{ $task->status->name }}
+                                                </span>
+                                            @endif
+                                        </div>
+                                        <div class="mt-3 flex flex-wrap items-center gap-2 text-xs text-gray-500">
+                                            <span class="inline-flex items-center px-2 py-1 rounded-full bg-indigo-50 text-indigo-700">{{ $task->points ?? '—' }} pts</span>
+                                            <span class="inline-flex items-center px-2 py-1 rounded-full bg-gray-100 text-gray-700">ID #{{ $task->id }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button
+                                    type="button"
+                                    class="flex items-center gap-1 px-3 py-2 rounded-full bg-indigo-50 text-indigo-700 text-xs font-semibold hover:bg-indigo-100"
+                                    @click="setTask('{{ $task->id }}', '{{ addslashes($task->name) }}', '{{ $task->project_id }}', '{{ addslashes($task->project->name ?? '') }}')"
+                                >
+                                    ▶ <span>Usar</span>
+                                </button>
+                            </div>
+                        </div>
+                    @empty
+                        <p class="text-sm text-gray-500">No tienes tareas pendientes asignadas.</p>
+                    @endforelse
                 </div>
             </div>
         </div>
