@@ -463,7 +463,7 @@
                             <div class="grid grid-cols-2 gap-3">
                                 <div>
                                     <x-input-label for="quick_priority" value="Prioridad (1 a 10)" />
-                                    <input id="quick_priority" name="priority" type="range" min="1" max="10" step="1" value="5" class="mt-2 w-full accent-indigo-600">
+                                    <input id="quick_priority" name="priority" type="range" min="1" max="10" step="1" value="1" class="mt-2 w-full accent-indigo-600">
                                     <div class="text-xs text-gray-600 mt-1 flex justify-between">
                                         <span>Baja</span>
                                         <span class="font-semibold">5</span>
