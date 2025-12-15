@@ -23,7 +23,6 @@
                         <p class="text-3xl font-semibold text-gray-900 leading-tight">Hola, {{ auth()->user()?->name ?? 'Ari' }}.!</p>
                         <p class="text-xl font-semibold text-gray-900 leading-tight">¿Qué planes tienes para hoy?</p>
                         <p class="text-sm text-gray-600">Esta plataforma está diseñada para ayudarte a lograr tus metas.</p>
-
                     </div>
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-full">
                         <div class="bg-white shadow-sm rounded-2xl border border-gray-100 p-5 flex flex-col">
@@ -55,16 +54,16 @@
                                 <p class="text-sm text-gray-500">Resumen mensual</p>
                                 <p class="text-2xl font-semibold text-gray-900">{{ $totalTasks }} tareas</p>
                             </div>
-                            <div>
-                                <form method="GET" id="rangeForm" class="flex items-center mt-4">
-                                    <input type="text" id="rangePicker" class="w-64 px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white shadow-sm cursor-pointer" readonly>
-                                    <input type="hidden" name="range" id="rangeValue" value="{{ $rangeValue }}">
-                                </form>
-                            </div>
+                        <div class="flex items-center gap-3">
+                            <form method="GET" id="rangeForm" class="flex items-center">
+                                <input type="text" id="rangePicker" class="w-64 px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white shadow-sm cursor-pointer" readonly>
+                                <input type="hidden" name="range" id="rangeValue" value="{{ $rangeValue }}">
+                            </form>
                             <div class="text-right">
                                 <p class="text-sm font-semibold text-gray-700">Rango seleccionado</p>
                                 <p class="text-xs text-gray-500">{{ $rangeLabel }}</p>
                             </div>
+                        </div>
                         </div>
                         <div class="mt-6">
                             <canvas id="tasksTrendChart" height="220"></canvas>
@@ -83,11 +82,12 @@
                                             <p class="text-sm font-semibold text-gray-900 truncate">{{ $task->name }}</p>
                                             <p class="text-xs text-gray-500">Hora: {{ optional($task->due_date)->format('H:i') ?? 'Sin hora' }}</p>
                                         </div>
-                                        @if($task->status)
-                                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px]" style="background: {{ $task->status->background_color ?? '#eef2ff' }}; color: {{ $task->status->color ?? '#312e81' }}">
-                                                {{ $task->status->name }}
-                                            </span>
-                                        @endif
+                                        <form action="{{ route('timer.start') }}" method="POST" class="flex items-center" onsubmit="event.preventDefault(); window.location='{{ route('timer.index', ['prefill' => urlencode($task->name)]) }}';">
+                                            @csrf
+                                            <button type="button" onclick="window.location='{{ route('timer.index', ['prefill' => urlencode($task->name)]) }}'" class="inline-flex items-center justify-center h-8 w-8 rounded-full bg-indigo-50 text-indigo-600 hover:bg-indigo-100" title="Ir al timer">
+                                                ▶
+                                            </button>
+                                        </form>
                                     </div>
                                 @empty
                                     <p class="text-sm text-gray-500">No tienes tareas para hoy.</p>

@@ -97,6 +97,18 @@ class DashboardTest extends TestCase
                 'due_date' => $now->copy()->subDays(15),
             ],
             [
+                'name' => 'Overdue REQ',
+                'user_id' => $user->id,
+                'status_id' => 1,
+                'creator_user_id' => $user->id,
+                'updator_user_id' => $user->id,
+                'points' => 1,
+                'value_generated' => true,
+                'created_at' => $now->copy()->subDays(4),
+                'updated_at' => $now->copy()->subDays(4),
+                'due_date' => $now->copy()->subDays(4),
+            ],
+            [
                 'name' => 'Outside range',
                 'user_id' => $user->id,
                 'status_id' => 1,
@@ -133,10 +145,10 @@ class DashboardTest extends TestCase
         $todayList = $response->viewData('todayTasks');
         $overdueList = $response->viewData('overdueTasks');
 
-        $this->assertSame(1, $summary['req']);
+        $this->assertSame(2, $summary['req']);
         $this->assertSame(2, $summary['billing']);
-        $this->assertEqualsWithDelta(4.0, $summary['points'], 0.01);
-        $this->assertEqualsWithDelta(100.0, $summary['amount'], 0.01);
+        $this->assertEqualsWithDelta(5.0, $summary['points'], 0.01);
+        $this->assertEqualsWithDelta(125.0, $summary['amount'], 0.01);
         $this->assertEqualsWithDelta(25.0, $summary['hourly_rate'], 0.01);
 
         $this->assertGreaterThan(0, count($chart['labels']));
@@ -146,5 +158,6 @@ class DashboardTest extends TestCase
         $this->assertCount(1, $todayList);
         $this->assertSame('REQ task', $todayList->first()->name);
         $this->assertGreaterThan(0, $overdueList->count());
+        $this->assertSame('Overdue REQ', $overdueList->first()->name);
     }
 }
