@@ -78,8 +78,8 @@
                             </div>
                             <div class="mt-3 space-y-3">
                                 @forelse($todayTasks as $task)
-                                    <div class="flex items-center justify-between border border-gray-100 rounded-xl px-3 py-2">
-                                        <div>
+                                    <div class="flex items-center justify-between gap-3 border border-gray-100 rounded-xl px-3 py-2">
+                                        <div class="min-w-0">
                                             <p class="text-sm font-semibold text-gray-900 truncate">{{ $task->name }}</p>
                                             <p class="text-xs text-gray-500">Hora: {{ optional($task->due_date)->format('H:i') ?? 'Sin hora' }}</p>
                                         </div>
@@ -101,8 +101,8 @@
                             </div>
                             <div class="mt-3 space-y-3">
                                 @forelse($overdueTasks as $task)
-                                    <div class="flex items-center justify-between border border-gray-100 rounded-xl px-3 py-2">
-                                        <div>
+                                    <div class="flex items-center justify-between gap-3 border border-gray-100 rounded-xl px-3 py-2">
+                                        <div class="min-w-0">
                                             <p class="text-sm font-semibold text-gray-900 truncate">{{ $task->name }}</p>
                                             <p class="text-xs text-rose-600">Venció: {{ optional($task->due_date)->format('d M') }}</p>
                                         </div>
