@@ -17,11 +17,6 @@ class ReportController extends Controller
 
         $months = collect(range(1, 12))->map(fn ($month) => Carbon::create($year, $month, 1));
 
-        $users = User::query()
-            ->where('status_id', 1)
-            ->orderBy('name')
-            ->get(['id', 'name', 'image_url', 'hourly_rate', 'email']);
-
         $tasks = Task::query()
             ->select(['user_id', 'points', 'due_date'])
             ->whereYear('due_date', $year)
@@ -36,6 +31,16 @@ class ReportController extends Controller
             $monthNumber = Carbon::parse($task->due_date)->month;
             $current = $matrix[$userId][$monthNumber] ?? 0;
             $matrix[$userId][$monthNumber] = $current + (float) ($task->points ?? 0);
+        }
+
+        $userIds = array_keys($matrix);
+
+        $users = collect();
+        if (! empty($userIds)) {
+            $users = User::query()
+                ->whereIn('id', $userIds)
+                ->orderBy('name')
+                ->get(['id', 'name', 'hourly_rate', 'email']);
         }
 
         $yearOptions = collect(range($currentYear - 2, $currentYear + 1));
