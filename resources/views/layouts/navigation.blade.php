@@ -46,16 +46,39 @@
                     <span class="font-mono text-sm" x-text="formatted"></span>
                 </a>
 
+                @php
+                    $navUser = Auth::user();
+                    $navImg = $navUser?->image_url
+                        ? (str_contains($navUser->image_url, '/') ? $navUser->image_url : 'files/users/'.$navUser->image_url)
+                        : null;
+                    $navInitials = collect(explode(' ', trim($navUser?->name ?? '')))
+                        ->filter()
+                        ->map(fn ($part) => mb_substr($part, 0, 1))
+                        ->take(2)
+                        ->implode('');
+                @endphp
+
                 <x-dropdown align="right" width="48">
                     <x-slot name="trigger">
-                        <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150">
-                            <div>{{ Auth::user()->name }}</div>
-
-                            <div class="ms-1">
-                                <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-                                </svg>
+                        <button class="inline-flex items-center gap-3 px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-600 bg-white hover:text-gray-900 focus:outline-none transition ease-in-out duration-150">
+                            <div class="flex items-center gap-3">
+                                <div class="h-10 w-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 p-0.5 shadow-lg">
+                                    <div class="h-full w-full rounded-full overflow-hidden bg-white flex items-center justify-center text-xs font-semibold text-gray-600">
+                                        @if($navImg)
+                                            <img src="{{ asset('storage/'.$navImg) }}" alt="{{ $navUser?->name }}" class="h-full w-full object-cover">
+                                        @else
+                                            {{ $navInitials ?: '?' }}
+                                        @endif
+                                    </div>
+                                </div>
+                                <div class="text-left">
+                                    <div class="font-semibold text-gray-900">{{ $navUser?->name }}</div>
+                                    <div class="text-xs text-gray-500">{{ $navUser?->email }}</div>
+                                </div>
                             </div>
+                            <svg class="fill-current h-4 w-4 text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                            </svg>
                         </button>
                     </x-slot>
 

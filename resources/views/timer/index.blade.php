@@ -8,7 +8,7 @@
         </div>
     </x-slot>
 
-    <div class="py-6" x-data="timerApp()" x-init="init()">
+    <div class="py-6" x-data="timerApp(@json($prefillTask))" x-init="init()">
         <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4">
             <div class="bg-white border border-gray-100 rounded-lg shadow-sm p-4 sm:p-6">
                 <div class="flex flex-col gap-4">
@@ -182,8 +182,9 @@
     </div>
 
     <script>
-        function timerApp() {
+        function timerApp(prefillTask = null) {
             return {
+                prefillTask,
                 running: false,
                 elapsed: 0,
                 intervalId: null,
@@ -203,6 +204,10 @@
                 lastBeepAt: 0,
                 async init() {
                     await this.loadStatus();
+                    if (this.prefillTask) {
+                        this.applyPrefill(this.prefillTask);
+                        this.prefillTask = null;
+                    }
                 },
                 formattedTime() {
                     const hrs = Math.floor(this.elapsed / 3600);
@@ -227,6 +232,20 @@
                     this.manualProjectId = projectId || '';
                     this.manualProjectName = projectName || '';
                     this.projectLabel = projectName || '';
+                },
+                applyPrefill(taskData) {
+                    if (!taskData) {
+                        return;
+                    }
+                    this.setTask(
+                        taskData.id ?? '',
+                        taskData.name ?? '',
+                        taskData.project_id ?? '',
+                        taskData.project_name ?? ''
+                    );
+                    if (taskData.name) {
+                        this.manualTaskName = taskData.name;
+                    }
                 },
                 applyManual() {
                     if (!this.manualTaskName.trim()) return;

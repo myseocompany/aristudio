@@ -13,16 +13,28 @@
         $amountDisplay = number_format((float) $taskSummary['amount'], 0, '.', ',');
         $rateDisplay = number_format((float) $taskSummary['hourly_rate'], 0, '.', ',');
         $rangeValue = $taskSummary['range_value'];
+        $currentUser = auth()->user();
+        $avatarPath = $currentUser?->image_url
+            ? (str_contains($currentUser->image_url, '/') ? $currentUser->image_url : 'files/users/'.$currentUser->image_url)
+            : null;
+        $userInitials = collect(explode(' ', trim($currentUser?->name ?? '')))
+            ->filter()
+            ->map(fn ($part) => mb_substr($part, 0, 1))
+            ->take(2)
+            ->implode('');
     @endphp
     <div class="py-8">
         <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
             <div class="space-y-10">
                 <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-                    <div class="flex flex-col gap-2 max-w-2xl">
-                        <p class="text-sm text-gray-600 uppercase tracking-wide">Planifica tu día</p>
-                        <p class="text-3xl font-semibold text-gray-900 leading-tight">Hola, {{ auth()->user()?->name ?? 'Ari' }}.!</p>
-                        <p class="text-xl font-semibold text-gray-900 leading-tight">¿Qué planes tienes para hoy?</p>
-                        <p class="text-sm text-gray-600">Esta plataforma está diseñada para ayudarte a lograr tus metas.</p>
+                    <div class="flex items-center gap-4 max-w-2xl">
+                        <div class="flex flex-col gap-2">
+                            <p class="text-sm text-gray-600 uppercase tracking-wide">Planifica tu día</p>
+                            <p class="text-3xl font-semibold text-gray-900 leading-tight">Hola, {{ auth()->user()?->name ?? 'Ari' }}.!</p>
+                            <p class="text-xl font-semibold text-gray-900 leading-tight">¿Qué planes tienes para hoy?</p>
+                            <p class="text-sm text-gray-600">Esta plataforma está diseñada para ayudarte a lograr tus metas.</p>
+                        </div>
+
                     </div>
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-full">
                         <div class="bg-white shadow-sm rounded-2xl border border-gray-100 p-5 flex flex-col">
@@ -82,12 +94,9 @@
                                             <p class="text-sm font-semibold text-gray-900 truncate">{{ $task->name }}</p>
                                             <p class="text-xs text-gray-500">Hora: {{ optional($task->due_date)->format('H:i') ?? 'Sin hora' }}</p>
                                         </div>
-                                        <form action="{{ route('timer.start') }}" method="POST" class="flex items-center" onsubmit="event.preventDefault(); window.location='{{ route('timer.index', ['prefill' => urlencode($task->name)]) }}';">
-                                            @csrf
-                                            <button type="button" onclick="window.location='{{ route('timer.index', ['prefill' => urlencode($task->name)]) }}'" class="inline-flex items-center justify-center h-8 w-8 rounded-full bg-indigo-50 text-indigo-600 hover:bg-indigo-100" title="Ir al timer">
-                                                ▶
-                                            </button>
-                                        </form>
+                                        <a href="{{ route('timer.index', ['task' => $task->id]) }}" class="inline-flex items-center justify-center h-8 w-8 rounded-full bg-indigo-50 text-indigo-600 hover:bg-indigo-100" title="Ir al timer">
+                                            ▶
+                                        </a>
                                     </div>
                                 @empty
                                     <p class="text-sm text-gray-500">No tienes tareas para hoy.</p>

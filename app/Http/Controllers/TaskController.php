@@ -177,7 +177,7 @@ class TaskController extends Controller
         $data['updator_user_id'] = Auth::id();
         $data['value_generated'] = $request->boolean('value_generated', true);
         $data['not_billing'] = $request->boolean('not_billing');
-        $data['due_date'] = $this->parseDateTime($request->input('due_date'));
+        $data['due_date'] = $this->parseDateTime($request->input('due_date')) ?? now()->startOfDay();
         $data['delivery_date'] = $this->parseDateTime($request->input('delivery_date'));
 
         if ($request->hasFile('file')) {

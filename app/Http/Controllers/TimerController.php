@@ -9,6 +9,7 @@ use App\Models\Task;
 use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 
@@ -21,7 +22,7 @@ class TimerController extends Controller
         $this->middleware('auth');
     }
 
-    public function index(): View
+    public function index(Request $request): View
     {
         $tasks = Task::with([
             'project:id,name,color',
@@ -38,10 +39,28 @@ class TimerController extends Controller
             ->orderBy('name')
             ->get(['id', 'name', 'color']);
 
+        $prefillTask = null;
+        if ($request->filled('task')) {
+            $candidate = Task::with('project:id,name')
+                ->where('id', $request->integer('task'))
+                ->where('user_id', Auth::id())
+                ->first();
+            if ($candidate) {
+                $prefillTask = [
+                    'id' => (string) $candidate->id,
+                    'name' => $candidate->name,
+                    'project_id' => $candidate->project_id ? (string) $candidate->project_id : '',
+                    'project_name' => $candidate->project->name ?? '',
+                    'status_id' => (string) ($candidate->status_id ?? ''),
+                ];
+            }
+        }
+
         return view('timer.index', [
             'tasks' => $tasks,
             'projects' => $projects,
             'maxSeconds' => self::MAX_SECONDS,
+            'prefillTask' => $prefillTask,
         ]);
     }
 
@@ -112,7 +131,7 @@ class TimerController extends Controller
             'points' => $points,
             'creator_user_id' => Auth::id(),
             'updator_user_id' => Auth::id(),
-            'due_date' => now(),
+            'due_date' => now()->startOfDay(),
             'value_generated' => true,
         ]);
 
