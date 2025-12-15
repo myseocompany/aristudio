@@ -48,6 +48,11 @@ class DashboardController extends Controller
         }
 
         $flatTasks = $groupedTasks->flatten();
+        $summaryTasks = Task::query()
+            ->select(['status_id', 'points'])
+            ->where('user_id', $user->id)
+            ->whereBetween('created_at', [$rangeStart, $rangeEnd])
+            ->get();
 
         $chartData = [
             'labels' => $labels,
@@ -55,12 +60,12 @@ class DashboardController extends Controller
             'billing' => $billingSeries,
         ];
 
-        $pointsTotal = $flatTasks->sum(fn (Task $task) => (float) ($task->points ?? 0));
+        $pointsTotal = $summaryTasks->sum(fn (Task $task) => (float) ($task->points ?? 0));
         $hourlyRate = (float) ($user->hourly_rate ?? 0);
 
         $summary = [
-            'req' => $flatTasks->where('status_id', 1)->count(),
-            'billing' => $flatTasks->filter(fn ($task) => in_array((int) $task->status_id, self::BILLING_STATUS_IDS, true))->count(),
+            'req' => $summaryTasks->where('status_id', 1)->count(),
+            'billing' => $summaryTasks->filter(fn ($task) => in_array((int) $task->status_id, self::BILLING_STATUS_IDS, true))->count(),
             'points' => $pointsTotal,
             'amount' => round($pointsTotal * $hourlyRate, 2),
             'hourly_rate' => $hourlyRate,

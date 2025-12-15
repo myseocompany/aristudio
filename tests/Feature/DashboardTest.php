@@ -39,6 +39,7 @@ class DashboardTest extends TestCase
         $user = User::factory()->create([
             'hourly_rate' => 25,
         ]);
+        $otherUser = User::factory()->create();
         $this->actingAs($user);
 
         $now = Carbon::now();
@@ -87,6 +88,17 @@ class DashboardTest extends TestCase
                 'value_generated' => true,
                 'created_at' => $now->copy()->subDays(45),
                 'updated_at' => $now->copy()->subDays(45),
+            ],
+            [
+                'name' => 'Created by user task',
+                'user_id' => $otherUser->id,
+                'status_id' => 6,
+                'creator_user_id' => $user->id,
+                'updator_user_id' => $user->id,
+                'points' => 3,
+                'value_generated' => true,
+                'created_at' => $now->copy()->subDays(7),
+                'updated_at' => $now->copy()->subDays(7),
             ],
         ]);
 

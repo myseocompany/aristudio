@@ -10,67 +10,63 @@
         $rangeLabel = $taskSummary['range']['from']->translatedFormat('d M').' - '.$taskSummary['range']['to']->translatedFormat('d M');
         $totalTasks = $taskSummary['req'] + $taskSummary['billing'];
         $pointsDisplay = number_format((float) $taskSummary['points'], 2, '.', ',');
-        $amountDisplay = number_format((float) $taskSummary['amount'], 2, '.', ',');
-        $rateDisplay = number_format((float) $taskSummary['hourly_rate'], 2, '.', ',');
+        $amountDisplay = number_format((float) $taskSummary['amount'], 0, '.', ',');
+        $rateDisplay = number_format((float) $taskSummary['hourly_rate'], 0, '.', ',');
         $rangeValue = $taskSummary['range_value'];
     @endphp
     <div class="py-8">
         <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
-            <div class="grid lg:grid-cols-12 gap-6 items-start">
-                <div class="lg:col-span-7 space-y-4">
-                    <div class="flex flex-col gap-4">
-                        <div class="flex flex-col gap-1">
-                            <p class="text-sm text-gray-600 uppercase tracking-wide">Planifica tu día</p>
-                            <p class="text-3xl font-semibold text-gray-900 leading-snug">Hola, {{ auth()->user()?->name ?? 'Ari' }}.!<br>¿Qué planes tienes para hoy?</p>
-                            <p class="text-sm text-gray-600">Esta plataforma está diseñada para ayudarte a lograr tus metas.</p>
+            <div class="space-y-10">
+                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+                    <div class="flex flex-col gap-1 max-w-2xl">
+                        <p class="text-3xl font-semibold text-gray-900 leading-tight">Hola, {{ auth()->user()?->name ?? 'Ari' }}.!</p>
+                        <p class="text-xl font-semibold text-gray-900 leading-tight">¿Qué planes tienes para hoy?</p>
+                        
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-full">
+                        <div class="bg-white shadow-sm rounded-2xl border border-gray-100 p-5 flex flex-col">
+                            <p class="text-3xl font-semibold text-gray-900">${{ $amountDisplay }}</p>
+                            <p class="text-sm text-gray-500">Valor estimado</p>
+                            <p class="text-xs text-emerald-600 font-medium mt-1">Tarifa actual: ${{ $rateDisplay }}/h</p>
                         </div>
-                        <form method="GET" id="rangeForm" class="flex items-center gap-2">
+                        <div class="bg-white shadow-sm rounded-2xl border border-gray-100 p-5 flex flex-col">
+                            <p class="text-3xl font-semibold text-gray-900">{{ $pointsDisplay }}</p>
+                            <p class="text-sm text-gray-500">Puntos generados</p>
+                            <p class="text-xs text-indigo-600 font-medium mt-1">Último rango</p>
+                        </div>
+                        <div class="bg-white shadow-sm rounded-2xl border border-gray-100 p-5 flex flex-col">
+                            <p class="text-3xl font-semibold text-gray-900">{{ $taskSummary['req'] }}</p>
+                            <p class="text-sm text-gray-500">Tareas REQ</p>
+                            <p class="text-xs text-amber-600 font-medium mt-1">Estado 1</p>
+                        </div>
+                        <div class="bg-white shadow-sm rounded-2xl border border-gray-100 p-5 flex flex-col">
+                            <p class="text-3xl font-semibold text-gray-900">{{ $taskSummary['billing'] }}</p>
+                            <p class="text-sm text-gray-500">Ver/Billing</p>
+                            <p class="text-xs text-sky-600 font-medium mt-1">Estados 6 y 56</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white shadow-sm rounded-2xl border border-gray-100 p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-500">Resumen mensual</p>
+                            <p class="text-2xl font-semibold text-gray-900">{{ $totalTasks }} tareas</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-sm font-semibold text-gray-700">Rango seleccionado</p>
+                            <p class="text-xs text-gray-500">{{ $rangeLabel }}</p>
+                            <form method="GET" id="rangeForm" class="flex items-center mt-4">
                             <input type="text" id="rangePicker" class="w-64 px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white shadow-sm cursor-pointer" readonly>
                             <input type="hidden" name="range" id="rangeValue" value="{{ $rangeValue }}">
                         </form>
-                    </div>
-                    <div class="bg-white shadow-sm rounded-2xl border border-gray-100 p-6">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-sm text-gray-500">Resumen mensual</p>
-                                <p class="text-2xl font-semibold text-gray-900">{{ $totalTasks }} tareas</p>
-                            </div>
-                            <div class="text-right">
-                                <p class="text-sm font-semibold text-gray-700">Rango seleccionado</p>
-                                <p class="text-xs text-gray-500">{{ $rangeLabel }}</p>
-                            </div>
-                        </div>
-                        <div class="mt-6">
-                            <canvas id="tasksTrendChart" height="220"></canvas>
                         </div>
                     </div>
-                </div>
-                <div class="lg:col-span-5 grid md:grid-cols-2 gap-4">
-                    <div class="bg-white shadow-sm rounded-2xl border border-gray-100 p-5">
-                        <p class="text-3xl font-semibold text-gray-900">${{ $amountDisplay }}</p>
-                        <p class="text-sm text-gray-500">Valor estimado</p>
-                        <p class="text-xs text-emerald-600 font-medium mt-1">Tarifa actual: ${{ $rateDisplay }}/h</p>
-                    </div>
-                    <div class="bg-white shadow-sm rounded-2xl border border-gray-100 p-5">
-                        <p class="text-3xl font-semibold text-gray-900">{{ $pointsDisplay }}</p>
-                        <p class="text-sm text-gray-500">Puntos generados</p>
-                        <p class="text-xs text-indigo-600 font-medium mt-1">Último rango</p>
-                    </div>
-                    <div class="bg-white shadow-sm rounded-2xl border border-gray-100 p-5">
-                        <p class="text-3xl font-semibold text-gray-900">{{ $taskSummary['req'] }}</p>
-                        <p class="text-sm text-gray-500">Tareas REQ</p>
-                        <p class="text-xs text-amber-600 font-medium mt-1">Estado 1</p>
-                    </div>
-                    <div class="bg-white shadow-sm rounded-2xl border border-gray-100 p-5">
-                        <p class="text-3xl font-semibold text-gray-900">{{ $taskSummary['billing'] }}</p>
-                        <p class="text-sm text-gray-500">Ver/Billing</p>
-                        <p class="text-xs text-sky-600 font-medium mt-1">Estados 6 y 56</p>
-                    </div>
-                </div>
-            </div>
+                    <div class="mt-6">
+                        
+                        <canvas id="tasksTrendChart" height="220"></canvas>
         </div>
     </div>
-
+    
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/min/moment-with-locales.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
