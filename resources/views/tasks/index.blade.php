@@ -1,12 +1,15 @@
 <x-app-layout>
     @php
         $selectedPointsDisplay = number_format((float) ($selectedPointsTotal ?? 0), 2, '.', ',');
+        $defaultRangeStart = $defaultFromDate ?? now()->startOfMonth()->toDateString();
+        $defaultRangeEnd = $defaultToDate ?? now()->endOfMonth()->toDateString();
     @endphp
     <style>
         [x-cloak] {
             display: none !important;
         }
     </style>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css">
     <x-slot name="header">
         <div class="flex items-center justify-between">
             <div class="flex items-center gap-3">
@@ -44,6 +47,11 @@
                 </div>
             @endif
 
+            @php
+            $currentRangeValue = $filters['from_date'] && $filters['to_date']
+                ? $filters['from_date'].'|'.$filters['to_date']
+                : $defaultRangeStart.'|'.$defaultRangeEnd;
+            @endphp
             <div class="relative bg-white shadow-sm rounded border border-gray-100" x-data="{ showFilters: false }">
                 <div class="px-4 py-3 border-b border-gray-100 flex flex-wrap items-center gap-3">
                     <div class="flex-1 min-w-[200px]">
@@ -55,6 +63,16 @@
                             {{ $selectedPointsDisplay }} pts
                         </span>
                         <span class="inline-flex items-center px-2 py-1 rounded-full bg-emerald-50 text-emerald-700 font-semibold">{{ $tasks->where('status.pending', 1)->count() }} pendientes</span>
+                        <form method="GET" id="tasksRangeForm" class="flex items-center gap-2">
+                            <input type="text" id="tasksRangePicker" class="w-56 px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white shadow-sm cursor-pointer" readonly>
+                            <input type="hidden" name="range" id="tasksRangeValue" value="{{ $currentRangeValue }}">
+                            <input type="hidden" name="from_date" id="tasksFromDate" value="{{ $filters['from_date'] }}">
+                            <input type="hidden" name="to_date" id="tasksToDate" value="{{ $filters['to_date'] }}">
+                            <input type="hidden" name="status_id" value="{{ $filters['status_id'] }}">
+                            <input type="hidden" name="project_id" value="{{ $filters['project_id'] }}">
+                            <input type="hidden" name="user_id" value="{{ $filters['user_id'] }}">
+                            <input type="hidden" name="q" value="{{ $filters['q'] }}">
+                        </form>
                         <button type="button" @click="showFilters = !showFilters" class="px-3 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded border border-gray-200 text-gray-700">
                             <span x-show="!showFilters">Mostrar filtros</span>
                             <span x-show="showFilters">Ocultar filtros</span>
@@ -81,6 +99,8 @@
                             this.$refs.to_date.value = preset.to;
                         }
                     }">
+                        <input type="hidden" name="from_date" id="tasksFiltersFrom" value="{{ $filters['from_date'] }}">
+                        <input type="hidden" name="to_date" id="tasksFiltersTo" value="{{ $filters['to_date'] }}">
                         <div class="md:col-span-2">
                             <label class="text-sm text-gray-600">Buscar</label>
                             <input type="search" name="q" value="{{ $filters['q'] }}" placeholder="Nombre, descripción o copia" class="mt-1 w-full rounded border-gray-300 text-sm px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500">
@@ -112,34 +132,16 @@
                                 @endforeach
                             </select>
                         </div>
-                        <div>
-                            <label class="text-sm text-gray-600">Rango rápido</label>
-                            <select class="mt-1 w-full rounded border-gray-300 text-sm px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500" @change="applyPreset($event.target.value)">
-                                <option value="">Selecciona</option>
-                                @foreach($timePresets as $key => $preset)
-                                    <option value="{{ $key }}">{{ $preset['label'] }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div>
-                            <label class="text-sm text-gray-600">Desde</label>
-                            <input type="date" name="from_date" x-ref="from_date" value="{{ $filters['from_date'] }}" class="mt-1 w-full rounded border-gray-300 text-sm px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500">
-                        </div>
-                        <div>
-                            <label class="text-sm text-gray-600">Hasta</label>
-                            <input type="date" name="to_date" x-ref="to_date" value="{{ $filters['to_date'] }}" class="mt-1 w-full rounded border-gray-300 text-sm px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500">
-                        </div>
-                        <div class="flex items-center gap-3 text-sm text-gray-700">
-                            <div class="flex items-center gap-2">
-                                <input type="hidden" name="only_pending" value="0">
-                                <input id="only_pending" name="only_pending" type="checkbox" value="1" @checked($filters['only_pending']) class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
-                                <label for="only_pending">Solo pendientes</label>
-                            </div>
-                        </div>
                         <div class="flex items-center gap-2 md:col-span-3">
                             <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-500 text-sm">Aplicar filtros</button>
                             @php
-                                $hasFilters = $filters['status_id'] || $filters['project_id'] || $filters['user_id'] || $filters['q'] || ! $filters['only_pending'] || $filters['from_date'] || $filters['to_date'];
+                                $hasFilters = $filters['status_id']
+                                    || $filters['project_id']
+                                    || $filters['user_id']
+                                    || $filters['q']
+                                    || $filters['value_generated']
+                                    || $filters['from_date'] !== $defaultRangeStart
+                                    || $filters['to_date'] !== $defaultRangeEnd;
                             @endphp
                             @if($hasFilters)
                                 <a href="{{ route('tasks.index') }}" class="text-sm text-gray-600 hover:text-gray-800">Limpiar</a>
@@ -567,3 +569,70 @@
     </div>
 </div>
 </x-app-layout>
+
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/min/moment-with-locales.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        moment.locale('es');
+        const rangeInput = $('#tasksRangePicker');
+        const rangeValue = $('#tasksRangeValue');
+        const fromField = $('#tasksFromDate');
+        const toField = $('#tasksToDate');
+        const rangeForm = document.getElementById('tasksRangeForm');
+        const filterFromField = $('#tasksFiltersFrom');
+        const filterToField = $('#tasksFiltersTo');
+
+        if (!rangeInput.length || !rangeForm) {
+            return;
+        }
+
+        const existingRange = rangeValue.val();
+        const defaultStart = moment('{{ $defaultRangeStart }}', 'YYYY-MM-DD');
+        const defaultEnd = moment('{{ $defaultRangeEnd }}', 'YYYY-MM-DD');
+        const [startRaw, endRaw] = existingRange ? existingRange.split('|') : [null, null];
+        const startDate = startRaw ? moment(startRaw, 'YYYY-MM-DD') : defaultStart;
+        const endDate = endRaw ? moment(endRaw, 'YYYY-MM-DD') : defaultEnd;
+
+        function updateDisplay(start, end) {
+            const startStr = start.format('YYYY-MM-DD');
+            const endStr = end.format('YYYY-MM-DD');
+            rangeInput.val(`${start.format('DD MMM YYYY')} - ${end.format('DD MMM YYYY')}`);
+            rangeValue.val(`${startStr}|${endStr}`);
+            fromField.val(startStr);
+            toField.val(endStr);
+            filterFromField.val(startStr);
+            filterToField.val(endStr);
+        }
+
+        rangeInput.daterangepicker({
+            startDate,
+            endDate,
+            ranges: {
+                'Hoy': [moment().startOf('day'), moment().endOf('day')],
+                'Este mes': [moment().startOf('month'), moment().endOf('month')],
+                'Mes pasado': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')],
+                'Trimestre pasado': [moment().subtract(3, 'month').startOf('quarter'), moment().subtract(3, 'month').endOf('quarter')],
+                'Semestre pasado': (function () {
+                    const start = moment().startOf('month').subtract(6, 'month').startOf('month');
+                    const end = start.clone().add(5, 'month').endOf('month');
+                    return [start, end];
+                })(),
+                'Este año': [moment().startOf('year'), moment().endOf('year')],
+                'Año pasado': [moment().subtract(1, 'year').startOf('year'), moment().subtract(1, 'year').endOf('year')],
+            },
+            locale: {
+                format: 'DD MMM YYYY',
+                applyLabel: 'Aplicar',
+                cancelLabel: 'Cancelar',
+            },
+            opens: 'left',
+        }, function(start, end) {
+            updateDisplay(start, end);
+            rangeForm.submit();
+        });
+
+        updateDisplay(startDate, endDate);
+    });
+</script>

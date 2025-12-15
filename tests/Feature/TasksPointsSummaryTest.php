@@ -112,6 +112,7 @@ class TasksPointsSummaryTest extends TestCase
             'user_id' => $user->id,
             'status_id' => 1,
             'points' => 1.25,
+            'due_date' => now(),
         ]);
 
         Task::create([
@@ -120,6 +121,7 @@ class TasksPointsSummaryTest extends TestCase
             'user_id' => $user->id,
             'status_id' => 1,
             'points' => 0.75,
+            'due_date' => now(),
         ]);
 
         Task::create([
@@ -128,6 +130,7 @@ class TasksPointsSummaryTest extends TestCase
             'user_id' => null,
             'status_id' => 1,
             'points' => 5,
+            'due_date' => now(),
         ]);
 
         $response = $this->get(route('tasks.index'));

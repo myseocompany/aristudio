@@ -23,13 +23,32 @@ class TaskController extends Controller
     {
         $statusId = $request->input('status_id');
         $projectId = $request->input('project_id');
+        $now = Carbon::now();
+        $defaultFromDate = $now->copy()->startOfMonth();
+        $defaultToDate = $now->copy()->endOfMonth();
+
         $userIdParam = $request->input('user_id');
         $userId = $request->has('user_id')
             ? ($userIdParam === '' ? null : $userIdParam)
             : Auth::id();
         $fromDate = $request->input('from_date');
         $toDate = $request->input('to_date');
-        $onlyPending = $request->boolean('only_pending', ! $statusId);
+        if ($request->filled('range')) {
+            $parts = explode('|', $request->input('range'));
+            if (count($parts) === 2) {
+                try {
+                    $start = Carbon::createFromFormat('Y-m-d', trim($parts[0]))->toDateString();
+                    $end = Carbon::createFromFormat('Y-m-d', trim($parts[1]))->toDateString();
+                    $fromDate = $start;
+                    $toDate = $end;
+                } catch (\Exception $e) {
+                    // Ignore invalid range format.
+                }
+            }
+        } else {
+            $fromDate = $fromDate ? Carbon::parse($fromDate)->toDateString() : $defaultFromDate->toDateString();
+            $toDate = $toDate ? Carbon::parse($toDate)->toDateString() : $defaultToDate->toDateString();
+        }
         $onlyValueGenerated = $request->boolean('value_generated');
         $search = $request->input('q');
 
@@ -52,7 +71,6 @@ class TaskController extends Controller
             })
             ->values();
         $defaultStatusId = $statuses->first()?->id;
-        $now = Carbon::now();
         $today = $now->copy()->startOfDay();
         $timePresets = [
             'manana' => [
@@ -109,7 +127,6 @@ class TaskController extends Controller
                 'status:id,name,alias,color,background_color,pending',
             ])
             ->when($statusId, fn ($q) => $q->where('status_id', $statusId))
-            ->when($onlyPending, fn ($q) => $q->whereHas('status', fn ($sub) => $sub->where('pending', 1)))
             ->when($projectId, fn ($q) => $q->where('project_id', $projectId))
             ->when($userId, fn ($q) => $q->where('user_id', $userId))
             ->when($onlyValueGenerated, fn ($q) => $q->where('value_generated', 1))
@@ -146,11 +163,12 @@ class TaskController extends Controller
             'defaultStatusId' => $defaultStatusId,
             'timePresets' => $timePresets,
             'selectedPointsTotal' => $selectedPointsTotal,
+            'defaultFromDate' => $defaultFromDate->toDateString(),
+            'defaultToDate' => $defaultToDate->toDateString(),
             'filters' => [
                 'status_id' => $statusId,
                 'project_id' => $projectId,
                 'user_id' => $userId,
-                'only_pending' => $onlyPending,
                 'value_generated' => $onlyValueGenerated,
                 'from_date' => $fromDate,
                 'to_date' => $toDate,
