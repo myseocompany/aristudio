@@ -127,6 +127,8 @@ class TaskController extends Controller
                 });
             });
 
+        $selectedPointsTotal = (clone $tasksQuery)->sum('points');
+
         $tasks = $tasksQuery
             ->orderByDesc('created_at')
             ->orderByRaw('CASE WHEN due_date IS NULL THEN 1 ELSE 0 END')
@@ -143,6 +145,7 @@ class TaskController extends Controller
             'subTypes' => $subTypes,
             'defaultStatusId' => $defaultStatusId,
             'timePresets' => $timePresets,
+            'selectedPointsTotal' => $selectedPointsTotal,
             'filters' => [
                 'status_id' => $statusId,
                 'project_id' => $projectId,

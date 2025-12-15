@@ -1,4 +1,7 @@
 <x-app-layout>
+    @php
+        $selectedPointsDisplay = number_format((float) ($selectedPointsTotal ?? 0), 2, '.', ',');
+    @endphp
     <style>
         [x-cloak] {
             display: none !important;
@@ -48,6 +51,9 @@
                         <p class="text-lg font-semibold text-gray-800">{{ $tasks->total() }} registros</p>
                     </div>
                     <div class="flex flex-wrap items-center gap-3 text-sm text-gray-600 justify-end">
+                        <span class="inline-flex items-center px-2 py-1 rounded-full bg-indigo-50 text-indigo-700 font-semibold">
+                            {{ $selectedPointsDisplay }} pts
+                        </span>
                         <span class="inline-flex items-center px-2 py-1 rounded-full bg-emerald-50 text-emerald-700 font-semibold">{{ $tasks->where('status.pending', 1)->count() }} pendientes</span>
                         <button type="button" @click="showFilters = !showFilters" class="px-3 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded border border-gray-200 text-gray-700">
                             <span x-show="!showFilters">Mostrar filtros</span>
@@ -260,10 +266,14 @@
                     </table>
                 </div>
                 <div class="md:hidden px-4 py-4 space-y-3">
-                    <div class="rounded-2xl border border-gray-200 bg-gradient-to-r from-indigo-50 to-slate-50 px-4 py-3 flex items-center justify-between">
+                    <div class="rounded-2xl border border-gray-200 bg-gradient-to-r from-indigo-50 to-slate-50 px-4 py-3 flex flex-wrap items-center justify-between gap-4">
                         <div>
                             <p class="text-xs text-gray-500">Tareas totales</p>
                             <p class="text-lg font-semibold text-gray-900">{{ $tasks->total() }}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-xs text-gray-500">Puntos filtrados</p>
+                            <p class="text-lg font-semibold text-gray-900">{{ $selectedPointsDisplay }} pts</p>
                         </div>
                         <span class="inline-flex items-center px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-semibold">
                             {{ $tasks->where('status.pending', 1)->count() }} pendientes
