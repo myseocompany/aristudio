@@ -108,7 +108,7 @@ class TimerController extends Controller
             'name' => $validated['name'],
             'project_id' => $validated['project_id'] ?? null,
             'user_id' => Auth::id(),
-            'status_id' => 1,
+            'status_id' => 6,
             'points' => $points,
             'creator_user_id' => Auth::id(),
             'updator_user_id' => Auth::id(),

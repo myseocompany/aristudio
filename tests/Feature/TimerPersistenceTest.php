@@ -18,6 +18,7 @@ class TimerPersistenceTest extends TestCase
         parent::setUp();
 
         Schema::dropIfExists('tasks');
+        Schema::dropIfExists('task_statuses');
         Schema::dropIfExists('projects');
 
         Schema::create('projects', function (Blueprint $table): void {
@@ -41,6 +42,13 @@ class TimerPersistenceTest extends TestCase
             $table->timestamp('due_date')->nullable();
             $table->boolean('value_generated')->default(false);
             $table->timestamps();
+        });
+        Schema::create('task_statuses', function (Blueprint $table): void {
+            $table->id();
+            $table->string('name');
+            $table->boolean('pending')->default(true);
+            $table->string('color')->nullable();
+            $table->string('background_color')->nullable();
         });
     }
 

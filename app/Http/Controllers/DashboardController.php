@@ -15,18 +15,19 @@ class DashboardController extends Controller
     public function __invoke(Request $request): View
     {
         $user = Auth::user();
-        $defaultEnd = Carbon::now();
+        $defaultEnd = Carbon::now()->endOfDay();
         $defaultStart = $defaultEnd->copy()->subDays(29)->startOfDay();
 
         [$rangeStart, $rangeEnd] = $this->resolveRange($request->query('range'), $defaultStart, $defaultEnd);
 
         $groupedTasks = Task::query()
-            ->select(['status_id', 'created_at', 'points'])
+            ->select(['status_id', 'due_date', 'points'])
             ->where('user_id', $user->id)
-            ->whereBetween('created_at', [$rangeStart, $rangeEnd])
+            ->whereNotNull('due_date')
+            ->whereBetween('due_date', [$rangeStart, $rangeEnd])
             ->whereIn('status_id', array_merge([1], self::BILLING_STATUS_IDS))
             ->get()
-            ->groupBy(fn (Task $task) => $task->created_at->copy()->startOfWeek(Carbon::MONDAY)->toDateString());
+            ->groupBy(fn (Task $task) => $task->due_date?->copy()->startOfWeek(Carbon::MONDAY)->toDateString() ?? 'unknown');
 
         $labels = [];
         $reqSeries = [];
@@ -51,7 +52,8 @@ class DashboardController extends Controller
         $summaryTasks = Task::query()
             ->select(['status_id', 'points'])
             ->where('user_id', $user->id)
-            ->whereBetween('created_at', [$rangeStart, $rangeEnd])
+            ->whereNotNull('due_date')
+            ->whereBetween('due_date', [$rangeStart, $rangeEnd])
             ->get();
 
         $chartData = [
@@ -75,10 +77,30 @@ class DashboardController extends Controller
             ],
             'range_value' => $request->query('range', $this->formatRangeValue($rangeStart, $rangeEnd)),
         ];
+        $today = Carbon::today();
+        $todayTasks = Task::with(['status:id,name,color,background_color,pending'])
+            ->where('user_id', $user->id)
+            ->whereNotNull('due_date')
+            ->whereDate('due_date', $today)
+            ->orderBy('due_date')
+            ->take(5)
+            ->get(['id', 'name', 'due_date', 'status_id']);
+
+        $overdueTasks = Task::with(['status:id,name,color,background_color,pending'])
+            ->where('user_id', $user->id)
+            ->whereNotNull('due_date')
+            ->where('status_id', 1)
+            ->whereDate('due_date', '<', $today)
+            ->whereHas('status', fn ($query) => $query->where('pending', 1))
+            ->orderByDesc('due_date')
+            ->take(5)
+            ->get(['id', 'name', 'due_date', 'status_id']);
 
         return view('dashboard', [
             'chartData' => $chartData,
             'taskSummary' => $summary,
+            'todayTasks' => $todayTasks,
+            'overdueTasks' => $overdueTasks,
         ]);
     }
 

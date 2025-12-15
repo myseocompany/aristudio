@@ -18,10 +18,12 @@
         <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
             <div class="space-y-10">
                 <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-                    <div class="flex flex-col gap-1 max-w-2xl">
+                    <div class="flex flex-col gap-2 max-w-2xl">
+                        <p class="text-sm text-gray-600 uppercase tracking-wide">Planifica tu día</p>
                         <p class="text-3xl font-semibold text-gray-900 leading-tight">Hola, {{ auth()->user()?->name ?? 'Ari' }}.!</p>
                         <p class="text-xl font-semibold text-gray-900 leading-tight">¿Qué planes tienes para hoy?</p>
-                        
+                        <p class="text-sm text-gray-600">Esta plataforma está diseñada para ayudarte a lograr tus metas.</p>
+
                     </div>
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-full">
                         <div class="bg-white shadow-sm rounded-2xl border border-gray-100 p-5 flex flex-col">
@@ -46,26 +48,78 @@
                         </div>
                     </div>
                 </div>
-                <div class="bg-white shadow-sm rounded-2xl border border-gray-100 p-6">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-sm text-gray-500">Resumen mensual</p>
-                            <p class="text-2xl font-semibold text-gray-900">{{ $totalTasks }} tareas</p>
+                <div class="grid lg:grid-cols-12 gap-6">
+                    <div class="lg:col-span-8 bg-white shadow-sm rounded-2xl border border-gray-100 p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-gray-500">Resumen mensual</p>
+                                <p class="text-2xl font-semibold text-gray-900">{{ $totalTasks }} tareas</p>
+                            </div>
+                            <div>
+                                <form method="GET" id="rangeForm" class="flex items-center mt-4">
+                                    <input type="text" id="rangePicker" class="w-64 px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white shadow-sm cursor-pointer" readonly>
+                                    <input type="hidden" name="range" id="rangeValue" value="{{ $rangeValue }}">
+                                </form>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-sm font-semibold text-gray-700">Rango seleccionado</p>
+                                <p class="text-xs text-gray-500">{{ $rangeLabel }}</p>
+                            </div>
                         </div>
-                        <div class="text-right">
-                            <p class="text-sm font-semibold text-gray-700">Rango seleccionado</p>
-                            <p class="text-xs text-gray-500">{{ $rangeLabel }}</p>
-                            <form method="GET" id="rangeForm" class="flex items-center mt-4">
-                            <input type="text" id="rangePicker" class="w-64 px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white shadow-sm cursor-pointer" readonly>
-                            <input type="hidden" name="range" id="rangeValue" value="{{ $rangeValue }}">
-                        </form>
+                        <div class="mt-6">
+                            <canvas id="tasksTrendChart" height="220"></canvas>
                         </div>
                     </div>
-                    <div class="mt-6">
-                        
-                        <canvas id="tasksTrendChart" height="220"></canvas>
-        </div>
-    </div>
+                    <div class="lg:col-span-4 space-y-4">
+                        <div class="bg-white shadow-sm rounded-2xl border border-gray-100 p-5">
+                            <div class="flex items-center justify-between">
+                                <p class="text-sm font-semibold text-gray-900">Tareas para hoy</p>
+                                <span class="text-xs text-gray-500">{{ $todayTasks->count() }}</span>
+                            </div>
+                            <div class="mt-3 space-y-3">
+                                @forelse($todayTasks as $task)
+                                    <div class="flex items-center justify-between border border-gray-100 rounded-xl px-3 py-2">
+                                        <div>
+                                            <p class="text-sm font-semibold text-gray-900 truncate">{{ $task->name }}</p>
+                                            <p class="text-xs text-gray-500">Hora: {{ optional($task->due_date)->format('H:i') ?? 'Sin hora' }}</p>
+                                        </div>
+                                        @if($task->status)
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px]" style="background: {{ $task->status->background_color ?? '#eef2ff' }}; color: {{ $task->status->color ?? '#312e81' }}">
+                                                {{ $task->status->name }}
+                                            </span>
+                                        @endif
+                                    </div>
+                                @empty
+                                    <p class="text-sm text-gray-500">No tienes tareas para hoy.</p>
+                                @endforelse
+                            </div>
+                        </div>
+                        <div class="bg-white shadow-sm rounded-2xl border border-gray-100 p-5">
+                            <div class="flex items-center justify-between">
+                                <p class="text-sm font-semibold text-gray-900">Tareas vencidas</p>
+                                <span class="text-xs text-gray-500">{{ $overdueTasks->count() }}</span>
+                            </div>
+                            <div class="mt-3 space-y-3">
+                                @forelse($overdueTasks as $task)
+                                    <div class="flex items-center justify-between border border-gray-100 rounded-xl px-3 py-2">
+                                        <div>
+                                            <p class="text-sm font-semibold text-gray-900 truncate">{{ $task->name }}</p>
+                                            <p class="text-xs text-rose-600">Venció: {{ optional($task->due_date)->format('d M') }}</p>
+                                        </div>
+                                        @if($task->status)
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px]" style="background: {{ $task->status->background_color ?? '#fee2e2' }}; color: {{ $task->status->color ?? '#b91c1c' }}">
+                                                {{ $task->status->name }}
+                                            </span>
+                                        @endif
+                                    </div>
+                                @empty
+                                    <p class="text-sm text-gray-500">Sin tareas vencidas.</p>
+                                @endforelse
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
     
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/min/moment-with-locales.min.js"></script>
@@ -86,6 +140,7 @@
             }
 
             const presetRanges = {
+                'Hoy': [moment().startOf('today'), moment().endOf('today')],
                 'Este mes': [moment().startOf('month'), moment().endOf('month')],
                 'Mes pasado': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')],
                 'Trimestre pasado': [moment().subtract(3, 'month').startOf('quarter'), moment().subtract(3, 'month').endOf('quarter')],

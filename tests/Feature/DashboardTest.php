@@ -7,6 +7,7 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
@@ -19,6 +20,7 @@ class DashboardTest extends TestCase
         parent::setUp();
 
         Schema::dropIfExists('tasks');
+        Schema::dropIfExists('task_statuses');
         Schema::create('tasks', function (Blueprint $table): void {
             $table->id();
             $table->string('name');
@@ -32,6 +34,19 @@ class DashboardTest extends TestCase
             $table->boolean('value_generated')->default(false);
             $table->timestamps();
         });
+        Schema::create('task_statuses', function (Blueprint $table): void {
+            $table->id();
+            $table->string('name');
+            $table->boolean('pending')->default(true);
+            $table->string('color')->nullable();
+            $table->string('background_color')->nullable();
+        });
+
+        DB::table('task_statuses')->insert([
+            ['id' => 1, 'name' => 'REQ', 'pending' => 1, 'color' => '#1d4ed8', 'background_color' => '#dbeafe'],
+            ['id' => 6, 'name' => 'Ver', 'pending' => 0, 'color' => '#047857', 'background_color' => '#d1fae5'],
+            ['id' => 56, 'name' => 'Billing', 'pending' => 0, 'color' => '#0f172a', 'background_color' => '#e2e8f0'],
+        ]);
     }
 
     public function test_dashboard_displays_monthly_task_stats(): void
@@ -53,8 +68,9 @@ class DashboardTest extends TestCase
                 'updator_user_id' => $user->id,
                 'points' => 1,
                 'value_generated' => true,
-                'created_at' => $now->copy()->subDays(5),
-                'updated_at' => $now->copy()->subDays(5),
+                'created_at' => $now->copy(),
+                'updated_at' => $now->copy(),
+                'due_date' => $now->copy(),
             ],
             [
                 'name' => 'Billing task',
@@ -66,6 +82,7 @@ class DashboardTest extends TestCase
                 'value_generated' => true,
                 'created_at' => $now->copy()->subDays(10),
                 'updated_at' => $now->copy()->subDays(10),
+                'due_date' => $now->copy()->subDays(10),
             ],
             [
                 'name' => 'Billing task 56',
@@ -77,6 +94,7 @@ class DashboardTest extends TestCase
                 'value_generated' => true,
                 'created_at' => $now->copy()->subDays(15),
                 'updated_at' => $now->copy()->subDays(15),
+                'due_date' => $now->copy()->subDays(15),
             ],
             [
                 'name' => 'Outside range',
@@ -88,6 +106,7 @@ class DashboardTest extends TestCase
                 'value_generated' => true,
                 'created_at' => $now->copy()->subDays(45),
                 'updated_at' => $now->copy()->subDays(45),
+                'due_date' => $now->copy()->subDays(45),
             ],
             [
                 'name' => 'Created by user task',
@@ -99,6 +118,7 @@ class DashboardTest extends TestCase
                 'value_generated' => true,
                 'created_at' => $now->copy()->subDays(7),
                 'updated_at' => $now->copy()->subDays(7),
+                'due_date' => $now->copy()->subDays(7),
             ],
         ]);
 
@@ -110,6 +130,8 @@ class DashboardTest extends TestCase
 
         $summary = $response->viewData('taskSummary');
         $chart = $response->viewData('chartData');
+        $todayList = $response->viewData('todayTasks');
+        $overdueList = $response->viewData('overdueTasks');
 
         $this->assertSame(1, $summary['req']);
         $this->assertSame(2, $summary['billing']);
@@ -121,5 +143,8 @@ class DashboardTest extends TestCase
         $this->assertSame($summary['req'], array_sum($chart['req']));
         $this->assertSame($summary['billing'], array_sum($chart['billing']));
         $this->assertSame($rangeParam, $summary['range_value']);
+        $this->assertCount(1, $todayList);
+        $this->assertSame('REQ task', $todayList->first()->name);
+        $this->assertGreaterThan(0, $overdueList->count());
     }
 }
