@@ -17,28 +17,30 @@
     </x-slot>
 
     <div class="py-6">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4">
-            <form method="GET" action="{{ route('logins.index') }}" class="bg-white border border-gray-100 rounded-lg shadow-sm p-4 sm:p-5">
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Buscar</label>
-                        <input type="text" name="q" value="{{ $filters['q'] ?? '' }}" placeholder="Nombre, usuario, URL..." class="mt-1 w-full rounded border-gray-300 text-sm px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Proyecto</label>
-                        <select name="project_id" class="mt-1 w-full rounded border-gray-300 text-sm px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500">
-                            <option value="">Todos</option>
-                            @foreach($projects as $project)
-                                <option value="{{ $project->id }}" @selected(($filters['project_id'] ?? '') == $project->id)>{{ $project->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="flex items-end gap-2">
-                        <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-500 text-sm">Filtrar</button>
-                        <a href="{{ route('logins.index') }}" class="px-4 py-2 border rounded text-sm text-gray-700 hover:bg-gray-50">Limpiar</a>
-                    </div>
-                </div>
-            </form>
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid gap-4 lg:grid-cols-4">
+                <div class="lg:col-span-3 space-y-4">
+                    <form method="GET" action="{{ route('logins.index') }}" class="bg-white border border-gray-100 rounded-lg shadow-sm p-4 sm:p-5">
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Buscar</label>
+                                <input type="text" name="q" value="{{ $filters['q'] ?? '' }}" placeholder="Nombre, usuario, URL..." class="mt-1 w-full rounded border-gray-300 text-sm px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Proyecto</label>
+                                <select name="project_id" class="mt-1 w-full rounded border-gray-300 text-sm px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500">
+                                    <option value="">Todos</option>
+                                    @foreach($projects as $project)
+                                        <option value="{{ $project->id }}" @selected(($filters['project_id'] ?? '') == $project->id)>{{ $project->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="flex items-end gap-2">
+                                <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-500 text-sm">Filtrar</button>
+                                <a href="{{ route('logins.index') }}" class="px-4 py-2 border rounded text-sm text-gray-700 hover:bg-gray-50">Limpiar</a>
+                            </div>
+                        </div>
+                    </form>
 
             <div class="bg-white border border-gray-100 rounded-lg shadow-sm">
                 <div class="border-b border-gray-100 px-4 py-3 flex items-center justify-between">
@@ -83,6 +85,11 @@
 
                 <div class="px-4 sm:px-5 py-3">
                     {{ $logins->links() }}
+                </div>
+            </div>
+                </div>
+                <div class="lg:col-span-1">
+                    @include('project_logins.partials.sidebar_form', ['projects' => $projects, 'filters' => $filters])
                 </div>
             </div>
         </div>

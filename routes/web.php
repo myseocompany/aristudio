@@ -29,6 +29,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('projects', ProjectController::class);
     Route::resource('projects.logins', ProjectLoginController::class)->except(['index', 'show']);
     Route::get('logins', [ProjectLoginController::class, 'index'])->name('logins.index');
+    Route::post('logins', [ProjectLoginController::class, 'quickStore'])->name('logins.quick-store');
     Route::resource('roles', RoleController::class);
     Route::post('roles/{role}/permissions', [RoleController::class, 'updatePermissions'])->name('roles.permissions');
     Route::post('modules/reorder', [ModuleController::class, 'reorder'])->name('modules.reorder');

@@ -85,6 +85,22 @@ class ProjectLoginController extends Controller
         return redirect()->route('projects.show', $project)->with('status', 'Login creado.');
     }
 
+    public function quickStore(Request $request): RedirectResponse
+    {
+        $projectId = $request->validate([
+            'project_id' => ['required', 'exists:projects,id'],
+        ])['project_id'];
+
+        $this->authorizeAccess((int) $projectId);
+
+        $data = $this->validateData($request);
+        $data['project_id'] = $projectId;
+
+        ProjectLogin::create($data);
+
+        return redirect()->route('logins.index')->with('status', 'Login creado.');
+    }
+
     public function edit(Project $project, ProjectLogin $login): View
     {
         $this->authorizeAccess($project->id);
