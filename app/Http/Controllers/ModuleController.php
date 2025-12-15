@@ -29,6 +29,10 @@ class ModuleController extends Controller
     public function store(Request $request)
     {
         $data = $this->validateData($request);
+        if (! str_starts_with($data['slug'], '/')) {
+            $data['slug'] = '/'.ltrim($data['slug'], '/');
+        }
+
         Module::create($data);
 
         return redirect()->route('modules.index')->with('status', 'Módulo creado.');
@@ -47,6 +51,10 @@ class ModuleController extends Controller
     public function update(Request $request, Module $module)
     {
         $data = $this->validateData($request, $module->id);
+        if (! str_starts_with($data['slug'], '/')) {
+            $data['slug'] = '/'.ltrim($data['slug'], '/');
+        }
+
         $module->update($data);
 
         return redirect()->route('modules.index')->with('status', 'Módulo actualizado.');

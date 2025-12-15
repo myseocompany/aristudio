@@ -34,6 +34,7 @@ Route::middleware('auth')->group(function () {
     Route::post('modules/reorder', [ModuleController::class, 'reorder'])->name('modules.reorder');
     Route::resource('modules', ModuleController::class);
     Route::resource('tasks', TaskController::class);
+    Route::view('config', 'config.index')->name('config.index');
     Route::view('reports', 'reports.index')->name('reports.index');
     Route::get('report_users_by_month', [ReportController::class, 'usersByMonth'])->name('reports.users_by_month');
     Route::get('timer', [TimerController::class, 'index'])->name('timer.index');

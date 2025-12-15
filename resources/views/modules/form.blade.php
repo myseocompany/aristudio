@@ -9,7 +9,7 @@
     <div>
         <x-input-label for="slug" value="Slug" />
         <x-text-input id="slug" name="slug" type="text" class="mt-1 block w-full" value="{{ old('slug', $module->slug) }}" required />
-        <p class="text-xs text-gray-500 mt-1">Se usará como ruta en el menú.</p>
+        <p class="text-xs text-gray-500 mt-1">Se usará como ruta en el menú (ej: /config).</p>
         <x-input-error :messages="$errors->get('slug')" class="mt-2" />
     </div>
 
