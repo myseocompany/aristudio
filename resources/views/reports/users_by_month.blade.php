@@ -7,11 +7,11 @@
     </x-slot>
 
     <div class="py-10">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4">
+        <div class="px-4 sm:px-6 lg:px-8 space-y-4">
             <form method="GET" class="flex flex-wrap items-end gap-3 text-sm bg-white border border-gray-100 rounded-xl shadow-sm p-4">
                 <div>
                     <label for="year" class="text-gray-600 font-medium block mb-1">Seleccione año</label>
-                    <select id="year" name="year" class="rounded-lg border-gray-300 px-3 py-2 focus:border-brand-600 focus:ring-brand-600">
+                    <select id="year" name="year" class="rounded-lg border-gray-300 px-3 py-2 pr-10 focus:border-brand-600 focus:ring-brand-600">
                         @foreach($yearOptions as $option)
                             <option value="{{ $option }}" @selected($year == $option)>{{ $option }}</option>
                         @endforeach
@@ -29,7 +29,7 @@
                             <tr class="text-sm text-gray-500">
                                 <th class="w-48 px-4 py-3 text-left font-semibold uppercase tracking-wide">Usuario</th>
                                 @foreach($months as $month)
-                                    <th class="px-3 py-3 text-center font-semibold uppercase tracking-wide">{{ $month->translatedFormat('M') }}</th>
+                                    <th class="px-3 py-3 text-center font-semibold uppercase tracking-wide">{{ $month->locale('es')->translatedFormat('M') }}</th>
                                 @endforeach
                             </tr>
                         </thead>

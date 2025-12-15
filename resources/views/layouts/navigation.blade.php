@@ -45,6 +45,9 @@
                     <span class="text-[11px] uppercase tracking-wide">Timer</span>
                     <span class="font-mono text-sm" x-text="formatted"></span>
                 </a>
+                <a href="{{ route('reports.users_by_month') }}" class="text-sm text-gray-600 hover:text-gray-900 font-medium">
+                    Reporte usuarios
+                </a>
 
                 @php
                     $navUser = Auth::user();
@@ -118,6 +121,9 @@
         <div class="pt-2 pb-3 space-y-1">
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('reports.users_by_month')" :active="request()->routeIs('reports.users_by_month')">
+                Reporte usuarios
             </x-responsive-nav-link>
             @foreach($moduleLinks as $module)
                 @php
