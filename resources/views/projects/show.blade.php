@@ -10,7 +10,7 @@
     </x-slot>
 
     <div class="py-6">
-        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 <div class="lg:col-span-2 bg-white shadow-sm rounded-lg border border-gray-100 overflow-hidden">
                     <div class="p-6 space-y-4">

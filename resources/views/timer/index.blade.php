@@ -22,7 +22,7 @@
                         </div>
                         <div class="w-full sm:w-72 text-sm bg-gray-50 border border-gray-200 rounded px-3 py-2">
                             <p class="text-gray-500">Tarea seleccionada</p>
-                            <p class="font-semibold text-gray-900 truncate" x-text="taskLabel || 'Ninguna'"></p>
+                            <p class="font-semibold text-gray-900 truncate" x-text="taskLabelDisplay"></p>
                         </div>
                     </div>
                     <div class="grid sm:grid-cols-2 gap-3">
@@ -32,16 +32,15 @@
                         </div>
                         <div>
                             <label class="text-sm text-gray-600">Proyecto</label>
-                            <select x-model="manualProjectId" class="mt-1 w-full rounded border-gray-300 text-sm px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500">
+                            <select x-model="manualProjectId" x-ref="projectSelect" class="mt-1 w-full rounded border-gray-300 text-sm px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500">
                                 <option value="">Sin proyecto</option>
                                 @foreach($projects as $project)
                                     <option value="{{ $project->id }}">{{ $project->name }}</option>
                                 @endforeach
                             </select>
                         </div>
-                        <div class="sm:col-span-2 flex items-center justify-end gap-3">
+                        <div class="sm:col-span-2 flex items-center justify-end">
                             <button type="button" class="px-4 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 text-sm" @click="clearManual()">Limpiar</button>
-                            <button type="button" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-500 text-sm" @click="applyManual()">Usar datos escritos</button>
                         </div>
                     </div>
                 </div>
@@ -51,7 +50,7 @@
                         <div class="text-sm uppercase tracking-wide">Tiempo transcurrido</div>
                         <div class="text-5xl font-mono" x-text="formattedTime"></div>
                         <div class="flex gap-3">
-                            <button type="button" @click="start()" :disabled="!taskLabel.trim() || running || elapsed >= maxSeconds" class="px-4 py-2 rounded bg-white text-indigo-700 font-semibold shadow hover:bg-indigo-50 disabled:opacity-50">Iniciar</button>
+                            <button type="button" @click="start()" :disabled="!taskLabel || running || elapsed >= maxSeconds" class="px-4 py-2 rounded bg-white text-indigo-700 font-semibold shadow hover:bg-indigo-50 disabled:opacity-50">Iniciar</button>
                             <button type="button" @click="pause()" :disabled="!running" class="px-4 py-2 rounded bg-amber-100 text-amber-800 font-semibold hover:bg-amber-200 disabled:opacity-50">Pausar</button>
                             <button type="button" @click="stop()" class="px-4 py-2 rounded bg-red-100 text-red-800 font-semibold hover:bg-red-200">Detener</button>
                         </div>
@@ -75,11 +74,11 @@
                         </div>
                         <div class="flex items-center justify-between text-sm">
                             <span class="text-gray-600">Tarea seleccionada</span>
-                            <span class="font-semibold text-gray-800 truncate max-w-[200px]" x-text="taskLabel"></span>
+                            <span class="font-semibold text-gray-800 truncate max-w-[200px]" x-text="taskLabelDisplay"></span>
                         </div>
                         <div class="flex items-center justify-between text-sm">
                             <span class="text-gray-600">Proyecto</span>
-                            <span class="font-semibold text-gray-800 truncate max-w-[200px]" x-text="projectLabel || 'Sin proyecto'"></span>
+                            <span class="font-semibold text-gray-800 truncate max-w-[200px]" x-text="currentProjectLabel || 'Sin proyecto'"></span>
                         </div>
                     </div>
                 </div>
@@ -194,7 +193,6 @@
                 selectedTaskLabel: '',
                 manualTaskName: '',
                 manualProjectId: '',
-                manualProjectName: '',
                 projectLabel: '',
                 recentCreated: [],
                 showTaskPanel: false,
@@ -222,15 +220,36 @@
                     const secs = diff % 60;
                     return `${mins}m ${secs}s`;
                 },
+                get isManualMode() {
+                    const manual = this.manualTaskName.trim();
+                    if (!manual) {
+                        return false;
+                    }
+                    if (!this.selectedTask) {
+                        return true;
+                    }
+                    return manual !== (this.selectedTaskLabel || '').trim();
+                },
                 get taskLabel() {
-                    return this.selectedTaskLabel || 'Ninguna';
+                    if (this.isManualMode) {
+                        return this.manualTaskName.trim();
+                    }
+                    return (this.selectedTaskLabel || '').trim();
+                },
+                get taskLabelDisplay() {
+                    return this.taskLabel || 'Ninguna';
+                },
+                get currentProjectLabel() {
+                    if (this.isManualMode) {
+                        return this.getProjectLabelFromSelect();
+                    }
+                    return this.projectLabel || '';
                 },
                 setTask(id, label, projectId = '', projectName = '') {
                     this.selectedTask = id;
                     this.selectedTaskLabel = label;
                     this.manualTaskName = '';
-                    this.manualProjectId = projectId || '';
-                    this.manualProjectName = projectName || '';
+                    this.manualProjectId = projectId ? String(projectId) : '';
                     this.projectLabel = projectName || '';
                 },
                 applyPrefill(taskData) {
@@ -247,19 +266,9 @@
                         this.manualTaskName = taskData.name;
                     }
                 },
-                applyManual() {
-                    if (!this.manualTaskName.trim()) return;
-                    this.selectedTask = '';
-                    this.selectedTaskLabel = this.manualTaskName.trim();
-                    const projSelect = document.querySelector('select[x-model="manualProjectId"]');
-                    const label = projSelect && this.manualProjectId ? projSelect.selectedOptions[0]?.textContent || '' : '';
-                    this.projectLabel = label;
-                    this.manualProjectName = label;
-                },
                 clearManual() {
                     this.manualTaskName = '';
                     this.manualProjectId = '';
-                    this.manualProjectName = '';
                     this.projectLabel = '';
                     this.selectedTaskLabel = '';
                     this.selectedTask = '';
@@ -287,7 +296,6 @@
                     this.selectedTaskLabel = data?.task_label || '';
                     this.manualTaskName = this.selectedTask ? '' : (data?.task_label || '');
                     this.manualProjectId = data?.project_id ? String(data.project_id) : '';
-                    this.manualProjectName = data?.project_name || '';
                     this.projectLabel = data?.project_name || '';
                     this.lastBeepAt = Math.floor(this.elapsed / this.beepEvery) * this.beepEvery;
                     this.clearTicker();
@@ -342,14 +350,15 @@
                     }
                 },
                 async start() {
-                    if (!this.taskLabel.trim() || this.running || this.elapsed >= this.maxSeconds) {
+                    const label = this.taskLabel;
+                    if (!label || this.running || this.elapsed >= this.maxSeconds) {
                         return;
                     }
                     const payload = {
-                        task_id: this.selectedTask || null,
-                        task_label: this.taskLabel.trim(),
+                        task_id: this.isManualMode ? null : (this.selectedTask || null),
+                        task_label: label,
                         project_id: this.manualProjectId || null,
-                        project_name: this.projectLabel || '',
+                        project_name: this.currentProjectLabel || '',
                         _token: document.querySelector('meta[name=\"csrf-token\"]').getAttribute('content'),
                     };
                     try {
@@ -396,8 +405,9 @@
                 async stop() {
                     this.clearTicker();
                     await this.pause();
+                    const label = this.taskLabel;
                     const payload = {
-                        name: this.taskLabel.trim(),
+                        name: label,
                         project_id: this.manualProjectId || null,
                         seconds: this.elapsed,
                         _token: document.querySelector('meta[name=\"csrf-token\"]').getAttribute('content'),
@@ -460,12 +470,23 @@
                     this.selectedTaskLabel = '';
                     this.manualTaskName = '';
                     this.manualProjectId = '';
-                    this.manualProjectName = '';
                     this.projectLabel = '';
                 },
                 playBeep() {
                     const audio = new Audio('data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEAIlYAAESsAAACABAAZGF0YYgAAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA=');
                     audio.play().catch(() => {});
+                },
+                getProjectLabelFromSelect() {
+                    if (!this.manualProjectId) {
+                        return '';
+                    }
+                    const select = this.$refs?.projectSelect ?? document.querySelector('select[x-model="manualProjectId"]');
+                    if (!select) {
+                        return '';
+                    }
+                    const option = select.selectedOptions?.[0]
+                        ?? select.querySelector(`option[value="${this.manualProjectId}"]`);
+                    return option ? option.textContent.trim() : '';
                 },
             };
         }
