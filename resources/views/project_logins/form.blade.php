@@ -27,6 +27,18 @@
             <p class="text-sm text-gray-500">Credenciales asociadas al proyecto.</p>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            @if ($login->exists && isset($projects) && $projects->count())
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700">Proyecto</label>
+                    <select name="project_id" class="mt-1 w-full border rounded px-3 py-2" required>
+                        @foreach ($projects as $projectOption)
+                            <option value="{{ $projectOption->id }}" @selected((int) old('project_id', $login->project_id) === $projectOption->id)>
+                                {{ $projectOption->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+            @endif
             <div>
                 <label class="block text-sm font-medium text-gray-700">Nombre</label>
                 <input type="text" name="name" value="{{ old('name', $login->name) }}" class="mt-1 w-full border rounded px-3 py-2" required>

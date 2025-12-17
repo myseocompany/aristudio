@@ -106,9 +106,16 @@ class ProjectLoginController extends Controller
         $this->authorizeAccess($project->id);
         $this->ensureSameProject($project, $login);
 
+        $canSeeAll = $this->canSeeAllProjects();
+        $projectsQuery = Project::query()->orderBy('name')->select('id', 'name');
+        if (! $canSeeAll) {
+            $projectsQuery->whereIn('id', $this->accessibleProjectIds(false));
+        }
+
         return view('project_logins.edit', [
             'project' => $project,
             'login' => $login,
+            'projects' => $projectsQuery->get(),
         ]);
     }
 
@@ -117,10 +124,19 @@ class ProjectLoginController extends Controller
         $this->authorizeAccess($project->id);
         $this->ensureSameProject($project, $login);
 
-        $data = $this->validateData($request);
+        $data = $this->validateData($request, true);
+
+        if ((int) $data['project_id'] !== $project->id) {
+            $this->authorizeAccess((int) $data['project_id']);
+        }
+
         $login->update($data);
 
-        return redirect()->route('projects.show', $project)->with('status', 'Login actualizado.');
+        $redirectProject = $project->id === (int) $data['project_id']
+            ? $project
+            : Project::findOrFail($data['project_id']);
+
+        return redirect()->route('projects.show', $redirectProject)->with('status', 'Login actualizado.');
     }
 
     public function destroy(Project $project, ProjectLogin $login): RedirectResponse
@@ -152,14 +168,20 @@ class ProjectLoginController extends Controller
         abort_unless($login->project_id === $project->id, 404);
     }
 
-    protected function validateData(Request $request): array
+    protected function validateData(Request $request, bool $includeProject = false): array
     {
-        return $request->validate([
+        $rules = [
             'name' => ['required', 'string', 'max:250'],
             'user' => ['required', 'string', 'max:250'],
             'password' => ['required', 'string', 'max:250'],
             'url' => ['nullable', 'string'],
-        ]);
+        ];
+
+        if ($includeProject) {
+            $rules['project_id'] = ['required', 'exists:projects,id'];
+        }
+
+        return $request->validate($rules);
     }
 
     protected function canSeeAllProjects(): bool

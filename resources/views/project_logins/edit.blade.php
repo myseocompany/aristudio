@@ -14,7 +14,7 @@
 
     <div class="py-6">
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            @include('project_logins.form', ['project' => $project, 'login' => $login])
+            @include('project_logins.form', ['project' => $project, 'login' => $login, 'projects' => $projects])
         </div>
     </div>
 </x-app-layout>
