@@ -20,6 +20,25 @@ class BillingController extends Controller
     public function index(BillingReportRequest $request): View
     {
         $validated = $request->validated();
+        $data = $this->buildReportData($validated);
+
+        return view('billing.index', $data);
+    }
+
+    public function print(BillingReportRequest $request): View
+    {
+        $validated = $request->validated();
+        $data = $this->buildReportData($validated);
+
+        return view('billing.print', $data);
+    }
+
+    /**
+     * @param  array<string, mixed>  $validated
+     * @return array<string, mixed>
+     */
+    private function buildReportData(array $validated): array
+    {
         $selectedMonth = Carbon::createFromFormat('Y-m', $validated['month'])->startOfMonth();
         $rangeStart = $selectedMonth->copy()->startOfMonth()->startOfDay();
         $rangeEnd = $selectedMonth->copy()->endOfMonth()->endOfDay();
@@ -27,7 +46,7 @@ class BillingController extends Controller
         $users = User::query()
             ->where('status_id', 1)
             ->orderBy('name')
-            ->get(['id', 'name', 'hourly_rate', 'email', 'status_id', 'document']);
+            ->get(['id', 'name', 'hourly_rate', 'email', 'status_id', 'document', 'address', 'phone']);
 
         $selectedUser = $users->firstWhere('id', (int) $validated['user_id'])
             ?? User::query()->find($validated['user_id']);
@@ -72,7 +91,7 @@ class BillingController extends Controller
             })
             ->sortByDesc('points');
 
-        return view('billing.index', [
+        return [
             'users' => $users,
             'selectedUser' => $selectedUser,
             'selectedMonth' => $selectedMonth,
@@ -92,6 +111,6 @@ class BillingController extends Controller
                 'month' => $validated['month'],
                 'user_id' => (int) $validated['user_id'],
             ],
-        ]);
+        ];
     }
 }

@@ -7,6 +7,26 @@
             ? '$'.number_format($summary['amount'], 2, '.', ',')
             : '—';
     @endphp
+    <style>
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            .printable,
+            .printable * {
+                visibility: visible;
+            }
+            .printable {
+                position: absolute;
+                inset: 0;
+                background: #fff;
+                padding: 24px;
+            }
+            .no-print {
+                display: none !important;
+            }
+        }
+    </style>
     <x-slot name="header">
         <div>
             <p class="text-sm text-gray-500">Facturacion</p>
@@ -140,19 +160,27 @@
             </div>
 
             @if($selectedUser)
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                    <div class="flex items-center justify-between">
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 printable">
+                    <div class="flex items-center justify-between no-print">
                         <div>
                             <p class="text-sm text-gray-500">Vista previa</p>
                             <h3 class="text-lg font-semibold text-gray-900">Cuenta de cobro</h3>
                         </div>
-                        <button type="button" onclick="window.print()" class="px-4 py-2 text-sm font-semibold rounded-lg bg-gray-900 text-white hover:bg-gray-700">
+                        <a
+                            href="{{ route('billing.print', ['month' => $params['month'], 'user_id' => $params['user_id']]) }}"
+                            target="_blank"
+                            class="px-4 py-2 text-sm font-semibold rounded-lg bg-gray-900 text-white hover:bg-gray-700"
+                        >
                             Imprimir
-                        </button>
+                        </a>
                     </div>
                     <div class="mt-6 bg-gray-50 border border-dashed border-gray-200 rounded-xl p-6 text-gray-700 space-y-4">
                         <div class="text-right text-sm text-gray-500">
                             {{ now()->locale('es')->translatedFormat('F j, Y') }}
+                        </div>
+                        <div class="text-center space-y-1">
+                            <p class="font-semibold text-gray-900 uppercase tracking-wide">MY SEO COMPANY</p>
+                            <p class="text-sm text-gray-600">NIT 900.489.574-1</p>
                         </div>
                         <div class="text-center space-y-1">
                             <p class="font-semibold text-gray-900 uppercase tracking-wide">Cuenta de cobro</p>

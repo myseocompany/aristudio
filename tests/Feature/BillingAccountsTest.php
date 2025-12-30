@@ -128,5 +128,18 @@ class BillingAccountsTest extends TestCase
         $response->assertSee('Proyecto B');
         $response->assertSee('66.67');
         $response->assertSee('33.33');
+        $response->assertSee('MY SEO COMPANY');
+        $response->assertSee('900.489.574-1');
+
+        $print = $this->get(route('billing.print', [
+            'month' => '2025-01',
+            'user_id' => $viewer->id,
+        ]));
+
+        $print->assertOk();
+        $print->assertSee('Cuenta de cobro');
+        $print->assertSee('Proyecto Demo');
+        $print->assertSee('Proyecto B');
+        $print->assertDontSee('Dashboard');
     }
 }
