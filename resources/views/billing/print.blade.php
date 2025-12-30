@@ -137,8 +137,7 @@
         <div class="section text-center">
             <p class="muted title">La suma de</p>
             <p class="amount">{{ $summary['amount'] > 0 ? '$'.number_format($summary['amount'], 2, '.', ',') : '—' }}</p>
-            <p class="muted">{{ number_format($summary['points'], 2, '.', ',') }} puntos x {{ number_format($summary['hourly_rate'], 2, '.', ',') }} / hora</p>
-
+          
         </div>
 
         @if($projects->isNotEmpty())
