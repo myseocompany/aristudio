@@ -137,12 +137,6 @@
             @if($selectedUser?->document)
                 <div class="muted">Documento: {{ $selectedUser->document }}</div>
             @endif
-            @if($selectedUser?->address)
-                <div class="muted">{{ $selectedUser->address }}</div>
-            @endif
-            @if($selectedUser?->phone)
-                <div class="muted">Tel: {{ $selectedUser->phone }}</div>
-            @endif
         </div>
 
         <div class="section text-center">
