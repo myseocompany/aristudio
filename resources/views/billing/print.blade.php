@@ -122,11 +122,6 @@
 
 
         <div class="section" style="text-align:center; line-height:1.5;">
-            <div class="title" style="font-size:18px;">Cuenta de cobro</div>
-            <div class="muted">{{ $monthLabel }}</div>
-        </div>
-
-        <div class="section" style="text-align:center; line-height:1.5;">
             <div class="title">MY SEO COMPANY</div>
             <div class="muted" style="margin-top:4px;">NIT 900.489.574-1</div>
         </div>
@@ -143,8 +138,7 @@
             <p class="muted title">La suma de</p>
             <p class="amount">{{ $summary['amount'] > 0 ? '$'.number_format($summary['amount'], 2, '.', ',') : '—' }}</p>
             <p class="muted">{{ number_format($summary['points'], 2, '.', ',') }} puntos x {{ number_format($summary['hourly_rate'], 2, '.', ',') }} / hora</p>
-            <p class="muted">Periodo: {{ $range['from']->translatedFormat('d M') }} - {{ $range['to']->translatedFormat('d M') }}</p>
-            <span class="badge">{{ $summary['tasks'] }} tareas</span>
+
         </div>
 
         @if($projects->isNotEmpty())
