@@ -83,6 +83,23 @@
             font-size: 13px;
             line-height: 1.6;
         }
+        .signature {
+            margin-top: 40px;
+        }
+        .signature-line {
+            border-top: 1px solid #374151;
+            width: 240px;
+            margin-top: 12px;
+        }
+        .person {
+            margin-top: 6px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .contact {
+            color: #6b7280;
+            font-size: 12px;
+        }
         @media print {
             body {
                 padding: 0;
@@ -188,6 +205,20 @@
             <p><strong>Declaración</strong></p>
             <p>Pertenezco al régimen simplificado, por tanto, no estoy obligado a cobrar el impuesto sobre las ventas (IVA).</p>
             <p>No estoy obligado a expedir factura de venta, conforme al artículo 616-2 del Estatuto Tributario.</p>
+        </div>
+
+        <div class="signature">
+            <div class="signature-line"></div>
+            <div class="person">{{ $selectedUser?->name }}</div>
+            @if($selectedUser?->document)
+                <div class="contact">Documento: {{ $selectedUser->document }}</div>
+            @endif
+            @if($selectedUser?->address)
+                <div class="contact">{{ $selectedUser->address }}</div>
+            @endif
+            @if($selectedUser?->phone)
+                <div class="contact">Tel: {{ $selectedUser->phone }}</div>
+            @endif
         </div>
     </div>
 </body>
