@@ -117,27 +117,27 @@
     <div class="page">
         <div class="text-right muted">{{ now()->locale('es')->translatedFormat('F j, Y') }}</div>
 
-        <div class="text-center section">
-            <p class="title">MY SEO COMPANY</p>
-            <p class="muted">NIT 900.489.574-1</p>
+        <div class="section" style="text-align:center; line-height:1.5;">
+            <div class="title">MY SEO COMPANY</div>
+            <div class="muted">NIT 900.489.574-1</div>
         </div>
 
-        <div class="text-center section">
-            <h1 class="title">Cuenta de cobro</h1>
-            <p class="muted">{{ ucfirst($selectedMonth->locale('es')->translatedFormat('F Y')) }}</p>
+        <div class="section" style="text-align:center; line-height:1.5;">
+            <div class="title" style="font-size:18px;">Cuenta de cobro</div>
+            <div class="muted">{{ ucfirst($selectedMonth->locale('es')->translatedFormat('F Y')) }}</div>
         </div>
 
-        <div class="text-center section">
-            <p class="muted">Debe a</p>
-            <p><strong>{{ $selectedUser?->name }}</strong></p>
+        <div class="section" style="line-height:1.6;">
+            <div class="muted" style="text-transform:uppercase; font-weight:600;">Debe a</div>
+            <div style="font-size:16px; font-weight:700;">{{ $selectedUser?->name }}</div>
             @if($selectedUser?->document)
-                <p class="muted">Documento: {{ $selectedUser->document }}</p>
+                <div class="muted">Documento: {{ $selectedUser->document }}</div>
             @endif
             @if($selectedUser?->address)
-                <p class="muted">{{ $selectedUser->address }}</p>
+                <div class="muted">{{ $selectedUser->address }}</div>
             @endif
             @if($selectedUser?->phone)
-                <p class="muted">Tel: {{ $selectedUser->phone }}</p>
+                <div class="muted">Tel: {{ $selectedUser->phone }}</div>
             @endif
         </div>
 
@@ -168,32 +168,6 @@
                                 <td class="text-right">{{ number_format($data['points'], 2, '.', ',') }}</td>
                                 <td class="text-right">{{ number_format($data['percentage'], 2, '.', ',') }}%</td>
                                 <td class="text-right">{{ $data['tasks'] }}</td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-        @endif
-
-        @if($tasks->isNotEmpty())
-            <div class="section">
-                <h3 class="title">Detalle de tareas</h3>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Fecha</th>
-                            <th>Tarea</th>
-                            <th>Proyecto</th>
-                            <th class="text-right">Puntos</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($tasks as $task)
-                            <tr>
-                                <td class="muted">{{ $task->due_date?->translatedFormat('d M') }}</td>
-                                <td>{{ $task->name }}</td>
-                                <td class="muted">{{ $task->project?->name ?? '—' }}</td>
-                                <td class="text-right">{{ number_format((float) ($task->points ?? 0), 2, '.', ',') }}</td>
                             </tr>
                         @endforeach
                     </tbody>
