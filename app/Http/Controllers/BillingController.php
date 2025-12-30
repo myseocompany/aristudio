@@ -25,6 +25,7 @@ class BillingController extends Controller
         $rangeEnd = $selectedMonth->copy()->endOfMonth()->endOfDay();
 
         $users = User::query()
+            ->where('status_id', 1)
             ->orderBy('name')
             ->get(['id', 'name', 'hourly_rate', 'email', 'status_id', 'document']);
 
@@ -57,6 +58,20 @@ class BillingController extends Controller
         $hourlyRate = (float) ($selectedUser?->hourly_rate ?? 0);
         $amount = round($pointsTotal * $hourlyRate, 2);
 
+        $projects = $tasks
+            ->groupBy(fn (Task $task) => $task->project?->name ?? 'Sin proyecto')
+            ->map(function ($group) use ($pointsTotal) {
+                $points = $group->sum(fn (Task $task) => (float) ($task->points ?? 0));
+                $percentage = $pointsTotal > 0 ? round(($points / $pointsTotal) * 100, 2) : 0;
+
+                return [
+                    'points' => $points,
+                    'percentage' => $percentage,
+                    'tasks' => $group->count(),
+                ];
+            })
+            ->sortByDesc('points');
+
         return view('billing.index', [
             'users' => $users,
             'selectedUser' => $selectedUser,
@@ -72,6 +87,7 @@ class BillingController extends Controller
                 'amount' => $amount,
                 'tasks' => $tasks->count(),
             ],
+            'projects' => $projects,
             'params' => [
                 'month' => $validated['month'],
                 'user_id' => (int) $validated['user_id'],

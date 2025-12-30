@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 
 class BillingReportRequest extends FormRequest
 {
@@ -24,7 +25,11 @@ class BillingReportRequest extends FormRequest
     {
         return [
             'month' => ['required', 'date_format:Y-m'],
-            'user_id' => ['required', 'integer', 'exists:users,id'],
+            'user_id' => [
+                'required',
+                'integer',
+                Rule::exists('users', 'id')->where('status_id', 1),
+            ],
         ];
     }
 
@@ -45,7 +50,7 @@ class BillingReportRequest extends FormRequest
             'month.required' => 'Seleccione un mes para generar la cuenta de cobro.',
             'month.date_format' => 'El mes debe tener el formato AAAA-MM.',
             'user_id.required' => 'Seleccione un usuario.',
-            'user_id.exists' => 'El usuario seleccionado no existe.',
+            'user_id.exists' => 'El usuario seleccionado no existe o no está activo.',
         ];
     }
 }

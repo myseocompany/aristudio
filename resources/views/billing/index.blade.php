@@ -84,6 +84,33 @@
                     </div>
                     <span class="text-xs px-3 py-1 rounded-full bg-gray-100 text-gray-600">Estados 6 y 56</span>
                 </div>
+                @if($projects->isNotEmpty())
+                    <div class="mb-4 rounded-xl border border-dashed border-gray-200 p-3 bg-gray-50">
+                        <p class="text-xs uppercase tracking-wide text-gray-500 font-semibold mb-2">Distribución por proyecto</p>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full text-sm">
+                                <thead class="text-left text-gray-500 uppercase tracking-wide">
+                                    <tr>
+                                        <th class="px-3 py-2">Proyecto</th>
+                                        <th class="px-3 py-2 text-right">Puntos</th>
+                                        <th class="px-3 py-2 text-right">% del total</th>
+                                        <th class="px-3 py-2 text-right">Tareas</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200">
+                                    @foreach($projects as $projectName => $data)
+                                        <tr>
+                                            <td class="px-3 py-2 text-gray-900 font-medium">{{ $projectName }}</td>
+                                            <td class="px-3 py-2 text-right text-gray-900 font-semibold">{{ number_format($data['points'], 2, '.', ',') }}</td>
+                                            <td class="px-3 py-2 text-right text-gray-700">{{ number_format($data['percentage'], 2, '.', ',') }}%</td>
+                                            <td class="px-3 py-2 text-right text-gray-700">{{ $data['tasks'] }}</td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                @endif
                 @if($tasks->isEmpty())
                     <p class="text-sm text-gray-500">No hay tareas facturables en este periodo.</p>
                 @else
@@ -146,6 +173,21 @@
                         <div class="text-sm text-gray-600 leading-relaxed">
                             <p>Periodo: {{ $periodLabel }} ({{ $fromLabel }} - {{ $toLabel }})</p>
                             <p>Total tareas: {{ $summary['tasks'] }}</p>
+                        </div>
+                        @if($projects->isNotEmpty())
+                            <div class="text-sm text-gray-600 leading-relaxed">
+                                <p class="font-semibold text-gray-800 mb-1">Proyectos y puntos</p>
+                                <ul class="list-disc list-inside space-y-1">
+                                    @foreach($projects as $projectName => $data)
+                                        <li>{{ $projectName }}: {{ number_format($data['points'], 2, '.', ',') }} pts ({{ number_format($data['percentage'], 2, '.', ',') }}%)</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        @endif
+                        <div class="text-sm text-gray-700 leading-relaxed space-y-1">
+                            <p class="font-semibold text-gray-900">Declaración</p>
+                            <p>Pertenezco al régimen simplificado, por tanto, no estoy obligado a cobrar el impuesto sobre las ventas (IVA).</p>
+                            <p>No estoy obligado a expedir factura de venta, conforme al artículo 616-2 del Estatuto Tributario.</p>
                         </div>
                     </div>
                 </div>

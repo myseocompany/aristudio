@@ -49,8 +49,14 @@ class BillingAccountsTest extends TestCase
 
         $otherUser = User::factory()->create();
 
-        $projectId = DB::table('projects')->insertGetId([
+        $projectA = DB::table('projects')->insertGetId([
             'name' => 'Proyecto Demo',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $projectB = DB::table('projects')->insertGetId([
+            'name' => 'Proyecto B',
             'created_at' => now(),
             'updated_at' => now(),
         ]);
@@ -59,7 +65,7 @@ class BillingAccountsTest extends TestCase
 
         Task::create([
             'name' => 'Tarea facturable A',
-            'project_id' => $projectId,
+            'project_id' => $projectA,
             'user_id' => $viewer->id,
             'status_id' => 6,
             'points' => 10,
@@ -68,7 +74,7 @@ class BillingAccountsTest extends TestCase
 
         Task::create([
             'name' => 'Tarea facturable B',
-            'project_id' => $projectId,
+            'project_id' => $projectB,
             'user_id' => $viewer->id,
             'status_id' => 56,
             'points' => 5,
@@ -77,7 +83,7 @@ class BillingAccountsTest extends TestCase
 
         Task::create([
             'name' => 'No facturar',
-            'project_id' => $projectId,
+            'project_id' => $projectA,
             'user_id' => $viewer->id,
             'status_id' => 6,
             'points' => 3,
@@ -87,7 +93,7 @@ class BillingAccountsTest extends TestCase
 
         Task::create([
             'name' => 'Otra fecha',
-            'project_id' => $projectId,
+            'project_id' => $projectA,
             'user_id' => $viewer->id,
             'status_id' => 6,
             'points' => 8,
@@ -96,7 +102,7 @@ class BillingAccountsTest extends TestCase
 
         Task::create([
             'name' => 'De otro usuario',
-            'project_id' => $projectId,
+            'project_id' => $projectA,
             'user_id' => $otherUser->id,
             'status_id' => 6,
             'points' => 7,
@@ -118,5 +124,9 @@ class BillingAccountsTest extends TestCase
         $response->assertDontSee('No facturar');
         $response->assertDontSee('Otra fecha');
         $response->assertDontSee('De otro usuario');
+        $response->assertSee('Proyecto Demo');
+        $response->assertSee('Proyecto B');
+        $response->assertSee('66.67');
+        $response->assertSee('33.33');
     }
 }
