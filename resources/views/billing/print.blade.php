@@ -120,14 +120,15 @@
     <div class="page">
         <div class="text-right muted">{{ now()->locale('es')->translatedFormat('F j, Y') }}</div>
 
-        <div class="section" style="text-align:center; line-height:1.5;">
-            <div class="title">MY SEO COMPANY</div>
-            <div class="muted" style="margin-top:4px;">NIT 900.489.574-1</div>
-        </div>
 
         <div class="section" style="text-align:center; line-height:1.5;">
             <div class="title" style="font-size:18px;">Cuenta de cobro</div>
             <div class="muted">{{ $monthLabel }}</div>
+        </div>
+
+        <div class="section" style="text-align:center; line-height:1.5;">
+            <div class="title">MY SEO COMPANY</div>
+            <div class="muted" style="margin-top:4px;">NIT 900.489.574-1</div>
         </div>
 
         <div class="section" style="text-align:center; line-height:1.5;">
