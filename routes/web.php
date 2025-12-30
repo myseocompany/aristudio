@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\BillingController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ModuleController;
 use App\Http\Controllers\ProfileController;
@@ -38,6 +39,7 @@ Route::middleware('auth')->group(function () {
     Route::view('config', 'config.index')->name('config.index');
     Route::view('reports', 'reports.index')->name('reports.index');
     Route::get('report_users_by_month', [ReportController::class, 'usersByMonth'])->name('reports.users_by_month');
+    Route::get('billing', [BillingController::class, 'index'])->name('billing.index');
     Route::get('timer', [TimerController::class, 'index'])->name('timer.index');
     Route::get('timer/status', [TimerController::class, 'status'])->name('timer.status');
     Route::post('timer/start', [TimerController::class, 'start'])->name('timer.start');
