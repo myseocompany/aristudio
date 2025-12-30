@@ -119,17 +119,12 @@
 
         <div class="section" style="text-align:center; line-height:1.5;">
             <div class="title">MY SEO COMPANY</div>
-            <div class="muted">NIT 900.489.574-1</div>
+            <div class="muted" style="margin-top:4px;">NIT 900.489.574-1</div>
         </div>
 
         <div class="section" style="text-align:center; line-height:1.5;">
-            <div class="title" style="font-size:18px;">Cuenta de cobro</div>
-            <div class="muted">{{ ucfirst($selectedMonth->locale('es')->translatedFormat('F Y')) }}</div>
-        </div>
-
-        <div class="section" style="line-height:1.6;">
             <div class="muted" style="text-transform:uppercase; font-weight:600;">Debe a</div>
-            <div style="font-size:16px; font-weight:700;">{{ $selectedUser?->name }}</div>
+            <div style="font-size:16px; font-weight:700; margin-top:4px;">{{ $selectedUser?->name }}</div>
             @if($selectedUser?->document)
                 <div class="muted">Documento: {{ $selectedUser->document }}</div>
             @endif
@@ -141,7 +136,12 @@
             @endif
         </div>
 
-        <div class="section summary text-center">
+        <div class="section" style="text-align:center; line-height:1.5;">
+            <div class="title" style="font-size:18px;">Cuenta de cobro</div>
+            <div class="muted">{{ ucfirst($selectedMonth->locale('es')->translatedFormat('F Y')) }}</div>
+        </div>
+
+        <div class="section text-center">
             <p class="muted title">La suma de</p>
             <p class="amount">{{ $summary['amount'] > 0 ? '$'.number_format($summary['amount'], 2, '.', ',') : '—' }}</p>
             <p class="muted">{{ number_format($summary['points'], 2, '.', ',') }} puntos x {{ number_format($summary['hourly_rate'], 2, '.', ',') }} / hora</p>
