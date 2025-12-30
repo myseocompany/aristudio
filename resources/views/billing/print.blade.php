@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cuenta de cobro</title>
+    @php
+        $monthLabel = ucfirst($selectedMonth->locale('es')->translatedFormat('F Y'));
+    @endphp
     <style>
         :root {
             color-scheme: light;
@@ -14,7 +17,7 @@
         body {
             font-family: 'Helvetica Neue', Arial, sans-serif;
             margin: 0;
-            padding: 32px;
+            padding: 24px;
             background: #fff;
             color: #111827;
         }
@@ -22,7 +25,7 @@
             margin: 0;
         }
         .page {
-            max-width: 800px;
+            max-width: 760px;
             margin: 0 auto;
         }
         .muted {
@@ -35,7 +38,7 @@
             font-weight: 700;
         }
         .section {
-            margin-top: 20px;
+            margin-top: 14px;
         }
         .summary {
             border: 1px dashed #e5e7eb;
@@ -108,7 +111,7 @@
                 width: 100%;
                 max-width: none;
                 margin: 0;
-                padding: 32px;
+                padding: 24px;
             }
         }
     </style>
@@ -123,6 +126,11 @@
         </div>
 
         <div class="section" style="text-align:center; line-height:1.5;">
+            <div class="title" style="font-size:18px;">Cuenta de cobro</div>
+            <div class="muted">{{ $monthLabel }}</div>
+        </div>
+
+        <div class="section" style="text-align:center; line-height:1.5;">
             <div class="muted" style="text-transform:uppercase; font-weight:600;">Debe a</div>
             <div style="font-size:16px; font-weight:700; margin-top:4px;">{{ $selectedUser?->name }}</div>
             @if($selectedUser?->document)
@@ -134,11 +142,6 @@
             @if($selectedUser?->phone)
                 <div class="muted">Tel: {{ $selectedUser->phone }}</div>
             @endif
-        </div>
-
-        <div class="section" style="text-align:center; line-height:1.5;">
-            <div class="title" style="font-size:18px;">Cuenta de cobro</div>
-            <div class="muted">{{ ucfirst($selectedMonth->locale('es')->translatedFormat('F Y')) }}</div>
         </div>
 
         <div class="section text-center">
