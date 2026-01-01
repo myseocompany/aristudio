@@ -40,9 +40,6 @@
                         <a href="{{ route('dashboard') }}" class="px-5 py-3 bg-white text-[#0B1021] rounded-xl font-semibold shadow-lg shadow-black/10 hover:bg-white/90 transition">Ir al dashboard</a>
                     @else
                         <a href="{{ route('login') }}" class="px-5 py-3 bg-white text-[#0B1021] rounded-xl font-semibold shadow-lg shadow-black/10 hover:bg-white/90 transition">Iniciar sesión</a>
-                        @if (Route::has('register'))
-                            <a href="{{ route('register') }}" class="px-5 py-3 border border-white/30 text-black rounded-xl font-semibold hover:bg-white/10 transition">Crear cuenta</a>
-                        @endif
                     @endauth
                 </div>
                 <div class="flex items-center gap-4 text-sm text-white">

@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\DB;
 
 class User extends Authenticatable
 {
@@ -83,5 +84,46 @@ class User extends Authenticatable
     public function role(): BelongsTo
     {
         return $this->belongsTo(Role::class);
+    }
+
+    public function hasModulePermission(string $slug, string $ability): bool
+    {
+        if (! $this->role_id) {
+            return false;
+        }
+
+        $column = match ($ability) {
+            'create' => 'created',
+            'read' => 'readed',
+            'update' => 'updated',
+            'delete' => 'deleted',
+            'list' => 'list',
+            default => null,
+        };
+
+        if (! $column) {
+            return false;
+        }
+
+        $moduleId = $this->resolveModuleId($slug);
+        if (! $moduleId) {
+            return false;
+        }
+
+        return DB::table('role_modules')
+            ->where('role_id', $this->role_id)
+            ->where('module_id', $moduleId)
+            ->where($column, 1)
+            ->exists();
+    }
+
+    private function resolveModuleId(string $slug): ?int
+    {
+        $normalized = '/'.ltrim($slug, '/');
+        $candidates = [$normalized, ltrim($normalized, '/')];
+
+        return DB::table('modules')
+            ->whereIn('slug', $candidates)
+            ->value('id');
     }
 }

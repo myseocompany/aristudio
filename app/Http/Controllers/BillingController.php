@@ -15,6 +15,14 @@ class BillingController extends Controller
     public function __construct()
     {
         $this->middleware('auth');
+        $this->middleware(function ($request, $next) {
+            $this->authorizeModule($request, '/billing', [
+                'index' => 'list',
+                'print' => 'read',
+            ]);
+
+            return $next($request);
+        });
     }
 
     public function index(BillingReportRequest $request): View

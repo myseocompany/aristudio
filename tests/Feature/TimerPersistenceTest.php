@@ -56,7 +56,8 @@ class TimerPersistenceTest extends TestCase
     public function test_timer_state_survives_reload_and_resume(): void
     {
         $user = User::factory()->create();
-        $this->actingAs($user);
+        $this->grantModulePermissions($user, '/timer', ['read', 'update']);
+        $this->actingAs($user->refresh());
 
         $this->postJson(route('timer.start'), [
             'task_label' => 'Llamada con cliente',
@@ -94,7 +95,8 @@ class TimerPersistenceTest extends TestCase
     public function test_store_uses_server_elapsed_and_clears_session(): void
     {
         $user = User::factory()->create();
-        $this->actingAs($user);
+        $this->grantModulePermissions($user, '/timer', ['create', 'read', 'update']);
+        $this->actingAs($user->refresh());
 
         $this->postJson(route('timer.start'), [
             'task_label' => 'Demo timer',

@@ -36,8 +36,16 @@ Route::middleware('auth')->group(function () {
     Route::post('modules/reorder', [ModuleController::class, 'reorder'])->name('modules.reorder');
     Route::resource('modules', ModuleController::class);
     Route::resource('tasks', TaskController::class);
-    Route::view('config', 'config.index')->name('config.index');
-    Route::view('reports', 'reports.index')->name('reports.index');
+    Route::get('config', function () {
+        abort_unless(auth()->user()?->hasModulePermission('/config', 'read'), 403, 'No autorizado.');
+
+        return view('config.index');
+    })->name('config.index');
+    Route::get('reports', function () {
+        abort_unless(auth()->user()?->hasModulePermission('/reports', 'list'), 403, 'No autorizado.');
+
+        return view('reports.index');
+    })->name('reports.index');
     Route::get('report_users_by_month', [ReportController::class, 'usersByMonth'])->name('reports.users_by_month');
     Route::get('billing', [BillingController::class, 'index'])->name('billing.index');
     Route::get('billing/print', [BillingController::class, 'print'])->name('billing.print');

@@ -46,6 +46,7 @@ class BillingAccountsTest extends TestCase
         $viewer = User::factory()->create([
             'hourly_rate' => 80,
         ]);
+        $this->grantModulePermissions($viewer, '/billing', ['list', 'read']);
 
         $otherUser = User::factory()->create();
 
@@ -109,7 +110,7 @@ class BillingAccountsTest extends TestCase
             'due_date' => $month->copy()->day(10),
         ]);
 
-        $this->actingAs($viewer);
+        $this->actingAs($viewer->refresh());
 
         $response = $this->get(route('billing.index', [
             'month' => '2025-01',

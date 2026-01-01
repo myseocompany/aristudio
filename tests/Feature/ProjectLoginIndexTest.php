@@ -101,6 +101,7 @@ class ProjectLoginIndexTest extends TestCase
         DB::table('role_modules')->insert([
             'role_id' => $roleTeamId,
             'module_id' => $moduleId,
+            'list' => true,
             'created_at' => now(),
             'updated_at' => now(),
             'view_scope' => 0,
@@ -155,6 +156,7 @@ class ProjectLoginIndexTest extends TestCase
         DB::table('role_modules')->insert([
             'role_id' => $roleAllId,
             'module_id' => $moduleId,
+            'list' => true,
             'created_at' => now(),
             'updated_at' => now(),
             'view_scope' => 1,

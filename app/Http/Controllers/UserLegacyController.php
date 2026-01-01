@@ -15,6 +15,19 @@ class UserLegacyController extends Controller
     public function __construct()
     {
         $this->middleware('auth');
+        $this->middleware(function ($request, $next) {
+            $this->authorizeModule($request, '/users', [
+                'index' => 'list',
+                'create' => 'create',
+                'store' => 'create',
+                'show' => 'read',
+                'edit' => 'update',
+                'update' => 'update',
+                'destroy' => 'delete',
+            ]);
+
+            return $next($request);
+        });
     }
 
     public function index(Request $request)

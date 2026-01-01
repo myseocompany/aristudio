@@ -59,7 +59,8 @@ class ProjectIndexSearchTest extends TestCase
     public function test_can_filter_projects_by_name(): void
     {
         $user = User::factory()->create();
-        $this->actingAs($user);
+        $this->grantModulePermissions($user, '/projects', ['list']);
+        $this->actingAs($user->refresh());
 
         DB::table('project_statuses')->insert([
             ['id' => 3, 'name' => 'Activo', 'created_at' => now(), 'updated_at' => now()],

@@ -10,6 +10,18 @@ use Illuminate\Http\Request;
 
 class ReportController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('auth');
+        $this->middleware(function ($request, $next) {
+            $this->authorizeModule($request, '/reports', [
+                'usersByMonth' => 'read',
+            ]);
+
+            return $next($request);
+        });
+    }
+
     public function usersByMonth(Request $request): View
     {
         $currentYear = (int) now()->year;

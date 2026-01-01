@@ -20,6 +20,18 @@ class TimerController extends Controller
     public function __construct()
     {
         $this->middleware('auth');
+        $this->middleware(function ($request, $next) {
+            $this->authorizeModule($request, '/timer', [
+                'index' => 'list',
+                'status' => 'read',
+                'start' => 'update',
+                'pause' => 'update',
+                'reset' => 'update',
+                'store' => 'create',
+            ]);
+
+            return $next($request);
+        });
     }
 
     public function index(Request $request): View

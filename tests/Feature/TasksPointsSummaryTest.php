@@ -84,7 +84,8 @@ class TasksPointsSummaryTest extends TestCase
             'status_id' => 1,
         ]);
 
-        $this->actingAs($user);
+        $this->grantModulePermissions($user, '/tasks', ['list']);
+        $this->actingAs($user->refresh());
 
         DB::table('projects')->insert([
             'id' => 1,

@@ -16,6 +16,19 @@ class ProjectLoginController extends Controller
     public function __construct()
     {
         $this->middleware('auth');
+        $this->middleware(function ($request, $next) {
+            $this->authorizeModule($request, '/logins', [
+                'index' => 'list',
+                'create' => 'create',
+                'store' => 'create',
+                'quickStore' => 'create',
+                'edit' => 'update',
+                'update' => 'update',
+                'destroy' => 'delete',
+            ]);
+
+            return $next($request);
+        });
     }
 
     public function index(ProjectLoginIndexRequest $request): View
@@ -191,7 +204,9 @@ class ProjectLoginController extends Controller
             return false;
         }
 
-        $moduleId = DB::table('modules')->where('slug', 'logins')->value('id');
+        $moduleId = DB::table('modules')
+            ->whereIn('slug', ['logins', '/logins'])
+            ->value('id');
         if (! $moduleId) {
             return false;
         }

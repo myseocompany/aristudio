@@ -39,6 +39,7 @@ class ReportsUsersByMonthTest extends TestCase
             'name' => 'Ana Lopez',
             'hourly_rate' => 50,
         ]);
+        $this->grantModulePermissions($viewer, '/reports', ['read', 'list']);
 
         $year = now()->year;
 
@@ -67,7 +68,7 @@ class ReportsUsersByMonthTest extends TestCase
             'due_date' => Carbon::create($year, 1, 10),
         ]);
 
-        $this->actingAs($viewer);
+        $this->actingAs($viewer->refresh());
 
         $response = $this->get(route('reports.users_by_month', ['year' => $year]));
 

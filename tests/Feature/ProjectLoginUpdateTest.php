@@ -101,6 +101,7 @@ class ProjectLoginUpdateTest extends TestCase
         DB::table('role_modules')->insert([
             'role_id' => $roleId,
             'module_id' => $moduleId,
+            'updated' => true,
             'view_scope' => 0,
             'created_at' => now(),
             'updated_at' => now(),
@@ -155,6 +156,7 @@ class ProjectLoginUpdateTest extends TestCase
         DB::table('role_modules')->insert([
             'role_id' => $roleId,
             'module_id' => $moduleId,
+            'updated' => true,
             'view_scope' => 0,
             'created_at' => now(),
             'updated_at' => now(),
