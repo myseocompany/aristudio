@@ -248,9 +248,12 @@
                 setTask(id, label, projectId = '', projectName = '') {
                     this.selectedTask = id ? String(id) : '';
                     this.selectedTaskLabel = label ? String(label) : '';
-                    this.manualTaskName = '';
+                    this.manualTaskName = label ? String(label) : '';
                     this.manualProjectId = projectId ? String(projectId) : '';
                     this.projectLabel = projectName ? String(projectName) : '';
+                    this.$nextTick(() => {
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    });
                 },
                 applyPrefill(taskData) {
                     if (!taskData) {

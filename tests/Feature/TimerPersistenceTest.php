@@ -121,7 +121,9 @@ class TimerPersistenceTest extends TestCase
         $this->actingAs($user)
             ->get(route('timer.index'))
             ->assertOk()
-            ->assertSee($expected, false);
+            ->assertSee($expected, false)
+            ->assertSee('this.manualTaskName = label ? String(label) : \'\';', false)
+            ->assertSee('window.scrollTo({ top: 0, behavior: \'smooth\' });', false);
     }
 
     public function test_store_uses_server_elapsed_and_clears_session(): void
