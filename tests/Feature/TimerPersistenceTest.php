@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Project;
 use App\Models\Task;
 use App\Models\User;
 use Illuminate\Database\Schema\Blueprint;
@@ -90,6 +91,37 @@ class TimerPersistenceTest extends TestCase
         $resumed = $this->getJson(route('timer.status'))->assertOk()->json();
         $this->assertTrue($resumed['running']);
         $this->assertEqualsWithDelta($paused['elapsed'] + 30, $resumed['elapsed'], 2);
+    }
+
+    public function test_timer_index_encodes_task_payload_for_alpine(): void
+    {
+        $user = User::factory()->create();
+        $this->grantModulePermissions($user, '/timer', ['list']);
+
+        $project = Project::query()->create([
+            'name' => 'MQE',
+            'status_id' => 3,
+        ]);
+
+        $task = Task::query()->create([
+            'name' => 'Analizar "mejor" contenido\'s',
+            'project_id' => $project->id,
+            'user_id' => $user->id,
+            'status_id' => 1,
+        ]);
+
+        $expectedName = 'Analizar \\u0022mejor\\u0022 contenido\\u0027s';
+        $expected = sprintf(
+            "setTask(%d, '%s', %d, 'MQE')",
+            $task->id,
+            $expectedName,
+            $project->id
+        );
+
+        $this->actingAs($user)
+            ->get(route('timer.index'))
+            ->assertOk()
+            ->assertSee($expected, false);
     }
 
     public function test_store_uses_server_elapsed_and_clears_session(): void

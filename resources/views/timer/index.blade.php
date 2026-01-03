@@ -145,7 +145,7 @@
                                 <button
                                     type="button"
                                     class="flex items-center gap-1 px-3 py-2 rounded-full bg-indigo-50 text-indigo-700 text-xs font-semibold hover:bg-indigo-100"
-                                    @click="setTask('{{ $task->id }}', '{{ addslashes($task->name) }}', '{{ $task->project_id }}', '{{ addslashes($task->project->name ?? '') }}')"
+                                    @click="setTask(@js($task->id), @js($task->name), @js($task->project_id), @js($task->project->name ?? ''))"
                                 >
                                     ▶ <span>Usar</span>
                                 </button>
@@ -246,11 +246,11 @@
                     return this.projectLabel || '';
                 },
                 setTask(id, label, projectId = '', projectName = '') {
-                    this.selectedTask = id;
-                    this.selectedTaskLabel = label;
+                    this.selectedTask = id ? String(id) : '';
+                    this.selectedTaskLabel = label ? String(label) : '';
                     this.manualTaskName = '';
                     this.manualProjectId = projectId ? String(projectId) : '';
-                    this.projectLabel = projectName || '';
+                    this.projectLabel = projectName ? String(projectName) : '';
                 },
                 applyPrefill(taskData) {
                     if (!taskData) {
