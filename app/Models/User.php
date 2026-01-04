@@ -92,6 +92,10 @@ class User extends Authenticatable
             return false;
         }
 
+        if ($this->isAdmin()) {
+            return true;
+        }
+
         $column = match ($ability) {
             'create' => 'created',
             'read' => 'readed',
@@ -115,6 +119,28 @@ class User extends Authenticatable
             ->where('module_id', $moduleId)
             ->where($column, 1)
             ->exists();
+    }
+
+    public function isAdmin(): bool
+    {
+        if (! $this->role_id) {
+            return false;
+        }
+
+        $roleName = $this->relationLoaded('role') ? $this->role?->name : null;
+        if (! $roleName) {
+            $roleName = DB::table('roles')
+                ->where('id', $this->role_id)
+                ->value('name');
+        }
+
+        if (! $roleName) {
+            return false;
+        }
+
+        $normalized = strtolower($roleName);
+
+        return in_array($normalized, ['admin', 'administrador'], true);
     }
 
     private function resolveModuleId(string $slug): ?int
