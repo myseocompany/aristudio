@@ -17,6 +17,7 @@
                         $moduleLinks = \Illuminate\Support\Facades\DB::table('modules')
                             ->join('role_modules', 'role_modules.module_id', '=', 'modules.id')
                             ->where('role_modules.role_id', Auth::user()->role_id)
+                            ->whereNull('modules.parent_id')
                             ->orderBy('modules.weight')
                             ->orderBy('modules.name')
                             ->select('modules.name', 'modules.slug')
