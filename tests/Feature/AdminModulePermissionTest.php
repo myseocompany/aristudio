@@ -6,6 +6,7 @@ use App\Models\Module;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 class AdminModulePermissionTest extends TestCase
@@ -25,10 +26,36 @@ class AdminModulePermissionTest extends TestCase
         $this->assertTrue($user->hasModulePermission('/users', 'list'));
     }
 
+    public function test_super_admin_role_bypasses_module_permissions(): void
+    {
+        $role = Role::query()->create(['name' => 'Super Admin']);
+        $user = User::factory()->create(['role_id' => $role->id]);
+
+        Module::query()->create([
+            'name' => 'Users',
+            'slug' => '/users',
+        ]);
+
+        $this->assertTrue($user->hasModulePermission('/users', 'list'));
+    }
+
+    public function test_role_id_one_bypasses_module_permissions(): void
+    {
+        Role::query()->create(['id' => 1, 'name' => 'Any']);
+        $user = User::factory()->create(['role_id' => 1]);
+
+        Module::query()->create([
+            'name' => 'Users',
+            'slug' => '/users',
+        ]);
+
+        $this->assertTrue($user->hasModulePermission('/users', 'list'));
+    }
+
     public function test_non_admin_role_still_requires_permissions(): void
     {
-        $role = Role::query()->create(['name' => 'Member']);
-        $user = User::factory()->create(['role_id' => $role->id]);
+        DB::table('roles')->insert(['id' => 2, 'name' => 'Member']);
+        $user = User::factory()->create(['role_id' => 2]);
 
         Module::query()->create([
             'name' => 'Users',

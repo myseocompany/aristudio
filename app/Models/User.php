@@ -127,6 +127,10 @@ class User extends Authenticatable
             return false;
         }
 
+        if ($this->role_id === 1) {
+            return true;
+        }
+
         $roleName = $this->relationLoaded('role') ? $this->role?->name : null;
         if (! $roleName) {
             $roleName = DB::table('roles')
@@ -140,7 +144,7 @@ class User extends Authenticatable
 
         $normalized = strtolower($roleName);
 
-        return in_array($normalized, ['admin', 'administrador'], true);
+        return in_array($normalized, ['admin', 'administrador', 'super admin', 'superadmin', 'super-admin'], true);
     }
 
     private function resolveModuleId(string $slug): ?int
