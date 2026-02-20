@@ -19,8 +19,21 @@ class DashboardTest extends TestCase
     {
         parent::setUp();
 
+        Schema::dropIfExists('project_users');
+        Schema::dropIfExists('projects');
         Schema::dropIfExists('tasks');
         Schema::dropIfExists('task_statuses');
+        Schema::create('projects', function (Blueprint $table): void {
+            $table->id();
+            $table->string('name');
+            $table->timestamps();
+        });
+        Schema::create('project_users', function (Blueprint $table): void {
+            $table->id();
+            $table->unsignedBigInteger('project_id');
+            $table->unsignedBigInteger('user_id');
+            $table->timestamps();
+        });
         Schema::create('tasks', function (Blueprint $table): void {
             $table->id();
             $table->string('name');
@@ -159,5 +172,114 @@ class DashboardTest extends TestCase
         $this->assertSame('REQ task', $todayList->first()->name);
         $this->assertGreaterThan(0, $overdueList->count());
         $this->assertSame('Overdue REQ', $overdueList->first()->name);
+    }
+
+    public function test_client_dashboard_shows_project_activities_not_only_own_tasks(): void
+    {
+        $client = User::factory()->create([
+            'role_id' => 4,
+            'hourly_rate' => 50,
+        ]);
+        $teamMember = User::factory()->create();
+
+        $this->actingAs($client);
+
+        $now = Carbon::now();
+        $visibleProjectId = 5001;
+        $hiddenProjectId = 5002;
+
+        DB::table('projects')->insert([
+            [
+                'id' => $visibleProjectId,
+                'name' => 'Proyecto cliente visible',
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
+            [
+                'id' => $hiddenProjectId,
+                'name' => 'Proyecto no vinculado',
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
+        ]);
+
+        DB::table('project_users')->insert([
+            'project_id' => $visibleProjectId,
+            'user_id' => $client->id,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ]);
+
+        Task::query()->insert([
+            [
+                'name' => 'Visible Today REQ',
+                'project_id' => $visibleProjectId,
+                'user_id' => $teamMember->id,
+                'status_id' => 1,
+                'creator_user_id' => $teamMember->id,
+                'updator_user_id' => $teamMember->id,
+                'points' => 1,
+                'value_generated' => true,
+                'created_at' => $now,
+                'updated_at' => $now,
+                'due_date' => $now->copy(),
+            ],
+            [
+                'name' => 'Visible Billing',
+                'project_id' => $visibleProjectId,
+                'user_id' => $teamMember->id,
+                'status_id' => 6,
+                'creator_user_id' => $teamMember->id,
+                'updator_user_id' => $teamMember->id,
+                'points' => 2,
+                'value_generated' => true,
+                'created_at' => $now->copy()->subDays(2),
+                'updated_at' => $now->copy()->subDays(2),
+                'due_date' => $now->copy()->subDays(2),
+            ],
+            [
+                'name' => 'Visible Overdue REQ',
+                'project_id' => $visibleProjectId,
+                'user_id' => $teamMember->id,
+                'status_id' => 1,
+                'creator_user_id' => $teamMember->id,
+                'updator_user_id' => $teamMember->id,
+                'points' => 1,
+                'value_generated' => true,
+                'created_at' => $now->copy()->subDays(3),
+                'updated_at' => $now->copy()->subDays(3),
+                'due_date' => $now->copy()->subDays(3),
+            ],
+            [
+                'name' => 'Hidden Project REQ',
+                'project_id' => $hiddenProjectId,
+                'user_id' => $teamMember->id,
+                'status_id' => 1,
+                'creator_user_id' => $teamMember->id,
+                'updator_user_id' => $teamMember->id,
+                'points' => 10,
+                'value_generated' => true,
+                'created_at' => $now->copy()->subDays(1),
+                'updated_at' => $now->copy()->subDays(1),
+                'due_date' => $now->copy()->subDays(1),
+            ],
+        ]);
+
+        $rangeParam = $now->copy()->subDays(10)->format('Y-m-d').'|'.$now->format('Y-m-d');
+
+        $response = $this->get('/dashboard?range='.$rangeParam);
+        $response->assertOk();
+
+        $summary = $response->viewData('taskSummary');
+        $todayList = $response->viewData('todayTasks');
+        $overdueList = $response->viewData('overdueTasks');
+
+        $this->assertSame(2, $summary['req']);
+        $this->assertSame(1, $summary['billing']);
+        $this->assertEqualsWithDelta(4.0, $summary['points'], 0.01);
+        $this->assertCount(1, $todayList);
+        $this->assertSame('Visible Today REQ', $todayList->first()->name);
+        $this->assertGreaterThan(0, $overdueList->count());
+        $this->assertSame('Visible Overdue REQ', $overdueList->first()->name);
     }
 }

@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Task;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -15,14 +17,14 @@ class DashboardController extends Controller
     public function __invoke(Request $request): View
     {
         $user = Auth::user();
+        $visibleTasks = $this->visibleTaskQueryFor($user);
         $defaultEnd = Carbon::now()->endOfDay();
         $defaultStart = $defaultEnd->copy()->subDays(29)->startOfDay();
 
         [$rangeStart, $rangeEnd] = $this->resolveRange($request->query('range'), $defaultStart, $defaultEnd);
 
-        $groupedTasks = Task::query()
+        $groupedTasks = (clone $visibleTasks)
             ->select(['status_id', 'due_date', 'points'])
-            ->where('user_id', $user->id)
             ->whereNotNull('due_date')
             ->whereBetween('due_date', [$rangeStart, $rangeEnd])
             ->whereIn('status_id', array_merge([1], self::BILLING_STATUS_IDS))
@@ -48,10 +50,8 @@ class DashboardController extends Controller
                 ->count();
         }
 
-        $flatTasks = $groupedTasks->flatten();
-        $summaryTasks = Task::query()
+        $summaryTasks = (clone $visibleTasks)
             ->select(['status_id', 'points'])
-            ->where('user_id', $user->id)
             ->whereNotNull('due_date')
             ->whereBetween('due_date', [$rangeStart, $rangeEnd])
             ->get();
@@ -78,16 +78,16 @@ class DashboardController extends Controller
             'range_value' => $request->query('range', $this->formatRangeValue($rangeStart, $rangeEnd)),
         ];
         $today = Carbon::today();
-        $todayTasks = Task::with(['status:id,name,color,background_color,pending'])
-            ->where('user_id', $user->id)
+        $todayTasks = (clone $visibleTasks)
+            ->with(['status:id,name,color,background_color,pending'])
             ->whereNotNull('due_date')
             ->whereDate('due_date', $today)
             ->orderBy('due_date')
             ->take(5)
             ->get(['id', 'name', 'due_date', 'status_id']);
 
-        $overdueTasks = Task::with(['status:id,name,color,background_color,pending'])
-            ->where('user_id', $user->id)
+        $overdueTasks = (clone $visibleTasks)
+            ->with(['status:id,name,color,background_color,pending'])
             ->whereNotNull('due_date')
             ->where('status_id', 1)
             ->whereDate('due_date', '<', $today)
@@ -127,5 +127,18 @@ class DashboardController extends Controller
     private function formatRangeValue(Carbon $start, Carbon $end): string
     {
         return $start->format('Y-m-d').'|'.$end->format('Y-m-d');
+    }
+
+    private function visibleTaskQueryFor(User $user): Builder
+    {
+        $query = Task::query();
+
+        if ((int) ($user->role_id ?? 0) !== 4) {
+            return $query->where('user_id', $user->id);
+        }
+
+        $projectIds = $user->projects()->pluck('projects.id')->all();
+
+        return $query->whereIn('project_id', $projectIds);
     }
 }
