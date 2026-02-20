@@ -34,6 +34,12 @@ class TaskController extends Controller
 
     public function index(Request $request)
     {
+        $authUser = Auth::user();
+        $isClientRole = (int) ($authUser?->role_id ?? 0) === 4;
+        $clientProjectIds = $isClientRole
+            ? $authUser->projects()->pluck('projects.id')->all()
+            : [];
+
         $statusId = $request->input('status_id');
         $projectId = $request->input('project_id');
         $now = Carbon::now();
@@ -43,7 +49,7 @@ class TaskController extends Controller
         $userIdParam = $request->input('user_id');
         $userId = $request->has('user_id')
             ? ($userIdParam === '' ? null : $userIdParam)
-            : Auth::id();
+            : ($isClientRole ? null : Auth::id());
         $fromDate = $request->input('from_date');
         $toDate = $request->input('to_date');
         if ($request->filled('range')) {
@@ -67,10 +73,21 @@ class TaskController extends Controller
 
         $statuses = TaskStatus::active()->orderBy('weight')->get();
         $projects = Project::where('status_id', 3)
+            ->when($isClientRole, fn ($query) => $query->whereIn('id', $clientProjectIds))
             ->orderBy('weight')
             ->orderBy('name')
             ->get(['id', 'name', 'color']);
         $users = User::where('status_id', 1)
+            ->when($isClientRole, function ($query) use ($clientProjectIds) {
+                $teamUserIds = Task::query()
+                    ->whereIn('project_id', $clientProjectIds)
+                    ->whereNotNull('user_id')
+                    ->distinct()
+                    ->pluck('user_id')
+                    ->all();
+
+                $query->whereIn('id', $teamUserIds);
+            })
             ->orderBy('name')
             ->get(['id', 'name', 'image_url', 'status_id']);
         $types = TaskType::orderBy('name')->get();
@@ -139,6 +156,7 @@ class TaskController extends Controller
                 'user:id,name,image_url,status_id',
                 'status:id,name,alias,color,background_color,pending',
             ])
+            ->when($isClientRole, fn ($q) => $q->whereIn('project_id', $clientProjectIds))
             ->when($statusId, fn ($q) => $q->where('status_id', $statusId))
             ->when($projectId, fn ($q) => $q->where('project_id', $projectId))
             ->when($userId, fn ($q) => $q->where('user_id', $userId))

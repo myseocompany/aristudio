@@ -19,6 +19,7 @@ class TasksPointsSummaryTest extends TestCase
         parent::setUp();
 
         Schema::dropIfExists('tasks');
+        Schema::dropIfExists('project_users');
         Schema::dropIfExists('projects');
         Schema::dropIfExists('task_statuses');
         Schema::dropIfExists('task_types');
@@ -29,6 +30,13 @@ class TasksPointsSummaryTest extends TestCase
             $table->unsignedBigInteger('status_id')->nullable();
             $table->decimal('weight', 8, 2)->default(0);
             $table->string('color')->nullable();
+            $table->timestamps();
+        });
+
+        Schema::create('project_users', function (Blueprint $table): void {
+            $table->id();
+            $table->unsignedBigInteger('project_id');
+            $table->unsignedBigInteger('user_id');
             $table->timestamps();
         });
 
@@ -139,5 +147,94 @@ class TasksPointsSummaryTest extends TestCase
         $response->assertOk();
         $response->assertSee('2.00 pts');
         $response->assertDontSee('5.00 pts');
+    }
+
+    public function test_client_role_loads_team_tasks_by_default(): void
+    {
+        $client = User::factory()->create([
+            'role_id' => 4,
+            'status_id' => 1,
+        ]);
+
+        $teamUserA = User::factory()->create(['status_id' => 1]);
+        $teamUserB = User::factory()->create(['status_id' => 1]);
+
+        $this->grantModulePermissions($client, '/tasks', ['list']);
+        $this->actingAs($client->refresh());
+
+        DB::table('projects')->insert([
+            [
+                'id' => 10,
+                'name' => 'Proyecto Cliente',
+                'status_id' => 3,
+                'weight' => 1,
+                'color' => '#000000',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'id' => 20,
+                'name' => 'Proyecto Oculto',
+                'status_id' => 3,
+                'weight' => 2,
+                'color' => '#111111',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+        ]);
+
+        DB::table('project_users')->insert([
+            'project_id' => 10,
+            'user_id' => $client->id,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        DB::table('task_statuses')->insert([
+            'id' => 1,
+            'name' => 'Pendiente',
+            'pending' => true,
+            'status_id' => 1,
+            'weight' => 1,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        Task::create([
+            'name' => 'Tarea Equipo A',
+            'project_id' => 10,
+            'user_id' => $teamUserA->id,
+            'status_id' => 1,
+            'points' => 1.00,
+            'due_date' => now(),
+        ]);
+
+        Task::create([
+            'name' => 'Tarea Equipo B',
+            'project_id' => 10,
+            'user_id' => $teamUserB->id,
+            'status_id' => 1,
+            'points' => 2.00,
+            'due_date' => now(),
+        ]);
+
+        Task::create([
+            'name' => 'Tarea Oculta',
+            'project_id' => 20,
+            'user_id' => $teamUserA->id,
+            'status_id' => 1,
+            'points' => 9.00,
+            'due_date' => now(),
+        ]);
+
+        $response = $this->get(route('tasks.index'));
+
+        $response->assertOk();
+        $response->assertSee('3.00 pts');
+        $response->assertDontSee('9.00 pts');
+        $response->assertSee('Tarea Equipo A');
+        $response->assertSee('Tarea Equipo B');
+        $response->assertDontSee('Tarea Oculta');
+        $response->assertViewHas('filters', fn (array $filters): bool => $filters['user_id'] === null);
     }
 }
