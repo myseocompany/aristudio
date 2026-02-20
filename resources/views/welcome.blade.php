@@ -83,7 +83,7 @@
                             </label>
                             <a href="{{ route('password.request') }}" class="hover:underline">¿Olvidaste tu contraseña?</a>
                         </div>
-                        <button type="submit" class="w-full px-4 py-3 bg-white text-[#0B1021] font-semibold rounded-2xl shadow-lg shadow-black/20 hover:bg-white/90 transition">Entrar al panel</button>
+                        <button type="submit" class="w-full px-4 py-3 bg-gray-900 text-white border border-white/20 font-semibold rounded-2xl shadow-lg shadow-black/30 hover:bg-gray-800 transition">Entrar al panel</button>
                     </form>
                     <div class="grid gap-4 mt-6">
                         <div class="p-4 rounded-2xl bg-white/5 border border-white/10">

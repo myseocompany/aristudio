@@ -13,4 +13,13 @@ class WelcomePageTest extends TestCase
         $response->assertStatus(200);
         $response->assertDontSee('Crear cuenta');
     }
+
+    public function test_welcome_page_shows_high_contrast_login_button(): void
+    {
+        $response = $this->get('/');
+
+        $response->assertStatus(200);
+        $response->assertSee('Entrar al panel');
+        $response->assertSee('bg-gray-900 text-white', false);
+    }
 }
