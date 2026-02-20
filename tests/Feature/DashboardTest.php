@@ -152,6 +152,7 @@ class DashboardTest extends TestCase
         $response = $this->get('/dashboard?range='.$rangeParam);
         $response->assertOk();
         $response->assertSee('Resumen mensual');
+        $response->assertSee('Versión: '.trim((string) file_get_contents(base_path('VERSION'))));
 
         $summary = $response->viewData('taskSummary');
         $chart = $response->viewData('chartData');
