@@ -150,7 +150,12 @@
                             <h3 class="font-semibold text-gray-900">Logins del proyecto</h3>
                             <span class="text-xs text-gray-500">{{ $logins->count() }} registros</span>
                         </div>
-                        <a href="{{ route('projects.logins.create', $project->id) }}" class="text-xs text-indigo-600 hover:text-indigo-500 font-semibold">Nuevo</a>
+                        <div class="flex items-center gap-3">
+                            @if($canExportLogins)
+                                <a href="{{ route('projects.logins.export', $project) }}" class="text-xs text-indigo-600 hover:text-indigo-500 font-semibold">Exportar CSV</a>
+                            @endif
+                            <a href="{{ route('projects.logins.create', $project->id) }}" class="text-xs text-indigo-600 hover:text-indigo-500 font-semibold">Nuevo</a>
+                        </div>
                     </div>
                     @if($logins->count())
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">

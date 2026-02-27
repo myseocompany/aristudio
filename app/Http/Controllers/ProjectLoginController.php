@@ -2,14 +2,18 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ProjectLogin\ProjectLoginExportRequest;
 use App\Http\Requests\ProjectLogin\ProjectLoginIndexRequest;
 use App\Models\Project;
 use App\Models\ProjectLogin;
 use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ProjectLoginController extends Controller
 {
@@ -19,6 +23,7 @@ class ProjectLoginController extends Controller
         $this->middleware(function ($request, $next) {
             $this->authorizeModule($request, '/logins', [
                 'index' => 'list',
+                'export' => 'list',
                 'create' => 'create',
                 'store' => 'create',
                 'quickStore' => 'create',
@@ -46,19 +51,7 @@ class ProjectLoginController extends Controller
                 ->whereHas('project', fn ($query) => $query->where('status_id', 3));
         }
 
-        if (! empty($filters['project_id'])) {
-            $loginsQuery->where('project_id', $filters['project_id']);
-        }
-
-        if (! empty($filters['q'])) {
-            $term = $filters['q'];
-            $loginsQuery->where(function ($query) use ($term): void {
-                $query->where('name', 'like', "%{$term}%")
-                    ->orWhere('user', 'like', "%{$term}%")
-                    ->orWhere('url', 'like', "%{$term}%")
-                    ->orWhereHas('project', fn ($projectQuery) => $projectQuery->where('name', 'like', "%{$term}%"));
-            });
-        }
+        $this->applyFilters($loginsQuery, $filters);
 
         $logins = $loginsQuery->paginate(20)->withQueryString();
 
@@ -73,6 +66,54 @@ class ProjectLoginController extends Controller
             'projects' => $projects,
             'filters' => $filters,
             'canSeeAll' => $canSeeAll,
+        ]);
+    }
+
+    public function export(ProjectLoginExportRequest $request, Project $project): StreamedResponse
+    {
+        $authUser = Auth::user();
+        abort_unless(
+            (int) ($authUser?->id ?? 0) === 1 && (int) ($authUser?->role_id ?? 0) === 1,
+            403,
+            'No autorizado para exportar logins.',
+        );
+
+        $filters = $request->validated();
+
+        $loginsQuery = ProjectLogin::query()
+            ->where('project_id', $project->id)
+            ->orderBy('name');
+
+        $this->applyFilters($loginsQuery, $filters);
+
+        $fileName = sprintf(
+            'logins-%s-%s.csv',
+            Str::slug($project->name ?: 'proyecto'),
+            now()->format('Ymd_His'),
+        );
+
+        return response()->streamDownload(function () use ($loginsQuery, $project): void {
+            $output = fopen('php://output', 'w');
+            if ($output === false) {
+                return;
+            }
+
+            fwrite($output, "\xEF\xBB\xBF");
+            fputcsv($output, ['Proyecto', 'Login', 'Usuario', 'Contrasena', 'URL']);
+
+            foreach ($loginsQuery->cursor() as $login) {
+                fputcsv($output, [
+                    $project->name,
+                    $login->name,
+                    $login->user,
+                    $login->password,
+                    $login->url ?? '',
+                ]);
+            }
+
+            fclose($output);
+        }, $fileName, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
         ]);
     }
 
@@ -195,6 +236,26 @@ class ProjectLoginController extends Controller
         }
 
         return $request->validate($rules);
+    }
+
+    /**
+     * @param  array<string, mixed>  $filters
+     */
+    protected function applyFilters(Builder $loginsQuery, array $filters): void
+    {
+        if (! empty($filters['project_id'])) {
+            $loginsQuery->where('project_id', $filters['project_id']);
+        }
+
+        if (! empty($filters['q'])) {
+            $term = $filters['q'];
+            $loginsQuery->where(function ($query) use ($term): void {
+                $query->where('name', 'like', "%{$term}%")
+                    ->orWhere('user', 'like', "%{$term}%")
+                    ->orWhere('url', 'like', "%{$term}%")
+                    ->orWhereHas('project', fn ($projectQuery) => $projectQuery->where('name', 'like', "%{$term}%"));
+            });
+        }
     }
 
     protected function canSeeAllProjects(): bool

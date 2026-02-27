@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
-class ProjectLoginIndexTest extends TestCase
+class ProjectLoginExportTest extends TestCase
 {
     use RefreshDatabase;
 
@@ -36,7 +36,6 @@ class ProjectLoginIndexTest extends TestCase
             $table->increments('id');
             $table->string('name', 100)->nullable();
             $table->string('slug', 100)->nullable();
-            $table->unsignedInteger('parent_id')->nullable();
             $table->integer('weight')->default(0);
             $table->string('url', 255)->nullable();
             $table->timestamps();
@@ -86,63 +85,67 @@ class ProjectLoginIndexTest extends TestCase
         });
     }
 
-    public function test_user_sees_only_assigned_project_logins_when_role_is_not_all(): void
+    public function test_user_id_1_with_role_id_1_can_export_project_logins(): void
     {
-        $moduleId = DB::table('modules')->insertGetId([
-            'name' => 'Logins',
-            'slug' => 'logins',
-            'weight' => 0,
+        DB::table('roles')->insert([
+            'id' => 1,
+            'name' => 'Admin',
             'created_at' => now(),
             'updated_at' => now(),
         ]);
-
-        $roleTeamId = DB::table('roles')->insertGetId(['name' => 'Equipo', 'created_at' => now(), 'updated_at' => now()]);
-        $user = User::factory()->create(['role_id' => $roleTeamId]);
-
-        DB::table('role_modules')->insert([
-            'role_id' => $roleTeamId,
-            'module_id' => $moduleId,
-            'list' => true,
-            'created_at' => now(),
-            'updated_at' => now(),
-            'view_scope' => 0,
+        $user = User::factory()->create([
+            'id' => 1,
+            'role_id' => 1,
         ]);
 
-        $projectA = Project::create(['name' => 'Alpha', 'color' => '#10b981', 'status_id' => 3]);
-        $projectB = Project::create(['name' => 'Beta', 'color' => '#6366f1', 'status_id' => 1]);
-
-        DB::table('project_users')->insert([
-            'project_id' => $projectA->id,
-            'user_id' => $user->id,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+        $project = Project::create(['name' => 'Alpha', 'color' => '#10b981', 'status_id' => 3]);
 
         ProjectLogin::create([
-            'project_id' => $projectA->id,
+            'project_id' => $project->id,
             'name' => 'Login Alpha',
             'user' => 'alpha_user',
             'password' => 'alpha_pass',
             'url' => 'https://alpha.test',
         ]);
 
-        ProjectLogin::create([
-            'project_id' => $projectB->id,
-            'name' => 'Login Beta',
-            'user' => 'beta_user',
-            'password' => 'beta_pass',
-            'url' => 'https://beta.test',
-        ]);
-
-        $response = $this->actingAs($user)->get(route('logins.index'));
+        $response = $this->actingAs($user)->get(route('projects.logins.export', $project));
 
         $response->assertOk();
-        $response->assertSee('Login Alpha');
-        $response->assertDontSee('Login Beta');
-        $response->assertDontSee('Exportar CSV');
+        $this->assertStringContainsString('text/csv', (string) $response->headers->get('content-type'));
+        $this->assertStringContainsString('attachment; filename=', (string) $response->headers->get('content-disposition'));
+
+        $csvContent = $response->streamedContent();
+        $this->assertStringContainsString('Proyecto,Login,Usuario,Contrasena,URL', $csvContent);
+        $this->assertStringContainsString('Login Alpha', $csvContent);
     }
 
-    public function test_role_todos_can_see_all_project_logins_and_filter(): void
+    public function test_user_with_role_id_1_but_different_id_cannot_export_project_logins(): void
+    {
+        DB::table('roles')->insert([
+            'id' => 1,
+            'name' => 'Admin',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        $user = User::factory()->create([
+            'id' => 2,
+            'role_id' => 1,
+        ]);
+
+        $project = Project::create(['name' => 'Alpha', 'color' => '#10b981', 'status_id' => 3]);
+        ProjectLogin::create([
+            'project_id' => $project->id,
+            'name' => 'Login Alpha',
+            'user' => 'alpha_user',
+            'password' => 'alpha_pass',
+            'url' => 'https://alpha.test',
+        ]);
+
+        $response = $this->actingAs($user)->get(route('projects.logins.export', $project));
+        $response->assertForbidden();
+    }
+
+    public function test_user_with_id_1_but_different_role_cannot_export_project_logins(): void
     {
         $moduleId = DB::table('modules')->insertGetId([
             'name' => 'Logins',
@@ -152,50 +155,37 @@ class ProjectLoginIndexTest extends TestCase
             'updated_at' => now(),
         ]);
 
-        $roleAllId = DB::table('roles')->insertGetId(['name' => 'Todos', 'created_at' => now(), 'updated_at' => now()]);
-        $user = User::factory()->create(['role_id' => $roleAllId]);
-
-        DB::table('role_modules')->insert([
-            'role_id' => $roleAllId,
-            'module_id' => $moduleId,
-            'list' => true,
+        DB::table('roles')->insert([
+            'id' => 2,
+            'name' => 'Equipo',
             'created_at' => now(),
             'updated_at' => now(),
+        ]);
+
+        $user = User::factory()->create([
+            'id' => 1,
+            'role_id' => 2,
+        ]);
+
+        DB::table('role_modules')->insert([
+            'role_id' => 2,
+            'module_id' => $moduleId,
+            'list' => true,
             'view_scope' => 1,
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
 
-        $projectA = Project::create(['name' => 'Gamma', 'color' => '#0ea5e9', 'status_id' => 3]);
-        $projectB = Project::create(['name' => 'Delta', 'color' => '#f59e0b', 'status_id' => 1]);
-
-        $loginGamma = ProjectLogin::create([
-            'project_id' => $projectA->id,
-            'name' => 'Gamma Login',
-            'user' => 'gamma_user',
-            'password' => 'gamma_pass',
-            'url' => null,
+        $project = Project::create(['name' => 'Alpha', 'color' => '#10b981', 'status_id' => 3]);
+        ProjectLogin::create([
+            'project_id' => $project->id,
+            'name' => 'Login Alpha',
+            'user' => 'alpha_user',
+            'password' => 'alpha_pass',
+            'url' => 'https://alpha.test',
         ]);
 
-        $loginDelta = ProjectLogin::create([
-            'project_id' => $projectB->id,
-            'name' => 'Delta Login',
-            'user' => 'delta_user',
-            'password' => 'delta_pass',
-            'url' => null,
-        ]);
-
-        $response = $this->actingAs($user)->get(route('logins.index'));
-        $response->assertOk();
-        $response->assertSee($loginGamma->name);
-        $response->assertSee($loginDelta->name);
-        $response->assertDontSee('Exportar CSV');
-
-        $filtered = $this->actingAs($user)->get(route('logins.index', [
-            'project_id' => $projectA->id,
-            'q' => 'Gamma',
-        ]));
-
-        $filtered->assertOk();
-        $filtered->assertSee($loginGamma->name);
-        $filtered->assertDontSee($loginDelta->name);
+        $response = $this->actingAs($user)->get(route('projects.logins.export', $project));
+        $response->assertForbidden();
     }
 }

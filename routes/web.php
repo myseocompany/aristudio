@@ -28,6 +28,7 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('users', UserLegacyController::class);
     Route::resource('projects', ProjectController::class);
+    Route::get('projects/{project}/logins/export', [ProjectLoginController::class, 'export'])->name('projects.logins.export');
     Route::resource('projects.logins', ProjectLoginController::class)->except(['index', 'show']);
     Route::get('logins', [ProjectLoginController::class, 'index'])->name('logins.index');
     Route::post('logins', [ProjectLoginController::class, 'quickStore'])->name('logins.quick-store');

@@ -87,6 +87,7 @@ class ProjectController extends Controller
 
     public function show(Project $project)
     {
+        $authUser = Auth::user();
         $status = DB::table('project_statuses')->where('id', $project->status_id)->value('name');
         $type = DB::table('project_types')->where('id', $project->type_id)->value('name');
         $project->load(['users' => function ($query) {
@@ -96,8 +97,9 @@ class ProjectController extends Controller
         $statusNames = DB::table('user_statuses')->pluck('name', 'id');
         $canManageLogins = DB::table('project_users')
             ->where('project_id', $project->id)
-            ->where('user_id', Auth::id())
+            ->where('user_id', $authUser?->id)
             ->exists();
+        $canExportLogins = (int) ($authUser?->id ?? 0) === 1 && (int) ($authUser?->role_id ?? 0) === 1;
         $logins = $canManageLogins
             ? DB::table('project_logins')->where('project_id', $project->id)->orderBy('name')->get()
             : collect();
@@ -110,6 +112,7 @@ class ProjectController extends Controller
             'userStatusNames' => $statusNames,
             'logins' => $logins,
             'canManageLogins' => $canManageLogins,
+            'canExportLogins' => $canExportLogins,
         ]);
     }
 
