@@ -63,13 +63,19 @@ class TasksPointsSummaryTest extends TestCase
             $table->id();
             $table->string('name');
             $table->text('description')->nullable();
+            $table->text('copy')->nullable();
             $table->text('caption')->nullable();
             $table->unsignedBigInteger('project_id')->nullable();
             $table->unsignedBigInteger('user_id')->nullable();
             $table->unsignedBigInteger('status_id')->nullable();
+            $table->unsignedBigInteger('creator_user_id')->nullable();
+            $table->unsignedBigInteger('updator_user_id')->nullable();
+            $table->integer('priority')->nullable();
             $table->decimal('points', 8, 2)->nullable();
             $table->timestamp('due_date')->nullable();
+            $table->timestamp('delivery_date')->nullable();
             $table->boolean('value_generated')->default(false);
+            $table->boolean('not_billing')->default(false);
             $table->timestamps();
         });
 
@@ -236,5 +242,72 @@ class TasksPointsSummaryTest extends TestCase
         $response->assertSee('Tarea Equipo B');
         $response->assertDontSee('Tarea Oculta');
         $response->assertViewHas('filters', fn (array $filters): bool => $filters['user_id'] === null);
+    }
+
+    public function test_tasks_index_renders_quick_empty_line_before_task_rows(): void
+    {
+        $user = User::factory()->create([
+            'status_id' => 1,
+        ]);
+
+        $this->grantModulePermissions($user, '/tasks', ['list']);
+        $this->actingAs($user->refresh());
+
+        DB::table('task_statuses')->insert([
+            'id' => 1,
+            'name' => 'Pendiente',
+            'pending' => true,
+            'status_id' => 1,
+            'weight' => 1,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        Task::create([
+            'name' => 'Tarea existente',
+            'user_id' => $user->id,
+            'status_id' => 1,
+            'due_date' => now(),
+        ]);
+
+        $response = $this->get(route('tasks.index'));
+
+        $response->assertOk();
+        $response->assertSee('id="tasks-inline-quick-name"', false);
+        $response->assertSeeInOrder(['id="tasks-inline-quick-name"', 'Tarea existente'], false);
+    }
+
+    public function test_store_assigns_task_to_authenticated_user_when_user_id_is_missing(): void
+    {
+        $user = User::factory()->create([
+            'status_id' => 1,
+        ]);
+
+        $this->grantModulePermissions($user, '/tasks', ['create']);
+        $this->actingAs($user->refresh());
+
+        DB::table('task_statuses')->insert([
+            'id' => 1,
+            'name' => 'Pendiente',
+            'pending' => true,
+            'status_id' => 1,
+            'weight' => 1,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $response = $this->post(route('tasks.store'), [
+            'name' => 'Tarea rápida',
+            'status_id' => 1,
+        ]);
+
+        $response->assertRedirect(route('tasks.index'));
+        $this->assertDatabaseHas('tasks', [
+            'name' => 'Tarea rápida',
+            'user_id' => $user->id,
+            'status_id' => 1,
+            'creator_user_id' => $user->id,
+            'updator_user_id' => $user->id,
+        ]);
     }
 }
