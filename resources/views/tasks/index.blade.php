@@ -238,6 +238,13 @@
                                                     ->take(2)
                                                     ->implode('')
                                                 : 'SA';
+                                            $inlineQuickUserAvatar = null;
+                                            if ($inlineQuickUser?->image_url) {
+                                                $inlineQuickUserImagePath = str_contains($inlineQuickUser->image_url, '/')
+                                                    ? $inlineQuickUser->image_url
+                                                    : 'files/users/'.$inlineQuickUser->image_url;
+                                                $inlineQuickUserAvatar = asset('storage/'.$inlineQuickUserImagePath);
+                                            }
                                             $inlineQuickUsersCatalog = $users
                                                 ->map(function ($user) {
                                                     $initials = collect(explode(' ', trim($user->name)))
@@ -245,11 +252,15 @@
                                                         ->map(fn ($part) => mb_substr($part, 0, 1))
                                                         ->take(2)
                                                         ->implode('');
+                                                    $avatarPath = $user->image_url
+                                                        ? (str_contains($user->image_url, '/') ? $user->image_url : 'files/users/'.$user->image_url)
+                                                        : null;
 
                                                     return [
                                                         'id' => (string) $user->id,
                                                         'name' => $user->name,
                                                         'initials' => $initials ?: '?',
+                                                        'avatarUrl' => $avatarPath ? asset('storage/'.$avatarPath) : null,
                                                     ];
                                                 })
                                                 ->values();
@@ -272,6 +283,7 @@
                                                 selectedUserId: @js($inlineQuickUserId),
                                                 selectedUserName: @js($inlineQuickUserName),
                                                 selectedUserInitials: @js($inlineQuickUserInitials),
+                                                selectedUserAvatar: @js($inlineQuickUserAvatar),
                                                 usersCatalog: @js($inlineQuickUsersCatalog),
                                                 isSubmitting: false,
                                                 inlineError: '',
@@ -307,6 +319,7 @@
                                                     const user = this.usersCatalog.find((item) => item.id === value);
                                                     this.selectedUserName = user ? user.name : 'Sin asignar';
                                                     this.selectedUserInitials = user ? user.initials : 'SA';
+                                                    this.selectedUserAvatar = user ? (user.avatarUrl ?? null) : null;
 
                                                     if (persist) {
                                                         window.localStorage.setItem(this.storageUserKey, value);
@@ -389,7 +402,8 @@
                                                 <button
                                                     id="tasks-inline-quick-project-toggle"
                                                     type="button"
-                                                    class="h-10 w-10 rounded-full border border-slate-300 bg-slate-100 text-slate-700 hover:border-blue-400 hover:text-blue-600 flex items-center justify-center text-xs font-semibold"
+                                                    class="h-10 w-10 rounded-full text-white hover:opacity-90 flex items-center justify-center text-xs font-semibold"
+                                                    :style="`background:${selectedProjectColor}`"
                                                     @click="showProjectPicker = !showProjectPicker"
                                                     title="Escoger proyecto"
                                                 >
@@ -420,10 +434,6 @@
                                                     @endforeach
                                                 </div>
                                             </div>
-                                            <div class="max-w-56 shrink-0 inline-flex items-center gap-2 rounded-full bg-slate-100 px-2.5 py-1">
-                                                <span class="h-2 w-2 rounded-full" :style="`background:${selectedProjectColor}`"></span>
-                                                <span class="truncate text-xs font-medium text-slate-700" x-text="'Proyecto: ' + selectedProjectName"></span>
-                                            </div>
                                             <input
                                                 id="tasks-inline-quick-name"
                                                 name="name"
@@ -435,19 +445,20 @@
                                                 required
                                                 autofocus
                                             >
-                                            <div class="max-w-56 shrink-0 inline-flex items-center gap-2 rounded-full bg-indigo-50 px-2.5 py-1">
-                                                <span class="h-5 w-5 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-[10px] font-semibold" x-text="selectedUserInitials"></span>
-                                                <span class="truncate text-xs font-medium text-indigo-700" x-text="'Usuario: ' + selectedUserName"></span>
-                                            </div>
                                             <div class="relative shrink-0">
                                                 <button
                                                     id="tasks-inline-quick-user-toggle"
                                                     type="button"
-                                                    class="h-10 min-w-10 rounded-full border border-gray-300 px-2 text-xs font-semibold text-gray-600 hover:border-blue-400 hover:text-blue-600 flex items-center justify-center"
+                                                    class="h-10 w-10 overflow-hidden rounded-full border border-gray-300 bg-white hover:border-blue-400 flex items-center justify-center"
                                                     @click="showUserPicker = !showUserPicker"
                                                     :title="selectedUserName"
                                                 >
-                                                    <span x-text="selectedUserInitials"></span>
+                                                    <template x-if="selectedUserAvatar">
+                                                        <img :src="selectedUserAvatar" :alt="selectedUserName" class="h-10 w-10 object-cover">
+                                                    </template>
+                                                    <template x-if="!selectedUserAvatar">
+                                                        <span class="text-xs font-semibold text-gray-600" x-text="selectedUserInitials"></span>
+                                                    </template>
                                                 </button>
                                                 <div
                                                     x-cloak
@@ -469,13 +480,20 @@
                                                                 ->map(fn ($part) => mb_substr($part, 0, 1))
                                                                 ->take(2)
                                                                 ->implode('');
+                                                            $userAvatarPath = $user->image_url
+                                                                ? (str_contains($user->image_url, '/') ? $user->image_url : 'files/users/'.$user->image_url)
+                                                                : null;
                                                         @endphp
                                                         <button
                                                             type="button"
                                                             class="w-full rounded px-3 py-2 text-left text-sm hover:bg-gray-100 text-gray-800 flex items-center gap-2"
                                                             @click="setSelectedUser('{{ $user->id }}'); showUserPicker = false"
                                                         >
-                                                            <span class="h-6 w-6 rounded-full bg-gray-100 text-gray-700 flex items-center justify-center text-xs font-semibold">{{ $userInitials ?: '?' }}</span>
+                                                            @if($userAvatarPath)
+                                                                <img src="{{ asset('storage/'.$userAvatarPath) }}" alt="{{ $user->name }}" class="h-6 w-6 rounded-full object-cover">
+                                                            @else
+                                                                <span class="h-6 w-6 rounded-full bg-gray-100 text-gray-700 flex items-center justify-center text-xs font-semibold">{{ $userInitials ?: '?' }}</span>
+                                                            @endif
                                                             <span class="truncate">{{ $user->name }}</span>
                                                         </button>
                                                     @endforeach
