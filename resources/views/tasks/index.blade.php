@@ -171,6 +171,12 @@
                                             if ($inlineQuickProjectId !== '') {
                                                 $inlineQuickProjectName = $projects->firstWhere('id', (int) $inlineQuickProjectId)?->name ?? 'Sin proyecto';
                                             }
+                                            $inlineQuickProjectsCatalog = $projects
+                                                ->map(fn ($project) => [
+                                                    'id' => (string) $project->id,
+                                                    'name' => $project->name,
+                                                ])
+                                                ->values();
                                             $inlineQuickUserId = (string) old('user_id', (string) auth()->id());
                                             $inlineQuickUser = $users->firstWhere('id', (int) $inlineQuickUserId);
                                             $inlineQuickUserName = $inlineQuickUser?->name ?? 'Sin asignar';
@@ -181,6 +187,21 @@
                                                     ->take(2)
                                                     ->implode('')
                                                 : 'SA';
+                                            $inlineQuickUsersCatalog = $users
+                                                ->map(function ($user) {
+                                                    $initials = collect(explode(' ', trim($user->name)))
+                                                        ->filter()
+                                                        ->map(fn ($part) => mb_substr($part, 0, 1))
+                                                        ->take(2)
+                                                        ->implode('');
+
+                                                    return [
+                                                        'id' => (string) $user->id,
+                                                        'name' => $user->name,
+                                                        'initials' => $initials ?: '?',
+                                                    ];
+                                                })
+                                                ->values();
                                         @endphp
                                         <form
                                             action="{{ route('tasks.store') }}"
@@ -192,12 +213,53 @@
                                                 showProjectPicker: false,
                                                 selectedProjectId: @js($inlineQuickProjectId),
                                                 selectedProjectName: @js($inlineQuickProjectName),
+                                                projectsCatalog: @js($inlineQuickProjectsCatalog),
                                                 showUserPicker: false,
                                                 selectedUserId: @js($inlineQuickUserId),
                                                 selectedUserName: @js($inlineQuickUserName),
                                                 selectedUserInitials: @js($inlineQuickUserInitials),
+                                                usersCatalog: @js($inlineQuickUsersCatalog),
                                                 isSubmitting: false,
                                                 inlineError: '',
+                                                storageProjectKey: 'tasks.inline.quick.project_id',
+                                                storageUserKey: 'tasks.inline.quick.user_id',
+                                                init() {
+                                                    const rememberedProjectId = window.localStorage.getItem(this.storageProjectKey);
+                                                    const rememberedUserId = window.localStorage.getItem(this.storageUserKey);
+
+                                                    if (rememberedProjectId !== null) {
+                                                        this.setSelectedProject(rememberedProjectId, false);
+                                                    }
+
+                                                    if (rememberedUserId !== null) {
+                                                        this.setSelectedUser(rememberedUserId, false);
+                                                    }
+                                                },
+                                                setSelectedProject(projectId, persist = true) {
+                                                    const value = String(projectId ?? '');
+                                                    this.selectedProjectId = value;
+                                                    const project = this.projectsCatalog.find((item) => item.id === value);
+                                                    this.selectedProjectName = project ? project.name : 'Sin proyecto';
+
+                                                    if (persist) {
+                                                        window.localStorage.setItem(this.storageProjectKey, value);
+                                                    }
+                                                },
+                                                setSelectedUser(userId, persist = true) {
+                                                    const value = String(userId ?? '');
+                                                    this.selectedUserId = value;
+                                                    const user = this.usersCatalog.find((item) => item.id === value);
+                                                    this.selectedUserName = user ? user.name : 'Sin asignar';
+                                                    this.selectedUserInitials = user ? user.initials : 'SA';
+
+                                                    if (persist) {
+                                                        window.localStorage.setItem(this.storageUserKey, value);
+                                                    }
+                                                },
+                                                persistQuickPreferences() {
+                                                    window.localStorage.setItem(this.storageProjectKey, String(this.selectedProjectId ?? ''));
+                                                    window.localStorage.setItem(this.storageUserKey, String(this.selectedUserId ?? ''));
+                                                },
                                                 async submitQuickTask() {
                                                     if (this.isSubmitting) {
                                                         return;
@@ -217,6 +279,7 @@
 
                                                     const formData = new FormData(this.$refs.inlineQuickForm);
                                                     formData.set('name', name);
+                                                    this.persistQuickPreferences();
                                                     this.isSubmitting = true;
 
                                                     try {
@@ -247,6 +310,7 @@
                                                     }
                                                 },
                                             }"
+                                            x-init="init()"
                                             @click.outside="showProjectPicker = false; showUserPicker = false"
                                         >
                                             @csrf
@@ -272,7 +336,7 @@
                                                     <button
                                                         type="button"
                                                         class="w-full rounded px-3 py-2 text-left text-sm hover:bg-gray-100 text-gray-700"
-                                                        @click="selectedProjectId = ''; selectedProjectName = 'Sin proyecto'; showProjectPicker = false"
+                                                        @click="setSelectedProject(''); showProjectPicker = false"
                                                     >
                                                         Sin proyecto
                                                     </button>
@@ -280,7 +344,7 @@
                                                         <button
                                                             type="button"
                                                             class="w-full rounded px-3 py-2 text-left text-sm hover:bg-gray-100 text-gray-800 flex items-center gap-2"
-                                                            @click="selectedProjectId = '{{ $project->id }}'; selectedProjectName = @js($project->name); showProjectPicker = false"
+                                                            @click="setSelectedProject('{{ $project->id }}'); showProjectPicker = false"
                                                         >
                                                             <span class="h-2.5 w-2.5 rounded-full" style="background: {{ $project->color ?? '#9ca3af' }}"></span>
                                                             <span class="truncate">{{ $project->name }}</span>
@@ -319,7 +383,7 @@
                                                     <button
                                                         type="button"
                                                         class="w-full rounded px-3 py-2 text-left text-sm hover:bg-gray-100 text-gray-700"
-                                                        @click="selectedUserId = ''; selectedUserName = 'Sin asignar'; selectedUserInitials = 'SA'; showUserPicker = false"
+                                                        @click="setSelectedUser(''); showUserPicker = false"
                                                     >
                                                         Sin asignar
                                                     </button>
@@ -334,7 +398,7 @@
                                                         <button
                                                             type="button"
                                                             class="w-full rounded px-3 py-2 text-left text-sm hover:bg-gray-100 text-gray-800 flex items-center gap-2"
-                                                            @click="selectedUserId = '{{ $user->id }}'; selectedUserName = @js($user->name); selectedUserInitials = @js($userInitials ?: '?'); showUserPicker = false"
+                                                            @click="setSelectedUser('{{ $user->id }}'); showUserPicker = false"
                                                         >
                                                             <span class="h-6 w-6 rounded-full bg-gray-100 text-gray-700 flex items-center justify-center text-xs font-semibold">{{ $userInitials ?: '?' }}</span>
                                                             <span class="truncate">{{ $user->name }}</span>
