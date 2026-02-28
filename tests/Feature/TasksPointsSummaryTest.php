@@ -279,6 +279,8 @@ class TasksPointsSummaryTest extends TestCase
         $response->assertSee('@submit.prevent="submitQuickTask"', false);
         $response->assertSee('@task-created="handleTaskCreated($event.detail.task)"', false);
         $response->assertSee('x-for="recentTask in recentTasks"', false);
+        $response->assertSee("x-text=\"recentTask.projectInitials ?? 'SP'\"", false);
+        $response->assertSee('x-if="recentTask.userAvatar"', false);
         $response->assertSee('x-text="selectedProjectInitials"', false);
         $response->assertSee(':style="`background:${selectedProjectColor}`"', false);
         $response->assertSee('selectedUserAvatar:', false);

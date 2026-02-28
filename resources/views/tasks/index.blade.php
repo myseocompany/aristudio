@@ -198,204 +198,210 @@
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100">
-                            <tr class="bg-white">
-                                <td colspan="5" class="px-4 py-2">
-                                    @if($defaultStatusId)
-                                        @php
-                                            $inlineQuickProjectId = (string) old('project_id', '');
-                                            $inlineQuickProjectName = 'Sin proyecto';
-                                            $inlineQuickProjectColor = '#9ca3af';
-                                            $inlineQuickProjectInitials = 'SP';
-                                            if ($inlineQuickProjectId !== '') {
-                                                $inlineQuickProject = $projects->firstWhere('id', (int) $inlineQuickProjectId);
-                                                $inlineQuickProjectName = $inlineQuickProject?->name ?? 'Sin proyecto';
-                                                $inlineQuickProjectColor = $inlineQuickProject?->color ?? '#9ca3af';
-                                                $inlineQuickProjectInitials = collect(explode(' ', trim($inlineQuickProjectName)))
-                                                    ->filter()
-                                                    ->map(fn ($word) => mb_substr($word, 0, 1))
-                                                    ->take(2)
-                                                    ->implode('') ?: 'SP';
-                                            }
-                                            $inlineQuickProjectsCatalog = $projects
-                                                ->map(fn ($project) => [
-                                                    'id' => (string) $project->id,
-                                                    'name' => $project->name,
-                                                    'color' => $project->color ?? '#9ca3af',
-                                                    'initials' => collect(explode(' ', trim($project->name)))
-                                                        ->filter()
-                                                        ->map(fn ($word) => mb_substr($word, 0, 1))
-                                                        ->take(2)
-                                                        ->implode('') ?: 'SP',
-                                                ])
-                                                ->values();
-                                            $inlineQuickUserId = (string) old('user_id', (string) auth()->id());
-                                            $inlineQuickUser = $users->firstWhere('id', (int) $inlineQuickUserId);
-                                            $inlineQuickUserName = $inlineQuickUser?->name ?? 'Sin asignar';
-                                            $inlineQuickUserInitials = $inlineQuickUser
-                                                ? collect(explode(' ', trim($inlineQuickUser->name)))
-                                                    ->filter()
-                                                    ->map(fn ($word) => mb_substr($word, 0, 1))
-                                                    ->take(2)
-                                                    ->implode('')
-                                                : 'SA';
-                                            $inlineQuickUserAvatar = null;
-                                            if ($inlineQuickUser?->image_url) {
-                                                $inlineQuickUserImagePath = str_contains($inlineQuickUser->image_url, '/')
-                                                    ? $inlineQuickUser->image_url
-                                                    : 'files/users/'.$inlineQuickUser->image_url;
-                                                $inlineQuickUserAvatar = asset('storage/'.$inlineQuickUserImagePath);
-                                            }
-                                            $inlineQuickUsersCatalog = $users
-                                                ->map(function ($user) {
-                                                    $initials = collect(explode(' ', trim($user->name)))
-                                                        ->filter()
-                                                        ->map(fn ($part) => mb_substr($part, 0, 1))
-                                                        ->take(2)
-                                                        ->implode('');
-                                                    $avatarPath = $user->image_url
-                                                        ? (str_contains($user->image_url, '/') ? $user->image_url : 'files/users/'.$user->image_url)
-                                                        : null;
+                            @if($defaultStatusId)
+                                @php
+                                    $inlineQuickProjectId = (string) old('project_id', '');
+                                    $inlineQuickProjectName = 'Sin proyecto';
+                                    $inlineQuickProjectColor = '#9ca3af';
+                                    $inlineQuickProjectInitials = 'SP';
+                                    if ($inlineQuickProjectId !== '') {
+                                        $inlineQuickProject = $projects->firstWhere('id', (int) $inlineQuickProjectId);
+                                        $inlineQuickProjectName = $inlineQuickProject?->name ?? 'Sin proyecto';
+                                        $inlineQuickProjectColor = $inlineQuickProject?->color ?? '#9ca3af';
+                                        $inlineQuickProjectInitials = collect(explode(' ', trim($inlineQuickProjectName)))
+                                            ->filter()
+                                            ->map(fn ($word) => mb_substr($word, 0, 1))
+                                            ->take(2)
+                                            ->implode('') ?: 'SP';
+                                    }
+                                    $inlineQuickProjectsCatalog = $projects
+                                        ->map(fn ($project) => [
+                                            'id' => (string) $project->id,
+                                            'name' => $project->name,
+                                            'color' => $project->color ?? '#9ca3af',
+                                            'initials' => collect(explode(' ', trim($project->name)))
+                                                ->filter()
+                                                ->map(fn ($word) => mb_substr($word, 0, 1))
+                                                ->take(2)
+                                                ->implode('') ?: 'SP',
+                                        ])
+                                        ->values();
+                                    $inlineQuickUserId = (string) old('user_id', (string) auth()->id());
+                                    $inlineQuickUser = $users->firstWhere('id', (int) $inlineQuickUserId);
+                                    $inlineQuickUserName = $inlineQuickUser?->name ?? 'Sin asignar';
+                                    $inlineQuickUserInitials = $inlineQuickUser
+                                        ? collect(explode(' ', trim($inlineQuickUser->name)))
+                                            ->filter()
+                                            ->map(fn ($word) => mb_substr($word, 0, 1))
+                                            ->take(2)
+                                            ->implode('')
+                                        : 'SA';
+                                    $inlineQuickUserAvatar = null;
+                                    if ($inlineQuickUser?->image_url) {
+                                        $inlineQuickUserImagePath = str_contains($inlineQuickUser->image_url, '/')
+                                            ? $inlineQuickUser->image_url
+                                            : 'files/users/'.$inlineQuickUser->image_url;
+                                        $inlineQuickUserAvatar = asset('storage/'.$inlineQuickUserImagePath);
+                                    }
+                                    $inlineQuickUsersCatalog = $users
+                                        ->map(function ($user) {
+                                            $initials = collect(explode(' ', trim($user->name)))
+                                                ->filter()
+                                                ->map(fn ($part) => mb_substr($part, 0, 1))
+                                                ->take(2)
+                                                ->implode('');
+                                            $avatarPath = $user->image_url
+                                                ? (str_contains($user->image_url, '/') ? $user->image_url : 'files/users/'.$user->image_url)
+                                                : null;
 
-                                                    return [
-                                                        'id' => (string) $user->id,
-                                                        'name' => $user->name,
-                                                        'initials' => $initials ?: '?',
-                                                        'avatarUrl' => $avatarPath ? asset('storage/'.$avatarPath) : null,
-                                                    ];
-                                                })
-                                                ->values();
-                                        @endphp
+                                            return [
+                                                'id' => (string) $user->id,
+                                                'name' => $user->name,
+                                                'initials' => $initials ?: '?',
+                                                'avatarUrl' => $avatarPath ? asset('storage/'.$avatarPath) : null,
+                                            ];
+                                        })
+                                        ->values();
+                                @endphp
+                                <tr
+                                    class="bg-white"
+                                    x-data="{
+                                        showProjectPicker: false,
+                                        selectedProjectId: @js($inlineQuickProjectId),
+                                        selectedProjectName: @js($inlineQuickProjectName),
+                                        selectedProjectColor: @js($inlineQuickProjectColor),
+                                        selectedProjectInitials: @js($inlineQuickProjectInitials),
+                                        projectsCatalog: @js($inlineQuickProjectsCatalog),
+                                        defaultStatusId: @js((string) $defaultStatusId),
+                                        statusesCatalog: @js($statuses->mapWithKeys(fn ($status) => [(string) $status->id => $status->name])->all()),
+                                        showUserPicker: false,
+                                        selectedUserId: @js($inlineQuickUserId),
+                                        selectedUserName: @js($inlineQuickUserName),
+                                        selectedUserInitials: @js($inlineQuickUserInitials),
+                                        selectedUserAvatar: @js($inlineQuickUserAvatar),
+                                        usersCatalog: @js($inlineQuickUsersCatalog),
+                                        isSubmitting: false,
+                                        inlineError: '',
+                                        storageProjectKey: 'tasks.inline.quick.project_id',
+                                        storageUserKey: 'tasks.inline.quick.user_id',
+                                        init() {
+                                            const rememberedProjectId = window.localStorage.getItem(this.storageProjectKey);
+                                            const rememberedUserId = window.localStorage.getItem(this.storageUserKey);
+
+                                            if (rememberedProjectId !== null) {
+                                                this.setSelectedProject(rememberedProjectId, false);
+                                            }
+
+                                            if (rememberedUserId !== null) {
+                                                this.setSelectedUser(rememberedUserId, false);
+                                            }
+                                        },
+                                        setSelectedProject(projectId, persist = true) {
+                                            const value = String(projectId ?? '');
+                                            this.selectedProjectId = value;
+                                            const project = this.projectsCatalog.find((item) => item.id === value);
+                                            this.selectedProjectName = project ? project.name : 'Sin proyecto';
+                                            this.selectedProjectColor = project ? (project.color ?? '#9ca3af') : '#9ca3af';
+                                            this.selectedProjectInitials = project ? (project.initials ?? 'SP') : 'SP';
+
+                                            if (persist) {
+                                                window.localStorage.setItem(this.storageProjectKey, value);
+                                            }
+                                        },
+                                        setSelectedUser(userId, persist = true) {
+                                            const value = String(userId ?? '');
+                                            this.selectedUserId = value;
+                                            const user = this.usersCatalog.find((item) => item.id === value);
+                                            this.selectedUserName = user ? user.name : 'Sin asignar';
+                                            this.selectedUserInitials = user ? user.initials : 'SA';
+                                            this.selectedUserAvatar = user ? (user.avatarUrl ?? null) : null;
+
+                                            if (persist) {
+                                                window.localStorage.setItem(this.storageUserKey, value);
+                                            }
+                                        },
+                                        persistQuickPreferences() {
+                                            window.localStorage.setItem(this.storageProjectKey, String(this.selectedProjectId ?? ''));
+                                            window.localStorage.setItem(this.storageUserKey, String(this.selectedUserId ?? ''));
+                                        },
+                                        async submitQuickTask() {
+                                            if (this.isSubmitting) {
+                                                return;
+                                            }
+
+                                            this.inlineError = '';
+
+                                            const input = this.$refs.inlineQuickName;
+                                            const name = (input?.value ?? '').trim();
+
+                                            if (!name) {
+                                                this.inlineError = 'Escribe una tarea.';
+                                                input?.focus();
+
+                                                return;
+                                            }
+
+                                            const formData = new FormData(this.$refs.inlineQuickForm);
+                                            formData.set('name', name);
+                                            this.persistQuickPreferences();
+                                            this.isSubmitting = true;
+
+                                            try {
+                                                const response = await fetch(this.$refs.inlineQuickForm.action, {
+                                                    method: 'POST',
+                                                    headers: {
+                                                        'Accept': 'application/json',
+                                                        'X-Requested-With': 'XMLHttpRequest',
+                                                    },
+                                                    body: formData,
+                                                });
+                                                const payload = await response.json().catch(() => ({}));
+
+                                                if (!response.ok) {
+                                                    this.inlineError = payload?.errors?.name?.[0]
+                                                        ?? payload?.message
+                                                        ?? 'No se pudo crear la tarea.';
+
+                                                    return;
+                                                }
+
+                                                const createdTask = payload?.task ?? {};
+                                                this.$dispatch('task-created', {
+                                                    task: {
+                                                        id: createdTask.id,
+                                                        name: createdTask.name ?? name,
+                                                        projectName: this.selectedProjectName ?? 'Sin proyecto',
+                                                        projectColor: this.selectedProjectColor ?? '#9ca3af',
+                                                        projectInitials: this.selectedProjectInitials ?? 'SP',
+                                                        statusName: this.statusesCatalog[String(this.defaultStatusId)] ?? 'Pendiente',
+                                                        userName: this.selectedUserName ?? 'Sin asignar',
+                                                        userInitials: this.selectedUserId ? this.selectedUserInitials : '—',
+                                                        userAvatar: this.selectedUserId ? (this.selectedUserAvatar ?? null) : null,
+                                                    },
+                                                });
+
+                                                input.value = '';
+                                                input.focus();
+                                            } catch (error) {
+                                                this.inlineError = 'No se pudo crear la tarea.';
+                                            } finally {
+                                                this.isSubmitting = false;
+                                            }
+                                        },
+                                    }"
+                                    x-init="init()"
+                                    @click.outside="showProjectPicker = false; showUserPicker = false"
+                                >
+                                    <td class="px-4 py-3">
                                         <form
                                             action="{{ route('tasks.store') }}"
                                             method="POST"
                                             x-ref="inlineQuickForm"
                                             @submit.prevent="submitQuickTask"
                                             class="flex items-center gap-3"
-                                            x-data="{
-                                                showProjectPicker: false,
-                                                selectedProjectId: @js($inlineQuickProjectId),
-                                                selectedProjectName: @js($inlineQuickProjectName),
-                                                selectedProjectColor: @js($inlineQuickProjectColor),
-                                                selectedProjectInitials: @js($inlineQuickProjectInitials),
-                                                projectsCatalog: @js($inlineQuickProjectsCatalog),
-                                                statusesCatalog: @js($statuses->mapWithKeys(fn ($status) => [(string) $status->id => $status->name])->all()),
-                                                showUserPicker: false,
-                                                selectedUserId: @js($inlineQuickUserId),
-                                                selectedUserName: @js($inlineQuickUserName),
-                                                selectedUserInitials: @js($inlineQuickUserInitials),
-                                                selectedUserAvatar: @js($inlineQuickUserAvatar),
-                                                usersCatalog: @js($inlineQuickUsersCatalog),
-                                                isSubmitting: false,
-                                                inlineError: '',
-                                                storageProjectKey: 'tasks.inline.quick.project_id',
-                                                storageUserKey: 'tasks.inline.quick.user_id',
-                                                init() {
-                                                    const rememberedProjectId = window.localStorage.getItem(this.storageProjectKey);
-                                                    const rememberedUserId = window.localStorage.getItem(this.storageUserKey);
-
-                                                    if (rememberedProjectId !== null) {
-                                                        this.setSelectedProject(rememberedProjectId, false);
-                                                    }
-
-                                                    if (rememberedUserId !== null) {
-                                                        this.setSelectedUser(rememberedUserId, false);
-                                                    }
-                                                },
-                                                setSelectedProject(projectId, persist = true) {
-                                                    const value = String(projectId ?? '');
-                                                    this.selectedProjectId = value;
-                                                    const project = this.projectsCatalog.find((item) => item.id === value);
-                                                    this.selectedProjectName = project ? project.name : 'Sin proyecto';
-                                                    this.selectedProjectColor = project ? (project.color ?? '#9ca3af') : '#9ca3af';
-                                                    this.selectedProjectInitials = project ? (project.initials ?? 'SP') : 'SP';
-
-                                                    if (persist) {
-                                                        window.localStorage.setItem(this.storageProjectKey, value);
-                                                    }
-                                                },
-                                                setSelectedUser(userId, persist = true) {
-                                                    const value = String(userId ?? '');
-                                                    this.selectedUserId = value;
-                                                    const user = this.usersCatalog.find((item) => item.id === value);
-                                                    this.selectedUserName = user ? user.name : 'Sin asignar';
-                                                    this.selectedUserInitials = user ? user.initials : 'SA';
-                                                    this.selectedUserAvatar = user ? (user.avatarUrl ?? null) : null;
-
-                                                    if (persist) {
-                                                        window.localStorage.setItem(this.storageUserKey, value);
-                                                    }
-                                                },
-                                                persistQuickPreferences() {
-                                                    window.localStorage.setItem(this.storageProjectKey, String(this.selectedProjectId ?? ''));
-                                                    window.localStorage.setItem(this.storageUserKey, String(this.selectedUserId ?? ''));
-                                                },
-                                                async submitQuickTask() {
-                                                    if (this.isSubmitting) {
-                                                        return;
-                                                    }
-
-                                                    this.inlineError = '';
-
-                                                    const input = this.$refs.inlineQuickName;
-                                                    const name = (input?.value ?? '').trim();
-
-                                                    if (!name) {
-                                                        this.inlineError = 'Escribe una tarea.';
-                                                        input?.focus();
-
-                                                        return;
-                                                    }
-
-                                                    const formData = new FormData(this.$refs.inlineQuickForm);
-                                                    formData.set('name', name);
-                                                    this.persistQuickPreferences();
-                                                    this.isSubmitting = true;
-
-                                                    try {
-                                                        const response = await fetch(this.$refs.inlineQuickForm.action, {
-                                                            method: 'POST',
-                                                            headers: {
-                                                                'Accept': 'application/json',
-                                                                'X-Requested-With': 'XMLHttpRequest',
-                                                            },
-                                                            body: formData,
-                                                        });
-                                                        const payload = await response.json().catch(() => ({}));
-
-                                                        if (!response.ok) {
-                                                            this.inlineError = payload?.errors?.name?.[0]
-                                                                ?? payload?.message
-                                                                ?? 'No se pudo crear la tarea.';
-
-                                                            return;
-                                                        }
-
-                                                        const createdTask = payload?.task ?? {};
-                                                        this.$dispatch('task-created', {
-                                                            task: {
-                                                                id: createdTask.id,
-                                                                name: createdTask.name ?? name,
-                                                                projectName: this.selectedProjectName ?? 'Sin proyecto',
-                                                                statusName: this.statusesCatalog[String(this.$refs.inlineQuickStatus.value)] ?? 'Pendiente',
-                                                                userName: this.selectedUserName ?? 'Sin asignar',
-                                                                userInitials: this.selectedUserId ? this.selectedUserInitials : '—',
-                                                            },
-                                                        });
-
-                                                        input.value = '';
-                                                        input.focus();
-                                                    } catch (error) {
-                                                        this.inlineError = 'No se pudo crear la tarea.';
-                                                    } finally {
-                                                        this.isSubmitting = false;
-                                                    }
-                                                },
-                                            }"
-                                            x-init="init()"
-                                            @click.outside="showProjectPicker = false; showUserPicker = false"
                                         >
                                             @csrf
-                                            <input type="hidden" name="status_id" value="{{ $defaultStatusId }}" x-ref="inlineQuickStatus">
+                                            <input type="hidden" name="status_id" value="{{ $defaultStatusId }}">
                                             <input type="hidden" name="user_id" :value="selectedUserId">
                                             <input type="hidden" name="project_id" :value="selectedProjectId">
                                             <div class="relative shrink-0">
@@ -445,78 +451,92 @@
                                                 required
                                                 autofocus
                                             >
-                                            <div class="relative shrink-0">
+                                        </form>
+                                    </td>
+                                    <td class="px-4 py-3">
+                                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700" x-text="statusesCatalog[String(defaultStatusId)] ?? 'Pendiente'"></span>
+                                    </td>
+                                    <td class="px-4 py-3 text-gray-400 whitespace-nowrap">Sin fecha</td>
+                                    <td class="px-4 py-3">
+                                        <span
+                                            class="text-xs"
+                                            :class="inlineError ? 'text-red-600' : (isSubmitting ? 'text-blue-600' : 'text-gray-400')"
+                                            x-text="inlineError ? inlineError : (isSubmitting ? 'Guardando...' : '')"
+                                        ></span>
+                                    </td>
+                                    <td class="px-4 py-3 text-center">
+                                        <div class="relative inline-flex">
+                                            <button
+                                                id="tasks-inline-quick-user-toggle"
+                                                type="button"
+                                                class="h-10 w-10 overflow-hidden rounded-full ring-2 ring-gray-100 bg-white flex items-center justify-center"
+                                                @click="showUserPicker = !showUserPicker"
+                                                :title="selectedUserName"
+                                            >
+                                                <template x-if="selectedUserAvatar">
+                                                    <img :src="selectedUserAvatar" :alt="selectedUserName" class="h-10 w-10 object-cover">
+                                                </template>
+                                                <template x-if="!selectedUserAvatar">
+                                                    <span class="text-xs font-semibold text-gray-600" x-text="selectedUserInitials"></span>
+                                                </template>
+                                            </button>
+                                            <div
+                                                x-cloak
+                                                x-show="showUserPicker"
+                                                x-transition
+                                                class="absolute right-0 top-12 z-20 w-72 max-h-72 overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-lg p-1"
+                                            >
                                                 <button
-                                                    id="tasks-inline-quick-user-toggle"
                                                     type="button"
-                                                    class="h-10 w-10 overflow-hidden rounded-full border border-gray-300 bg-white hover:border-blue-400 flex items-center justify-center"
-                                                    @click="showUserPicker = !showUserPicker"
-                                                    :title="selectedUserName"
+                                                    class="w-full rounded px-3 py-2 text-left text-sm hover:bg-gray-100 text-gray-700"
+                                                    @click="setSelectedUser(''); showUserPicker = false"
                                                 >
-                                                    <template x-if="selectedUserAvatar">
-                                                        <img :src="selectedUserAvatar" :alt="selectedUserName" class="h-10 w-10 object-cover">
-                                                    </template>
-                                                    <template x-if="!selectedUserAvatar">
-                                                        <span class="text-xs font-semibold text-gray-600" x-text="selectedUserInitials"></span>
-                                                    </template>
+                                                    Sin asignar
                                                 </button>
-                                                <div
-                                                    x-cloak
-                                                    x-show="showUserPicker"
-                                                    x-transition
-                                                    class="absolute right-0 top-12 z-20 w-72 max-h-72 overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-lg p-1"
-                                                >
+                                                @foreach($users as $user)
+                                                    @php
+                                                        $userInitials = collect(explode(' ', trim($user->name)))
+                                                            ->filter()
+                                                            ->map(fn ($part) => mb_substr($part, 0, 1))
+                                                            ->take(2)
+                                                            ->implode('');
+                                                        $userAvatarPath = $user->image_url
+                                                            ? (str_contains($user->image_url, '/') ? $user->image_url : 'files/users/'.$user->image_url)
+                                                            : null;
+                                                    @endphp
                                                     <button
                                                         type="button"
-                                                        class="w-full rounded px-3 py-2 text-left text-sm hover:bg-gray-100 text-gray-700"
-                                                        @click="setSelectedUser(''); showUserPicker = false"
+                                                        class="w-full rounded px-3 py-2 text-left text-sm hover:bg-gray-100 text-gray-800 flex items-center gap-2"
+                                                        @click="setSelectedUser('{{ $user->id }}'); showUserPicker = false"
                                                     >
-                                                        Sin asignar
+                                                        @if($userAvatarPath)
+                                                            <img src="{{ asset('storage/'.$userAvatarPath) }}" alt="{{ $user->name }}" class="h-6 w-6 rounded-full object-cover">
+                                                        @else
+                                                            <span class="h-6 w-6 rounded-full bg-gray-100 text-gray-700 flex items-center justify-center text-xs font-semibold">{{ $userInitials ?: '?' }}</span>
+                                                        @endif
+                                                        <span class="truncate">{{ $user->name }}</span>
                                                     </button>
-                                                    @foreach($users as $user)
-                                                        @php
-                                                            $userInitials = collect(explode(' ', trim($user->name)))
-                                                                ->filter()
-                                                                ->map(fn ($part) => mb_substr($part, 0, 1))
-                                                                ->take(2)
-                                                                ->implode('');
-                                                            $userAvatarPath = $user->image_url
-                                                                ? (str_contains($user->image_url, '/') ? $user->image_url : 'files/users/'.$user->image_url)
-                                                                : null;
-                                                        @endphp
-                                                        <button
-                                                            type="button"
-                                                            class="w-full rounded px-3 py-2 text-left text-sm hover:bg-gray-100 text-gray-800 flex items-center gap-2"
-                                                            @click="setSelectedUser('{{ $user->id }}'); showUserPicker = false"
-                                                        >
-                                                            @if($userAvatarPath)
-                                                                <img src="{{ asset('storage/'.$userAvatarPath) }}" alt="{{ $user->name }}" class="h-6 w-6 rounded-full object-cover">
-                                                            @else
-                                                                <span class="h-6 w-6 rounded-full bg-gray-100 text-gray-700 flex items-center justify-center text-xs font-semibold">{{ $userInitials ?: '?' }}</span>
-                                                            @endif
-                                                            <span class="truncate">{{ $user->name }}</span>
-                                                        </button>
-                                                    @endforeach
-                                                </div>
+                                                @endforeach
                                             </div>
-                                            <span
-                                                class="shrink-0 text-xs"
-                                                :class="inlineError ? 'text-red-600' : (isSubmitting ? 'text-blue-600' : 'text-gray-400')"
-                                                x-text="inlineError ? inlineError : (isSubmitting ? 'Guardando...' : '')"
-                                            ></span>
-                                        </form>
-                                    @else
+                                        </div>
+                                    </td>
+                                </tr>
+                            @else
+                                <tr class="bg-white">
+                                    <td colspan="5" class="px-4 py-2">
                                         <p class="text-sm text-amber-700">No hay estados activos para crear tareas rápidas.</p>
-                                    @endif
-                                </td>
-                            </tr>
+                                    </td>
+                                </tr>
+                            @endif
                             <template x-for="recentTask in recentTasks" :key="recentTask.rowKey">
                                 <tr :class="recentTask.isFresh ? 'task-created-row' : 'hover:bg-gray-50'">
                                     <td class="px-4 py-3">
                                         <div class="flex items-start gap-3">
-                                            <div class="h-10 w-10 rounded-full flex items-center justify-center text-xs font-semibold bg-emerald-100 text-emerald-700">
-                                                +
-                                            </div>
+                                            <div
+                                                class="h-10 w-10 rounded-full flex items-center justify-center text-xs font-semibold text-white"
+                                                :style="`background:${recentTask.projectColor ?? '#9ca3af'}`"
+                                                x-text="recentTask.projectInitials ?? 'SP'"
+                                            ></div>
                                             <div>
                                                 <p class="font-semibold text-gray-900" x-text="recentTask.name"></p>
                                                 <p class="text-xs text-gray-500" x-text="recentTask.projectName"></p>
@@ -529,11 +549,16 @@
                                     <td class="px-4 py-3 text-gray-400 whitespace-nowrap">Sin fecha</td>
                                     <td class="px-4 py-3 text-xs font-semibold text-emerald-700">Recién creada</td>
                                     <td class="px-4 py-3 text-center">
-                                        <div
-                                            class="h-10 w-10 rounded-full flex items-center justify-center text-xs font-semibold mx-auto"
-                                            :class="recentTask.userInitials === '—' ? 'bg-gray-100 text-gray-500' : 'bg-indigo-100 text-indigo-700'"
-                                            x-text="recentTask.userInitials"
-                                        ></div>
+                                        <template x-if="recentTask.userAvatar">
+                                            <img :src="recentTask.userAvatar" :alt="recentTask.userName" class="h-10 w-10 rounded-full object-cover ring-2 ring-gray-100 mx-auto">
+                                        </template>
+                                        <template x-if="!recentTask.userAvatar">
+                                            <div
+                                                class="h-10 w-10 rounded-full flex items-center justify-center text-xs font-semibold mx-auto"
+                                                :class="recentTask.userInitials === '—' ? 'bg-gray-100 text-gray-500' : 'bg-indigo-100 text-indigo-700'"
+                                                x-text="recentTask.userInitials"
+                                            ></div>
+                                        </template>
                                     </td>
                                 </tr>
                             </template>
