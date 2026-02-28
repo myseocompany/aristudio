@@ -56,6 +56,7 @@ Route::middleware('auth')->group(function () {
     Route::post('timer/pause', [TimerController::class, 'pause'])->name('timer.pause');
     Route::post('timer/reset', [TimerController::class, 'reset'])->name('timer.reset');
     Route::post('timer', [TimerController::class, 'store'])->name('timer.store');
+    Route::post('tasks/{task}/quick-assign', [TaskController::class, 'quickAssign'])->name('tasks.quick-assign');
 });
 
 require __DIR__.'/auth.php';

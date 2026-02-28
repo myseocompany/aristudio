@@ -552,7 +552,8 @@
                                             ->map(fn ($w) => mb_substr($w, 0, 1))
                                             ->take(2)
                                             ->implode('')
-                                        : '?';
+                                        : 'SP';
+                                    $projectColor = $project->color ?? '#9ca3af';
                                     $imgPath = $user?->image_url
                                         ? (str_contains($user->image_url, '/') ? $user->image_url : 'files/users/'.$user->image_url)
                                         : null;
@@ -561,26 +562,159 @@
                                         ->map(fn ($part) => mb_substr($part, 0, 1))
                                         ->take(2)
                                         ->implode('');
+                                    $selectedUserAvatarUrl = $imgPath ? asset('storage/'.$imgPath) : null;
                                     $pointsUsed = (float) ($task->points ?? 0);
                                     $maxPoints = 2;
                                     $progressPct = max(0, min(1, $pointsUsed / $maxPoints)) * 100;
-                                    $palette = [
-                                        'bg-amber-100 text-amber-800',
-                                        'bg-indigo-100 text-indigo-800',
-                                        'bg-emerald-100 text-emerald-800',
-                                        'bg-sky-100 text-sky-800',
-                                        'bg-pink-100 text-pink-800',
-                                        'bg-slate-100 text-slate-800',
-                                        'bg-purple-100 text-purple-800',
-                                        'bg-teal-100 text-teal-800',
-                                    ];
-                                    $colorClass = $user ? $palette[$user->id % count($palette)] : 'bg-gray-100 text-gray-600';
                                 @endphp
-                                <tr class="hover:bg-gray-50">
+                                <tr
+                                    class="hover:bg-gray-50"
+                                    x-data="{
+                                        showProjectPicker: false,
+                                        showUserPicker: false,
+                                        selectedProjectId: @js((string) ($task->project_id ?? '')),
+                                        selectedProjectName: @js($project?->name ?? 'Sin proyecto'),
+                                        selectedProjectColor: @js($projectColor),
+                                        selectedProjectInitials: @js($projectInitials ?: 'SP'),
+                                        selectedUserId: @js((string) ($task->user_id ?? '')),
+                                        selectedUserName: @js($user?->name ?? 'Sin asignar'),
+                                        selectedUserInitials: @js($initials ?: 'SA'),
+                                        selectedUserAvatar: @js($selectedUserAvatarUrl),
+                                        updatingField: null,
+                                        rowError: '',
+                                        async persistAssignment(payload, field) {
+                                            this.rowError = '';
+                                            this.updatingField = field;
+
+                                            try {
+                                                const response = await fetch('{{ route('tasks.quick-assign', $task) }}', {
+                                                    method: 'POST',
+                                                    headers: {
+                                                        'Content-Type': 'application/json',
+                                                        'Accept': 'application/json',
+                                                        'X-Requested-With': 'XMLHttpRequest',
+                                                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                                    },
+                                                    body: JSON.stringify(payload),
+                                                });
+                                                const data = await response.json().catch(() => ({}));
+
+                                                if (!response.ok) {
+                                                    throw new Error(data?.message ?? 'No se pudo actualizar.');
+                                                }
+                                            } catch (error) {
+                                                this.rowError = error?.message ?? 'No se pudo actualizar.';
+                                                throw error;
+                                            } finally {
+                                                this.updatingField = null;
+                                            }
+                                        },
+                                        async setProject(projectId, projectName, projectColor, projectInitials) {
+                                            if (this.updatingField) {
+                                                return;
+                                            }
+
+                                            const previous = {
+                                                id: this.selectedProjectId,
+                                                name: this.selectedProjectName,
+                                                color: this.selectedProjectColor,
+                                                initials: this.selectedProjectInitials,
+                                            };
+
+                                            this.selectedProjectId = String(projectId ?? '');
+                                            this.selectedProjectName = projectName;
+                                            this.selectedProjectColor = projectColor;
+                                            this.selectedProjectInitials = projectInitials;
+                                            this.showProjectPicker = false;
+
+                                            try {
+                                                await this.persistAssignment({
+                                                    project_id: this.selectedProjectId !== '' ? Number(this.selectedProjectId) : null,
+                                                }, 'project');
+                                            } catch (error) {
+                                                this.selectedProjectId = previous.id;
+                                                this.selectedProjectName = previous.name;
+                                                this.selectedProjectColor = previous.color;
+                                                this.selectedProjectInitials = previous.initials;
+                                            }
+                                        },
+                                        async setUser(userId, userName, userInitials, userAvatar) {
+                                            if (this.updatingField) {
+                                                return;
+                                            }
+
+                                            const previous = {
+                                                id: this.selectedUserId,
+                                                name: this.selectedUserName,
+                                                initials: this.selectedUserInitials,
+                                                avatar: this.selectedUserAvatar,
+                                            };
+
+                                            this.selectedUserId = String(userId ?? '');
+                                            this.selectedUserName = userName;
+                                            this.selectedUserInitials = userInitials;
+                                            this.selectedUserAvatar = userAvatar;
+                                            this.showUserPicker = false;
+
+                                            try {
+                                                await this.persistAssignment({
+                                                    user_id: this.selectedUserId !== '' ? Number(this.selectedUserId) : null,
+                                                }, 'user');
+                                            } catch (error) {
+                                                this.selectedUserId = previous.id;
+                                                this.selectedUserName = previous.name;
+                                                this.selectedUserInitials = previous.initials;
+                                                this.selectedUserAvatar = previous.avatar;
+                                            }
+                                        },
+                                    }"
+                                    @click.outside="showProjectPicker = false; showUserPicker = false"
+                                >
                                     <td class="px-4 py-3">
                                         <div class="flex items-start gap-3">
-                                            <div class="h-10 w-10 rounded-full flex items-center justify-center text-xs font-semibold text-white" style="background: {{ $project->color ?? '#9ca3af' }}">
-                                                {{ $projectInitials ?: '?' }}
+                                            <div class="relative shrink-0">
+                                                <button
+                                                    type="button"
+                                                    class="h-10 w-10 rounded-full text-white flex items-center justify-center text-xs font-semibold hover:opacity-90"
+                                                    data-task-row-project-toggle="{{ $task->id }}"
+                                                    :style="`background:${selectedProjectColor}`"
+                                                    @click.stop="showProjectPicker = !showProjectPicker"
+                                                    :disabled="updatingField !== null"
+                                                    :title="selectedProjectName"
+                                                >
+                                                    <span x-text="selectedProjectInitials"></span>
+                                                </button>
+                                                <div
+                                                    x-cloak
+                                                    x-show="showProjectPicker"
+                                                    x-transition
+                                                    class="absolute left-0 top-12 z-20 w-72 max-h-72 overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-lg p-1"
+                                                >
+                                                    <button
+                                                        type="button"
+                                                        class="w-full rounded px-3 py-2 text-left text-sm hover:bg-gray-100 text-gray-700"
+                                                        @click="setProject('', 'Sin proyecto', '#9ca3af', 'SP')"
+                                                    >
+                                                        Sin proyecto
+                                                    </button>
+                                                    @foreach($projects as $projectOption)
+                                                        @php
+                                                            $projectOptionInitials = collect(explode(' ', trim($projectOption->name)))
+                                                                ->filter()
+                                                                ->map(fn ($part) => mb_substr($part, 0, 1))
+                                                                ->take(2)
+                                                                ->implode('') ?: 'SP';
+                                                        @endphp
+                                                        <button
+                                                            type="button"
+                                                            class="w-full rounded px-3 py-2 text-left text-sm hover:bg-gray-100 text-gray-800 flex items-center gap-2"
+                                                            @click="setProject('{{ $projectOption->id }}', @js($projectOption->name), @js($projectOption->color ?? '#9ca3af'), @js($projectOptionInitials))"
+                                                        >
+                                                            <span class="h-2.5 w-2.5 rounded-full" style="background: {{ $projectOption->color ?? '#9ca3af' }}"></span>
+                                                            <span class="truncate">{{ $projectOption->name }}</span>
+                                                        </button>
+                                                    @endforeach
+                                                </div>
                                             </div>
                                             <div>
                                                 <button type="button" class="font-semibold text-gray-900 hover:underline text-left" @click="loadPanel('{{ route('tasks.show', $task) }}?sidebar=1')">
@@ -589,6 +723,7 @@
                                                 <div class="text-xs text-gray-500 leading-relaxed">
                                                     {{ \Illuminate\Support\Str::limit(strip_tags($task->description ?? ''), 120) ?: 'Sin descripción' }}
                                                 </div>
+                                                <p class="text-xs text-red-600 mt-1" x-show="rowError" x-text="rowError"></p>
                                             </div>
                                         </div>
                                     </td>
@@ -619,19 +754,62 @@
                                         </div>
                                     </td>
                                     <td class="px-4 py-3 text-center">
-                                        @if($user)
-                                            @if($imgPath)
-                                                <img src="{{ asset('storage/'.$imgPath) }}" class="h-10 w-10 rounded-full object-cover ring-2 ring-gray-100 mx-auto" alt="{{ $user->name }}">
-                                            @else
-                                                <div class="h-10 w-10 rounded-full flex items-center justify-center text-xs font-semibold {{ $colorClass }} mx-auto">
-                                                    {{ $initials ?: '?' }}
-                                                </div>
-                                            @endif
-                                        @else
-                                            <div class="h-10 w-10 rounded-full flex items-center justify-center text-xs font-semibold bg-gray-100 text-gray-500 mx-auto">
-                                                —
+                                        <div class="relative inline-flex">
+                                            <button
+                                                type="button"
+                                                class="h-10 w-10 overflow-hidden rounded-full border border-gray-300 bg-white hover:border-blue-400 flex items-center justify-center"
+                                                data-task-row-user-toggle="{{ $task->id }}"
+                                                @click.stop="showUserPicker = !showUserPicker"
+                                                :disabled="updatingField !== null"
+                                                :title="selectedUserName"
+                                            >
+                                                <template x-if="selectedUserAvatar">
+                                                    <img :src="selectedUserAvatar" :alt="selectedUserName" class="h-10 w-10 object-cover">
+                                                </template>
+                                                <template x-if="!selectedUserAvatar">
+                                                    <span class="text-xs font-semibold text-gray-600" x-text="selectedUserId ? selectedUserInitials : '—'"></span>
+                                                </template>
+                                            </button>
+                                            <div
+                                                x-cloak
+                                                x-show="showUserPicker"
+                                                x-transition
+                                                class="absolute right-0 top-12 z-20 w-72 max-h-72 overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-lg p-1"
+                                            >
+                                                <button
+                                                    type="button"
+                                                    class="w-full rounded px-3 py-2 text-left text-sm hover:bg-gray-100 text-gray-700"
+                                                    @click="setUser('', 'Sin asignar', 'SA', null)"
+                                                >
+                                                    Sin asignar
+                                                </button>
+                                                @foreach($users as $userOption)
+                                                    @php
+                                                        $userOptionInitials = collect(explode(' ', trim($userOption->name)))
+                                                            ->filter()
+                                                            ->map(fn ($part) => mb_substr($part, 0, 1))
+                                                            ->take(2)
+                                                            ->implode('') ?: '?';
+                                                        $userOptionAvatarPath = $userOption->image_url
+                                                            ? (str_contains($userOption->image_url, '/') ? $userOption->image_url : 'files/users/'.$userOption->image_url)
+                                                            : null;
+                                                        $userOptionAvatarUrl = $userOptionAvatarPath ? asset('storage/'.$userOptionAvatarPath) : null;
+                                                    @endphp
+                                                    <button
+                                                        type="button"
+                                                        class="w-full rounded px-3 py-2 text-left text-sm hover:bg-gray-100 text-gray-800 flex items-center gap-2"
+                                                        @click="setUser('{{ $userOption->id }}', @js($userOption->name), @js($userOptionInitials), @js($userOptionAvatarUrl))"
+                                                    >
+                                                        @if($userOptionAvatarUrl)
+                                                            <img src="{{ $userOptionAvatarUrl }}" alt="{{ $userOption->name }}" class="h-6 w-6 rounded-full object-cover">
+                                                        @else
+                                                            <span class="h-6 w-6 rounded-full bg-gray-100 text-gray-700 flex items-center justify-center text-xs font-semibold">{{ $userOptionInitials }}</span>
+                                                        @endif
+                                                        <span class="truncate">{{ $userOption->name }}</span>
+                                                    </button>
+                                                @endforeach
                                             </div>
-                                        @endif
+                                        </div>
                                     </td>
                                 </tr>
                             @empty

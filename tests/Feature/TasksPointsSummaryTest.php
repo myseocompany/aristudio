@@ -284,6 +284,8 @@ class TasksPointsSummaryTest extends TestCase
         $response->assertSee('selectedUserAvatar:', false);
         $response->assertSee("storageProjectKey: 'tasks.inline.quick.project_id'", false);
         $response->assertSee("storageUserKey: 'tasks.inline.quick.user_id'", false);
+        $response->assertSee('data-task-row-project-toggle="', false);
+        $response->assertSee('data-task-row-user-toggle="', false);
         $response->assertSeeInOrder(['id="tasks-inline-quick-name"', 'Tarea existente'], false);
     }
 
@@ -354,6 +356,75 @@ class TasksPointsSummaryTest extends TestCase
             'name' => 'Tarea async',
             'user_id' => $user->id,
             'status_id' => 1,
+        ]);
+    }
+
+    public function test_quick_assign_updates_task_project_and_user(): void
+    {
+        $editor = User::factory()->create([
+            'status_id' => 1,
+        ]);
+        $assignee = User::factory()->create([
+            'status_id' => 1,
+        ]);
+
+        $this->grantModulePermissions($editor, '/tasks', ['update']);
+        $this->actingAs($editor->refresh());
+
+        DB::table('projects')->insert([
+            [
+                'id' => 11,
+                'name' => 'Proyecto Inicial',
+                'status_id' => 3,
+                'weight' => 1,
+                'color' => '#000000',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'id' => 12,
+                'name' => 'Proyecto Nuevo',
+                'status_id' => 3,
+                'weight' => 2,
+                'color' => '#111111',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+        ]);
+
+        DB::table('task_statuses')->insert([
+            'id' => 1,
+            'name' => 'Pendiente',
+            'pending' => true,
+            'status_id' => 1,
+            'weight' => 1,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $task = Task::create([
+            'name' => 'Tarea editable',
+            'project_id' => 11,
+            'status_id' => 1,
+            'due_date' => now(),
+        ]);
+
+        $response = $this->postJson(route('tasks.quick-assign', $task), [
+            'project_id' => 12,
+            'user_id' => $assignee->id,
+        ]);
+
+        $response->assertOk();
+        $response->assertJsonPath('message', 'Asignación actualizada.');
+        $response->assertJsonPath('task.id', $task->id);
+        $response->assertJsonPath('task.project_id', 12);
+        $response->assertJsonPath('task.user_id', $assignee->id);
+
+        $this->assertDatabaseHas('tasks', [
+            'id' => $task->id,
+            'project_id' => 12,
+            'user_id' => $assignee->id,
+            'updator_user_id' => $editor->id,
         ]);
     }
 }

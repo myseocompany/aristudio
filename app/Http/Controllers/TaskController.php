@@ -25,6 +25,7 @@ class TaskController extends Controller
                 'show' => 'read',
                 'edit' => 'update',
                 'update' => 'update',
+                'quickAssign' => 'update',
                 'destroy' => 'delete',
             ]);
 
@@ -277,6 +278,38 @@ class TaskController extends Controller
         }
 
         return view('tasks.show', ['task' => $task]);
+    }
+
+    public function quickAssign(Request $request, Task $task)
+    {
+        $data = $request->validate([
+            'project_id' => ['nullable', 'exists:projects,id'],
+            'user_id' => ['nullable', 'exists:users,id'],
+        ]);
+
+        $task->fill($data);
+        $task->updator_user_id = Auth::id();
+        $task->save();
+        $task->load(['project:id,name,color', 'user:id,name,image_url']);
+
+        return response()->json([
+            'message' => 'Asignación actualizada.',
+            'task' => [
+                'id' => $task->id,
+                'project_id' => $task->project_id,
+                'user_id' => $task->user_id,
+                'project' => $task->project ? [
+                    'id' => $task->project->id,
+                    'name' => $task->project->name,
+                    'color' => $task->project->color,
+                ] : null,
+                'user' => $task->user ? [
+                    'id' => $task->user->id,
+                    'name' => $task->user->name,
+                    'image_url' => $task->user->image_url,
+                ] : null,
+            ],
+        ]);
     }
 
     public function edit(Request $request, Task $task)
