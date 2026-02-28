@@ -42,7 +42,124 @@
             showTaskPanel: false,
             taskPanelHtml: '',
             loadingTaskId: null,
+            tasksBaseUrl: @js(url('tasks')),
+            csrfToken: @js(csrf_token()),
+            projectsCatalog: @js($projects->map(fn ($project) => [
+                'id' => (string) $project->id,
+                'name' => $project->name,
+                'color' => $project->color ?? '#9ca3af',
+                'initials' => collect(explode(' ', trim($project->name)))
+                    ->filter()
+                    ->map(fn ($word) => mb_substr($word, 0, 1))
+                    ->take(2)
+                    ->implode('') ?: 'SP',
+            ])->values()),
+            usersCatalog: @js($users->map(function ($user) {
+                $initials = collect(explode(' ', trim($user->name)))
+                    ->filter()
+                    ->map(fn ($part) => mb_substr($part, 0, 1))
+                    ->take(2)
+                    ->implode('');
+                $avatarPath = $user->image_url
+                    ? (str_contains($user->image_url, '/') ? $user->image_url : 'files/users/'.$user->image_url)
+                    : null;
+
+                return [
+                    'id' => (string) $user->id,
+                    'name' => $user->name,
+                    'initials' => $initials ?: '?',
+                    'avatarUrl' => $avatarPath ? asset('storage/'.$avatarPath) : null,
+                ];
+            })->values()),
             recentTasks: [],
+            quickAssignUrl(taskId) {
+                return `${this.tasksBaseUrl}/${taskId}/quick-assign`;
+            },
+            async updateRecentTaskAssignment(task, payload, field) {
+                task.rowError = '';
+                task.updatingField = field;
+
+                try {
+                    const response = await fetch(this.quickAssignUrl(task.id), {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRF-TOKEN': this.csrfToken,
+                        },
+                        body: JSON.stringify(payload),
+                    });
+                    const data = await response.json().catch(() => ({}));
+
+                    if (!response.ok) {
+                        throw new Error(data?.message ?? 'No se pudo actualizar.');
+                    }
+                } catch (error) {
+                    task.rowError = error?.message ?? 'No se pudo actualizar.';
+                    throw error;
+                } finally {
+                    task.updatingField = null;
+                }
+            },
+            async updateRecentTaskProject(task, projectId, projectName, projectColor, projectInitials) {
+                if (task.updatingField) {
+                    return;
+                }
+
+                const previous = {
+                    projectId: task.projectId,
+                    projectName: task.projectName,
+                    projectColor: task.projectColor,
+                    projectInitials: task.projectInitials,
+                };
+
+                task.projectId = String(projectId ?? '');
+                task.projectName = projectName;
+                task.projectColor = projectColor;
+                task.projectInitials = projectInitials;
+                task.showProjectPicker = false;
+
+                try {
+                    await this.updateRecentTaskAssignment(task, {
+                        project_id: task.projectId !== '' ? Number(task.projectId) : null,
+                    }, 'project');
+                } catch (error) {
+                    task.projectId = previous.projectId;
+                    task.projectName = previous.projectName;
+                    task.projectColor = previous.projectColor;
+                    task.projectInitials = previous.projectInitials;
+                }
+            },
+            async updateRecentTaskUser(task, userId, userName, userInitials, userAvatar) {
+                if (task.updatingField) {
+                    return;
+                }
+
+                const previous = {
+                    userId: task.userId,
+                    userName: task.userName,
+                    userInitials: task.userInitials,
+                    userAvatar: task.userAvatar,
+                };
+
+                task.userId = String(userId ?? '');
+                task.userName = userName;
+                task.userInitials = userInitials;
+                task.userAvatar = userAvatar;
+                task.showUserPicker = false;
+
+                try {
+                    await this.updateRecentTaskAssignment(task, {
+                        user_id: task.userId !== '' ? Number(task.userId) : null,
+                    }, 'user');
+                } catch (error) {
+                    task.userId = previous.userId;
+                    task.userName = previous.userName;
+                    task.userInitials = previous.userInitials;
+                    task.userAvatar = previous.userAvatar;
+                }
+            },
             handleTaskCreated(task) {
                 if (!task || !task.id) {
                     return;
@@ -50,6 +167,13 @@
 
                 this.recentTasks.unshift({
                     ...task,
+                    projectId: String(task.projectId ?? ''),
+                    userId: String(task.userId ?? ''),
+                    showProjectPicker: false,
+                    showUserPicker: false,
+                    updatingField: null,
+                    rowError: '',
+                    showUrl: task.showUrl ?? `${this.tasksBaseUrl}/${task.id}?sidebar=1`,
                     rowKey: `recent-${task.id}-${Date.now()}`,
                     isFresh: true,
                 });
@@ -273,7 +397,11 @@
                                         selectedProjectInitials: @js($inlineQuickProjectInitials),
                                         projectsCatalog: @js($inlineQuickProjectsCatalog),
                                         defaultStatusId: @js((string) $defaultStatusId),
-                                        statusesCatalog: @js($statuses->mapWithKeys(fn ($status) => [(string) $status->id => $status->name])->all()),
+                                        statusesCatalog: @js($statuses->mapWithKeys(fn ($status) => [(string) $status->id => [
+                                            'name' => $status->name,
+                                            'color' => $status->color ?? '#312e81',
+                                            'backgroundColor' => $status->background_color ?? '#eef2ff',
+                                        ]])->all()),
                                         showUserPicker: false,
                                         selectedUserId: @js($inlineQuickUserId),
                                         selectedUserName: @js($inlineQuickUserName),
@@ -366,17 +494,28 @@
                                                 }
 
                                                 const createdTask = payload?.task ?? {};
+                                                const selectedStatus = this.statusesCatalog[String(this.defaultStatusId)] ?? {
+                                                    name: 'Pendiente',
+                                                    color: '#312e81',
+                                                    backgroundColor: '#eef2ff',
+                                                };
+
                                                 this.$dispatch('task-created', {
                                                     task: {
                                                         id: createdTask.id,
                                                         name: createdTask.name ?? name,
+                                                        projectId: this.selectedProjectId ?? '',
                                                         projectName: this.selectedProjectName ?? 'Sin proyecto',
                                                         projectColor: this.selectedProjectColor ?? '#9ca3af',
                                                         projectInitials: this.selectedProjectInitials ?? 'SP',
-                                                        statusName: this.statusesCatalog[String(this.defaultStatusId)] ?? 'Pendiente',
+                                                        statusName: selectedStatus.name,
+                                                        statusColor: selectedStatus.color,
+                                                        statusBackgroundColor: selectedStatus.backgroundColor,
+                                                        userId: this.selectedUserId ?? '',
                                                         userName: this.selectedUserName ?? 'Sin asignar',
                                                         userInitials: this.selectedUserId ? this.selectedUserInitials : '—',
                                                         userAvatar: this.selectedUserId ? (this.selectedUserAvatar ?? null) : null,
+                                                        showUrl: `{{ url('tasks') }}/${createdTask.id}?sidebar=1`,
                                                     },
                                                 });
 
@@ -454,7 +593,11 @@
                                         </form>
                                     </td>
                                     <td class="px-4 py-3">
-                                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700" x-text="statusesCatalog[String(defaultStatusId)] ?? 'Pendiente'"></span>
+                                        <span
+                                            class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold"
+                                            :style="`background:${statusesCatalog[String(defaultStatusId)]?.backgroundColor ?? '#eef2ff'}; color:${statusesCatalog[String(defaultStatusId)]?.color ?? '#312e81'}`"
+                                            x-text="statusesCatalog[String(defaultStatusId)]?.name ?? 'Pendiente'"
+                                        ></span>
                                     </td>
                                     <td class="px-4 py-3 text-gray-400 whitespace-nowrap">Sin fecha</td>
                                     <td class="px-4 py-3">
@@ -532,33 +675,106 @@
                                 <tr :class="recentTask.isFresh ? 'task-created-row' : 'hover:bg-gray-50'">
                                     <td class="px-4 py-3">
                                         <div class="flex items-start gap-3">
-                                            <div
-                                                class="h-10 w-10 rounded-full flex items-center justify-center text-xs font-semibold text-white"
-                                                :style="`background:${recentTask.projectColor ?? '#9ca3af'}`"
-                                                x-text="recentTask.projectInitials ?? 'SP'"
-                                            ></div>
+                                            <div class="relative shrink-0" @click.outside="recentTask.showProjectPicker = false">
+                                                <button
+                                                    type="button"
+                                                    class="h-10 w-10 rounded-full text-white flex items-center justify-center text-xs font-semibold hover:opacity-90"
+                                                    :style="`background:${recentTask.projectColor ?? '#9ca3af'}`"
+                                                    @click.stop="recentTask.showProjectPicker = !recentTask.showProjectPicker"
+                                                    :disabled="recentTask.updatingField !== null"
+                                                    :title="recentTask.projectName"
+                                                >
+                                                    <span x-text="recentTask.projectInitials ?? 'SP'"></span>
+                                                </button>
+                                                <div
+                                                    x-cloak
+                                                    x-show="recentTask.showProjectPicker"
+                                                    x-transition
+                                                    class="absolute left-0 top-12 z-20 w-72 max-h-72 overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-lg p-1"
+                                                >
+                                                    <button
+                                                        type="button"
+                                                        class="w-full rounded px-3 py-2 text-left text-sm hover:bg-gray-100 text-gray-700"
+                                                        @click="updateRecentTaskProject(recentTask, '', 'Sin proyecto', '#9ca3af', 'SP')"
+                                                    >
+                                                        Sin proyecto
+                                                    </button>
+                                                    <template x-for="projectOption in projectsCatalog" :key="`recent-project-${recentTask.id}-${projectOption.id}`">
+                                                        <button
+                                                            type="button"
+                                                            class="w-full rounded px-3 py-2 text-left text-sm hover:bg-gray-100 text-gray-800 flex items-center gap-2"
+                                                            @click="updateRecentTaskProject(recentTask, projectOption.id, projectOption.name, projectOption.color ?? '#9ca3af', projectOption.initials ?? 'SP')"
+                                                        >
+                                                            <span class="h-2.5 w-2.5 rounded-full" :style="`background:${projectOption.color ?? '#9ca3af'}`"></span>
+                                                            <span class="truncate" x-text="projectOption.name"></span>
+                                                        </button>
+                                                    </template>
+                                                </div>
+                                            </div>
                                             <div>
-                                                <p class="font-semibold text-gray-900" x-text="recentTask.name"></p>
+                                                <button type="button" class="font-semibold text-gray-900 hover:underline text-left" @click="loadPanel(recentTask.showUrl)">
+                                                    <span x-text="recentTask.name"></span>
+                                                </button>
                                                 <p class="text-xs text-gray-500" x-text="recentTask.projectName"></p>
+                                                <p class="text-xs text-red-600 mt-1" x-show="recentTask.rowError" x-text="recentTask.rowError"></p>
                                             </div>
                                         </div>
                                     </td>
                                     <td class="px-4 py-3">
-                                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700" x-text="recentTask.statusName"></span>
+                                        <span
+                                            class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold"
+                                            :style="`background:${recentTask.statusBackgroundColor ?? '#eef2ff'}; color:${recentTask.statusColor ?? '#312e81'}`"
+                                            x-text="recentTask.statusName"
+                                        ></span>
                                     </td>
                                     <td class="px-4 py-3 text-gray-400 whitespace-nowrap">Sin fecha</td>
                                     <td class="px-4 py-3 text-xs font-semibold text-emerald-700">Recién creada</td>
                                     <td class="px-4 py-3 text-center">
-                                        <template x-if="recentTask.userAvatar">
-                                            <img :src="recentTask.userAvatar" :alt="recentTask.userName" class="h-10 w-10 rounded-full object-cover ring-2 ring-gray-100 mx-auto">
-                                        </template>
-                                        <template x-if="!recentTask.userAvatar">
+                                        <div class="relative inline-flex" @click.outside="recentTask.showUserPicker = false">
+                                            <button
+                                                type="button"
+                                                class="h-10 w-10 overflow-hidden rounded-full border border-gray-300 bg-white hover:border-blue-400 flex items-center justify-center"
+                                                @click.stop="recentTask.showUserPicker = !recentTask.showUserPicker"
+                                                :disabled="recentTask.updatingField !== null"
+                                                :title="recentTask.userName"
+                                            >
+                                                <template x-if="recentTask.userAvatar">
+                                                    <img :src="recentTask.userAvatar" :alt="recentTask.userName" class="h-10 w-10 object-cover">
+                                                </template>
+                                                <template x-if="!recentTask.userAvatar">
+                                                    <span class="text-xs font-semibold text-gray-600" x-text="recentTask.userInitials ?? '—'"></span>
+                                                </template>
+                                            </button>
                                             <div
-                                                class="h-10 w-10 rounded-full flex items-center justify-center text-xs font-semibold mx-auto"
-                                                :class="recentTask.userInitials === '—' ? 'bg-gray-100 text-gray-500' : 'bg-indigo-100 text-indigo-700'"
-                                                x-text="recentTask.userInitials"
-                                            ></div>
-                                        </template>
+                                                x-cloak
+                                                x-show="recentTask.showUserPicker"
+                                                x-transition
+                                                class="absolute right-0 top-12 z-20 w-72 max-h-72 overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-lg p-1"
+                                            >
+                                                <button
+                                                    type="button"
+                                                    class="w-full rounded px-3 py-2 text-left text-sm hover:bg-gray-100 text-gray-700"
+                                                    @click="updateRecentTaskUser(recentTask, '', 'Sin asignar', 'SA', null)"
+                                                >
+                                                    Sin asignar
+                                                </button>
+                                                <template x-for="userOption in usersCatalog" :key="`recent-user-${recentTask.id}-${userOption.id}`">
+                                                    <button
+                                                        type="button"
+                                                        class="w-full rounded px-3 py-2 text-left text-sm hover:bg-gray-100 text-gray-800 flex items-center gap-2"
+                                                        @click="updateRecentTaskUser(recentTask, userOption.id, userOption.name, userOption.initials ?? '?', userOption.avatarUrl ?? null)"
+                                                    >
+                                                        <template x-if="userOption.avatarUrl">
+                                                            <img :src="userOption.avatarUrl" :alt="userOption.name" class="h-6 w-6 rounded-full object-cover">
+                                                        </template>
+                                                        <template x-if="!userOption.avatarUrl">
+                                                            <span class="h-6 w-6 rounded-full bg-gray-100 text-gray-700 flex items-center justify-center text-xs font-semibold" x-text="userOption.initials ?? '?'"></span>
+                                                        </template>
+                                                        <span class="truncate" x-text="userOption.name"></span>
+                                                    </button>
+                                                </template>
+                                            </div>
+                                        </div>
                                     </td>
                                 </tr>
                             </template>
