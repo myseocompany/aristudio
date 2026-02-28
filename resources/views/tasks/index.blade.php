@@ -205,16 +205,27 @@
                                             $inlineQuickProjectId = (string) old('project_id', '');
                                             $inlineQuickProjectName = 'Sin proyecto';
                                             $inlineQuickProjectColor = '#9ca3af';
+                                            $inlineQuickProjectInitials = 'SP';
                                             if ($inlineQuickProjectId !== '') {
                                                 $inlineQuickProject = $projects->firstWhere('id', (int) $inlineQuickProjectId);
                                                 $inlineQuickProjectName = $inlineQuickProject?->name ?? 'Sin proyecto';
                                                 $inlineQuickProjectColor = $inlineQuickProject?->color ?? '#9ca3af';
+                                                $inlineQuickProjectInitials = collect(explode(' ', trim($inlineQuickProjectName)))
+                                                    ->filter()
+                                                    ->map(fn ($word) => mb_substr($word, 0, 1))
+                                                    ->take(2)
+                                                    ->implode('') ?: 'SP';
                                             }
                                             $inlineQuickProjectsCatalog = $projects
                                                 ->map(fn ($project) => [
                                                     'id' => (string) $project->id,
                                                     'name' => $project->name,
                                                     'color' => $project->color ?? '#9ca3af',
+                                                    'initials' => collect(explode(' ', trim($project->name)))
+                                                        ->filter()
+                                                        ->map(fn ($word) => mb_substr($word, 0, 1))
+                                                        ->take(2)
+                                                        ->implode('') ?: 'SP',
                                                 ])
                                                 ->values();
                                             $inlineQuickUserId = (string) old('user_id', (string) auth()->id());
@@ -254,6 +265,7 @@
                                                 selectedProjectId: @js($inlineQuickProjectId),
                                                 selectedProjectName: @js($inlineQuickProjectName),
                                                 selectedProjectColor: @js($inlineQuickProjectColor),
+                                                selectedProjectInitials: @js($inlineQuickProjectInitials),
                                                 projectsCatalog: @js($inlineQuickProjectsCatalog),
                                                 statusesCatalog: @js($statuses->mapWithKeys(fn ($status) => [(string) $status->id => $status->name])->all()),
                                                 showUserPicker: false,
@@ -283,6 +295,7 @@
                                                     const project = this.projectsCatalog.find((item) => item.id === value);
                                                     this.selectedProjectName = project ? project.name : 'Sin proyecto';
                                                     this.selectedProjectColor = project ? (project.color ?? '#9ca3af') : '#9ca3af';
+                                                    this.selectedProjectInitials = project ? (project.initials ?? 'SP') : 'SP';
 
                                                     if (persist) {
                                                         window.localStorage.setItem(this.storageProjectKey, value);
@@ -376,11 +389,11 @@
                                                 <button
                                                     id="tasks-inline-quick-project-toggle"
                                                     type="button"
-                                                    class="h-10 w-10 rounded-full border-2 border-dashed border-gray-300 text-gray-500 hover:border-blue-400 hover:text-blue-600 flex items-center justify-center"
+                                                    class="h-10 w-10 rounded-full border border-slate-300 bg-slate-100 text-slate-700 hover:border-blue-400 hover:text-blue-600 flex items-center justify-center text-xs font-semibold"
                                                     @click="showProjectPicker = !showProjectPicker"
                                                     title="Escoger proyecto"
                                                 >
-                                                    +
+                                                    <span x-text="selectedProjectInitials"></span>
                                                 </button>
                                                 <div
                                                     x-cloak
