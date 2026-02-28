@@ -252,6 +252,19 @@ class TaskController extends Controller
 
         $task = Task::create($data);
 
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' => 'Tarea creada.',
+                'task' => [
+                    'id' => $task->id,
+                    'name' => $task->name,
+                    'project_id' => $task->project_id,
+                    'user_id' => $task->user_id,
+                    'status_id' => $task->status_id,
+                ],
+            ], 201);
+        }
+
         return redirect()->route('tasks.index')->with('status', 'Tarea creada.');
     }
 

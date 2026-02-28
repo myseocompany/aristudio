@@ -273,7 +273,10 @@ class TasksPointsSummaryTest extends TestCase
         $response = $this->get(route('tasks.index'));
 
         $response->assertOk();
+        $response->assertSee('id="tasks-inline-quick-project-toggle"', false);
+        $response->assertSee('id="tasks-inline-quick-user-toggle"', false);
         $response->assertSee('id="tasks-inline-quick-name"', false);
+        $response->assertSee('@submit.prevent="submitQuickTask"', false);
         $response->assertSeeInOrder(['id="tasks-inline-quick-name"', 'Tarea existente'], false);
     }
 
@@ -308,6 +311,42 @@ class TasksPointsSummaryTest extends TestCase
             'status_id' => 1,
             'creator_user_id' => $user->id,
             'updator_user_id' => $user->id,
+        ]);
+    }
+
+    public function test_store_returns_json_for_async_requests(): void
+    {
+        $user = User::factory()->create([
+            'status_id' => 1,
+        ]);
+
+        $this->grantModulePermissions($user, '/tasks', ['create']);
+        $this->actingAs($user->refresh());
+
+        DB::table('task_statuses')->insert([
+            'id' => 1,
+            'name' => 'Pendiente',
+            'pending' => true,
+            'status_id' => 1,
+            'weight' => 1,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $response = $this->postJson(route('tasks.store'), [
+            'name' => 'Tarea async',
+            'status_id' => 1,
+        ]);
+
+        $response->assertCreated();
+        $response->assertJsonPath('message', 'Tarea creada.');
+        $response->assertJsonPath('task.name', 'Tarea async');
+        $response->assertJsonPath('task.user_id', $user->id);
+
+        $this->assertDatabaseHas('tasks', [
+            'name' => 'Tarea async',
+            'user_id' => $user->id,
+            'status_id' => 1,
         ]);
     }
 }

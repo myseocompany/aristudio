@@ -165,23 +165,188 @@
                             <tr class="bg-white">
                                 <td colspan="5" class="px-4 py-2">
                                     @if($defaultStatusId)
-                                        <form action="{{ route('tasks.store') }}" method="POST" class="flex items-center gap-3">
+                                        @php
+                                            $inlineQuickProjectId = (string) old('project_id', '');
+                                            $inlineQuickProjectName = 'Sin proyecto';
+                                            if ($inlineQuickProjectId !== '') {
+                                                $inlineQuickProjectName = $projects->firstWhere('id', (int) $inlineQuickProjectId)?->name ?? 'Sin proyecto';
+                                            }
+                                            $inlineQuickUserId = (string) old('user_id', (string) auth()->id());
+                                            $inlineQuickUser = $users->firstWhere('id', (int) $inlineQuickUserId);
+                                            $inlineQuickUserName = $inlineQuickUser?->name ?? 'Sin asignar';
+                                            $inlineQuickUserInitials = $inlineQuickUser
+                                                ? collect(explode(' ', trim($inlineQuickUser->name)))
+                                                    ->filter()
+                                                    ->map(fn ($word) => mb_substr($word, 0, 1))
+                                                    ->take(2)
+                                                    ->implode('')
+                                                : 'SA';
+                                        @endphp
+                                        <form
+                                            action="{{ route('tasks.store') }}"
+                                            method="POST"
+                                            x-ref="inlineQuickForm"
+                                            @submit.prevent="submitQuickTask"
+                                            class="flex items-center gap-3"
+                                            x-data="{
+                                                showProjectPicker: false,
+                                                selectedProjectId: @js($inlineQuickProjectId),
+                                                selectedProjectName: @js($inlineQuickProjectName),
+                                                showUserPicker: false,
+                                                selectedUserId: @js($inlineQuickUserId),
+                                                selectedUserName: @js($inlineQuickUserName),
+                                                selectedUserInitials: @js($inlineQuickUserInitials),
+                                                isSubmitting: false,
+                                                inlineError: '',
+                                                async submitQuickTask() {
+                                                    if (this.isSubmitting) {
+                                                        return;
+                                                    }
+
+                                                    this.inlineError = '';
+
+                                                    const input = this.$refs.inlineQuickName;
+                                                    const name = (input?.value ?? '').trim();
+
+                                                    if (!name) {
+                                                        this.inlineError = 'Escribe una tarea.';
+                                                        input?.focus();
+
+                                                        return;
+                                                    }
+
+                                                    const formData = new FormData(this.$refs.inlineQuickForm);
+                                                    formData.set('name', name);
+                                                    this.isSubmitting = true;
+
+                                                    try {
+                                                        const response = await fetch(this.$refs.inlineQuickForm.action, {
+                                                            method: 'POST',
+                                                            headers: {
+                                                                'Accept': 'application/json',
+                                                                'X-Requested-With': 'XMLHttpRequest',
+                                                            },
+                                                            body: formData,
+                                                        });
+                                                        const payload = await response.json().catch(() => ({}));
+
+                                                        if (!response.ok) {
+                                                            this.inlineError = payload?.errors?.name?.[0]
+                                                                ?? payload?.message
+                                                                ?? 'No se pudo crear la tarea.';
+
+                                                            return;
+                                                        }
+
+                                                        input.value = '';
+                                                        input.focus();
+                                                    } catch (error) {
+                                                        this.inlineError = 'No se pudo crear la tarea.';
+                                                    } finally {
+                                                        this.isSubmitting = false;
+                                                    }
+                                                },
+                                            }"
+                                            @click.outside="showProjectPicker = false; showUserPicker = false"
+                                        >
                                             @csrf
                                             <input type="hidden" name="status_id" value="{{ $defaultStatusId }}">
-                                            <input type="hidden" name="user_id" value="{{ auth()->id() }}">
-                                            <div class="h-10 w-10 rounded-full border-2 border-dashed border-gray-300 text-gray-400 flex items-center justify-center">+</div>
+                                            <input type="hidden" name="user_id" :value="selectedUserId">
+                                            <input type="hidden" name="project_id" :value="selectedProjectId">
+                                            <div class="relative shrink-0">
+                                                <button
+                                                    id="tasks-inline-quick-project-toggle"
+                                                    type="button"
+                                                    class="h-10 w-10 rounded-full border-2 border-dashed border-gray-300 text-gray-500 hover:border-blue-400 hover:text-blue-600 flex items-center justify-center"
+                                                    @click="showProjectPicker = !showProjectPicker"
+                                                    title="Escoger proyecto"
+                                                >
+                                                    +
+                                                </button>
+                                                <div
+                                                    x-cloak
+                                                    x-show="showProjectPicker"
+                                                    x-transition
+                                                    class="absolute left-0 top-12 z-20 w-72 max-h-72 overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-lg p-1"
+                                                >
+                                                    <button
+                                                        type="button"
+                                                        class="w-full rounded px-3 py-2 text-left text-sm hover:bg-gray-100 text-gray-700"
+                                                        @click="selectedProjectId = ''; selectedProjectName = 'Sin proyecto'; showProjectPicker = false"
+                                                    >
+                                                        Sin proyecto
+                                                    </button>
+                                                    @foreach($projects as $project)
+                                                        <button
+                                                            type="button"
+                                                            class="w-full rounded px-3 py-2 text-left text-sm hover:bg-gray-100 text-gray-800 flex items-center gap-2"
+                                                            @click="selectedProjectId = '{{ $project->id }}'; selectedProjectName = @js($project->name); showProjectPicker = false"
+                                                        >
+                                                            <span class="h-2.5 w-2.5 rounded-full" style="background: {{ $project->color ?? '#9ca3af' }}"></span>
+                                                            <span class="truncate">{{ $project->name }}</span>
+                                                        </button>
+                                                    @endforeach
+                                                </div>
+                                            </div>
+                                            <p class="max-w-44 truncate text-xs text-gray-500" x-text="selectedProjectName"></p>
                                             <input
                                                 id="tasks-inline-quick-name"
                                                 name="name"
                                                 type="text"
-                                                class="w-full border-0 bg-transparent text-sm text-gray-900 placeholder:text-gray-400 focus:ring-0"
+                                                x-ref="inlineQuickName"
+                                                class="flex-1 border-0 bg-transparent text-sm text-gray-900 placeholder:text-gray-400 focus:ring-0"
                                                 placeholder="Agregar una tarea..."
+                                                :disabled="isSubmitting"
                                                 required
                                                 autofocus
                                             >
-                                            <button type="submit" class="px-3 py-1.5 text-xs font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-500">
-                                                Guardar
-                                            </button>
+                                            <div class="relative shrink-0">
+                                                <button
+                                                    id="tasks-inline-quick-user-toggle"
+                                                    type="button"
+                                                    class="h-10 min-w-10 rounded-full border border-gray-300 px-2 text-xs font-semibold text-gray-600 hover:border-blue-400 hover:text-blue-600 flex items-center justify-center"
+                                                    @click="showUserPicker = !showUserPicker"
+                                                    :title="selectedUserName"
+                                                >
+                                                    <span x-text="selectedUserInitials"></span>
+                                                </button>
+                                                <div
+                                                    x-cloak
+                                                    x-show="showUserPicker"
+                                                    x-transition
+                                                    class="absolute right-0 top-12 z-20 w-72 max-h-72 overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-lg p-1"
+                                                >
+                                                    <button
+                                                        type="button"
+                                                        class="w-full rounded px-3 py-2 text-left text-sm hover:bg-gray-100 text-gray-700"
+                                                        @click="selectedUserId = ''; selectedUserName = 'Sin asignar'; selectedUserInitials = 'SA'; showUserPicker = false"
+                                                    >
+                                                        Sin asignar
+                                                    </button>
+                                                    @foreach($users as $user)
+                                                        @php
+                                                            $userInitials = collect(explode(' ', trim($user->name)))
+                                                                ->filter()
+                                                                ->map(fn ($part) => mb_substr($part, 0, 1))
+                                                                ->take(2)
+                                                                ->implode('');
+                                                        @endphp
+                                                        <button
+                                                            type="button"
+                                                            class="w-full rounded px-3 py-2 text-left text-sm hover:bg-gray-100 text-gray-800 flex items-center gap-2"
+                                                            @click="selectedUserId = '{{ $user->id }}'; selectedUserName = @js($user->name); selectedUserInitials = @js($userInitials ?: '?'); showUserPicker = false"
+                                                        >
+                                                            <span class="h-6 w-6 rounded-full bg-gray-100 text-gray-700 flex items-center justify-center text-xs font-semibold">{{ $userInitials ?: '?' }}</span>
+                                                            <span class="truncate">{{ $user->name }}</span>
+                                                        </button>
+                                                    @endforeach
+                                                </div>
+                                            </div>
+                                            <span
+                                                class="shrink-0 text-xs"
+                                                :class="inlineError ? 'text-red-600' : (isSubmitting ? 'text-blue-600' : 'text-gray-400')"
+                                                x-text="inlineError ? inlineError : (isSubmitting ? 'Guardando...' : 'Enter')"
+                                            ></span>
                                         </form>
                                     @else
                                         <p class="text-sm text-amber-700">No hay estados activos para crear tareas rápidas.</p>

@@ -3,7 +3,7 @@
 Documenta aquí los agentes o responsabilidades relacionadas.
 
 - Breadcrumbs añadidos en usuarios y proyectos para volver al listado desde show/create/edit.
-- Versión visible en footer desde el archivo `VERSION` (formato `x.y.z`); antes de cada `git push` se debe incrementar y commitear ese archivo.
+- Versión visible en footer desde el archivo `VERSION` (formato `x.y.z`); cada cambio en el proyecto debe incrementar y commitear ese archivo (no esperar al `git push`).
 
 ===
 
