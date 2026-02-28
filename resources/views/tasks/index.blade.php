@@ -162,6 +162,32 @@
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100">
+                            <tr class="bg-white">
+                                <td colspan="5" class="px-4 py-2">
+                                    @if($defaultStatusId)
+                                        <form action="{{ route('tasks.store') }}" method="POST" class="flex items-center gap-3">
+                                            @csrf
+                                            <input type="hidden" name="status_id" value="{{ $defaultStatusId }}">
+                                            <input type="hidden" name="user_id" value="{{ auth()->id() }}">
+                                            <div class="h-10 w-10 rounded-full border-2 border-dashed border-gray-300 text-gray-400 flex items-center justify-center">+</div>
+                                            <input
+                                                id="tasks-inline-quick-name"
+                                                name="name"
+                                                type="text"
+                                                class="w-full border-0 bg-transparent text-sm text-gray-900 placeholder:text-gray-400 focus:ring-0"
+                                                placeholder="Agregar una tarea..."
+                                                required
+                                                autofocus
+                                            >
+                                            <button type="submit" class="px-3 py-1.5 text-xs font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-500">
+                                                Guardar
+                                            </button>
+                                        </form>
+                                    @else
+                                        <p class="text-sm text-amber-700">No hay estados activos para crear tareas rápidas.</p>
+                                    @endif
+                                </td>
+                            </tr>
                             @forelse($tasks as $task)
                                 @php
                                     $project = $task->project;
@@ -432,7 +458,7 @@
                             <select id="quick_user_id" name="user_id" class="mt-1 w-full rounded border-gray-300 text-sm px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500">
                                 <option value="">Sin asignar</option>
                                 @foreach($users as $user)
-                                    <option value="{{ $user->id }}">{{ $user->name }}</option>
+                                    <option value="{{ $user->id }}" @selected((string)$user->id === (string)old('user_id', auth()->id()))>{{ $user->name }}</option>
                                 @endforeach
                             </select>
                         </div>

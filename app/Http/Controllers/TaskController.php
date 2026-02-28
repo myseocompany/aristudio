@@ -218,6 +218,7 @@ class TaskController extends Controller
         $task = new Task([
             'due_date' => now()->startOfDay(),
             'priority' => 1,
+            'user_id' => Auth::id(),
         ]);
 
         return view('tasks.create', array_merge($options, [
@@ -232,6 +233,10 @@ class TaskController extends Controller
 
         if (! isset($data['priority'])) {
             $data['priority'] = 1;
+        }
+
+        if (! isset($data['user_id']) || ! $data['user_id']) {
+            $data['user_id'] = Auth::id();
         }
 
         $data['creator_user_id'] = Auth::id();
