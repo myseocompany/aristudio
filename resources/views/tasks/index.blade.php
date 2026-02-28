@@ -8,6 +8,22 @@
         [x-cloak] {
             display: none !important;
         }
+
+        @keyframes task-created-highlight {
+            0% {
+                background-color: #d1fae5;
+                transform: translateY(-8px);
+            }
+
+            100% {
+                background-color: transparent;
+                transform: translateY(0);
+            }
+        }
+
+        .task-created-row {
+            animation: task-created-highlight 1s ease-out;
+        }
     </style>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css">
     <x-slot name="header">
@@ -26,6 +42,26 @@
             showTaskPanel: false,
             taskPanelHtml: '',
             loadingTaskId: null,
+            recentTasks: [],
+            handleTaskCreated(task) {
+                if (!task || !task.id) {
+                    return;
+                }
+
+                this.recentTasks.unshift({
+                    ...task,
+                    rowKey: `recent-${task.id}-${Date.now()}`,
+                    isFresh: true,
+                });
+
+                const createdTaskId = task.id;
+                window.setTimeout(() => {
+                    const recentTask = this.recentTasks.find((item) => item.id === createdTaskId);
+                    if (recentTask) {
+                        recentTask.isFresh = false;
+                    }
+                }, 1000);
+            },
             loadPanel(url) {
                 this.loadingTaskId = null;
                 this.showTaskPanel = true;
@@ -38,7 +74,7 @@
                         this.taskPanelHtml = '';
                     });
             }
-        }">
+        }" @task-created="handleTaskCreated($event.detail.task)">
         <div class="py-6">
             <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4">
             @if (session('status'))
@@ -168,13 +204,17 @@
                                         @php
                                             $inlineQuickProjectId = (string) old('project_id', '');
                                             $inlineQuickProjectName = 'Sin proyecto';
+                                            $inlineQuickProjectColor = '#9ca3af';
                                             if ($inlineQuickProjectId !== '') {
-                                                $inlineQuickProjectName = $projects->firstWhere('id', (int) $inlineQuickProjectId)?->name ?? 'Sin proyecto';
+                                                $inlineQuickProject = $projects->firstWhere('id', (int) $inlineQuickProjectId);
+                                                $inlineQuickProjectName = $inlineQuickProject?->name ?? 'Sin proyecto';
+                                                $inlineQuickProjectColor = $inlineQuickProject?->color ?? '#9ca3af';
                                             }
                                             $inlineQuickProjectsCatalog = $projects
                                                 ->map(fn ($project) => [
                                                     'id' => (string) $project->id,
                                                     'name' => $project->name,
+                                                    'color' => $project->color ?? '#9ca3af',
                                                 ])
                                                 ->values();
                                             $inlineQuickUserId = (string) old('user_id', (string) auth()->id());
@@ -213,7 +253,9 @@
                                                 showProjectPicker: false,
                                                 selectedProjectId: @js($inlineQuickProjectId),
                                                 selectedProjectName: @js($inlineQuickProjectName),
+                                                selectedProjectColor: @js($inlineQuickProjectColor),
                                                 projectsCatalog: @js($inlineQuickProjectsCatalog),
+                                                statusesCatalog: @js($statuses->mapWithKeys(fn ($status) => [(string) $status->id => $status->name])->all()),
                                                 showUserPicker: false,
                                                 selectedUserId: @js($inlineQuickUserId),
                                                 selectedUserName: @js($inlineQuickUserName),
@@ -240,6 +282,7 @@
                                                     this.selectedProjectId = value;
                                                     const project = this.projectsCatalog.find((item) => item.id === value);
                                                     this.selectedProjectName = project ? project.name : 'Sin proyecto';
+                                                    this.selectedProjectColor = project ? (project.color ?? '#9ca3af') : '#9ca3af';
 
                                                     if (persist) {
                                                         window.localStorage.setItem(this.storageProjectKey, value);
@@ -301,6 +344,18 @@
                                                             return;
                                                         }
 
+                                                        const createdTask = payload?.task ?? {};
+                                                        this.$dispatch('task-created', {
+                                                            task: {
+                                                                id: createdTask.id,
+                                                                name: createdTask.name ?? name,
+                                                                projectName: this.selectedProjectName ?? 'Sin proyecto',
+                                                                statusName: this.statusesCatalog[String(this.$refs.inlineQuickStatus.value)] ?? 'Pendiente',
+                                                                userName: this.selectedUserName ?? 'Sin asignar',
+                                                                userInitials: this.selectedUserId ? this.selectedUserInitials : '—',
+                                                            },
+                                                        });
+
                                                         input.value = '';
                                                         input.focus();
                                                     } catch (error) {
@@ -314,7 +369,7 @@
                                             @click.outside="showProjectPicker = false; showUserPicker = false"
                                         >
                                             @csrf
-                                            <input type="hidden" name="status_id" value="{{ $defaultStatusId }}">
+                                            <input type="hidden" name="status_id" value="{{ $defaultStatusId }}" x-ref="inlineQuickStatus">
                                             <input type="hidden" name="user_id" :value="selectedUserId">
                                             <input type="hidden" name="project_id" :value="selectedProjectId">
                                             <div class="relative shrink-0">
@@ -352,7 +407,10 @@
                                                     @endforeach
                                                 </div>
                                             </div>
-                                            <p class="max-w-44 truncate text-xs text-gray-500" x-text="selectedProjectName"></p>
+                                            <div class="max-w-56 shrink-0 inline-flex items-center gap-2 rounded-full bg-slate-100 px-2.5 py-1">
+                                                <span class="h-2 w-2 rounded-full" :style="`background:${selectedProjectColor}`"></span>
+                                                <span class="truncate text-xs font-medium text-slate-700" x-text="'Proyecto: ' + selectedProjectName"></span>
+                                            </div>
                                             <input
                                                 id="tasks-inline-quick-name"
                                                 name="name"
@@ -364,6 +422,10 @@
                                                 required
                                                 autofocus
                                             >
+                                            <div class="max-w-56 shrink-0 inline-flex items-center gap-2 rounded-full bg-indigo-50 px-2.5 py-1">
+                                                <span class="h-5 w-5 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-[10px] font-semibold" x-text="selectedUserInitials"></span>
+                                                <span class="truncate text-xs font-medium text-indigo-700" x-text="'Usuario: ' + selectedUserName"></span>
+                                            </div>
                                             <div class="relative shrink-0">
                                                 <button
                                                     id="tasks-inline-quick-user-toggle"
@@ -409,7 +471,7 @@
                                             <span
                                                 class="shrink-0 text-xs"
                                                 :class="inlineError ? 'text-red-600' : (isSubmitting ? 'text-blue-600' : 'text-gray-400')"
-                                                x-text="inlineError ? inlineError : (isSubmitting ? 'Guardando...' : 'Enter')"
+                                                x-text="inlineError ? inlineError : (isSubmitting ? 'Guardando...' : '')"
                                             ></span>
                                         </form>
                                     @else
@@ -417,6 +479,33 @@
                                     @endif
                                 </td>
                             </tr>
+                            <template x-for="recentTask in recentTasks" :key="recentTask.rowKey">
+                                <tr :class="recentTask.isFresh ? 'task-created-row' : 'hover:bg-gray-50'">
+                                    <td class="px-4 py-3">
+                                        <div class="flex items-start gap-3">
+                                            <div class="h-10 w-10 rounded-full flex items-center justify-center text-xs font-semibold bg-emerald-100 text-emerald-700">
+                                                +
+                                            </div>
+                                            <div>
+                                                <p class="font-semibold text-gray-900" x-text="recentTask.name"></p>
+                                                <p class="text-xs text-gray-500" x-text="recentTask.projectName"></p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-4 py-3">
+                                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700" x-text="recentTask.statusName"></span>
+                                    </td>
+                                    <td class="px-4 py-3 text-gray-400 whitespace-nowrap">Sin fecha</td>
+                                    <td class="px-4 py-3 text-xs font-semibold text-emerald-700">Recién creada</td>
+                                    <td class="px-4 py-3 text-center">
+                                        <div
+                                            class="h-10 w-10 rounded-full flex items-center justify-center text-xs font-semibold mx-auto"
+                                            :class="recentTask.userInitials === '—' ? 'bg-gray-100 text-gray-500' : 'bg-indigo-100 text-indigo-700'"
+                                            x-text="recentTask.userInitials"
+                                        ></div>
+                                    </td>
+                                </tr>
+                            </template>
                             @forelse($tasks as $task)
                                 @php
                                     $project = $task->project;
@@ -515,8 +604,8 @@
                                     </td>
                                 </tr>
                             @empty
-                                <tr>
-                                    <td colspan="9" class="px-4 py-6 text-center text-gray-500">No hay tareas que coincidan con el filtro.</td>
+                                <tr x-show="recentTasks.length === 0">
+                                    <td colspan="5" class="px-4 py-6 text-center text-gray-500">No hay tareas que coincidan con el filtro.</td>
                                 </tr>
                             @endforelse
                         </tbody>

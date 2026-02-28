@@ -277,6 +277,10 @@ class TasksPointsSummaryTest extends TestCase
         $response->assertSee('id="tasks-inline-quick-user-toggle"', false);
         $response->assertSee('id="tasks-inline-quick-name"', false);
         $response->assertSee('@submit.prevent="submitQuickTask"', false);
+        $response->assertSee('@task-created="handleTaskCreated($event.detail.task)"', false);
+        $response->assertSee('x-for="recentTask in recentTasks"', false);
+        $response->assertSee('x-text="\'Proyecto: \' + selectedProjectName"', false);
+        $response->assertSee('x-text="\'Usuario: \' + selectedUserName"', false);
         $response->assertSee("storageProjectKey: 'tasks.inline.quick.project_id'", false);
         $response->assertSee("storageUserKey: 'tasks.inline.quick.user_id'", false);
         $response->assertSeeInOrder(['id="tasks-inline-quick-name"', 'Tarea existente'], false);
