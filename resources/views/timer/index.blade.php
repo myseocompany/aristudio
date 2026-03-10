@@ -297,7 +297,7 @@
                     this.elapsedBaseline = this.elapsed;
                     this.selectedTask = data?.task_id ? String(data.task_id) : '';
                     this.selectedTaskLabel = data?.task_label || '';
-                    this.manualTaskName = this.selectedTask ? '' : (data?.task_label || '');
+                    this.manualTaskName = data?.task_label || '';
                     this.manualProjectId = data?.project_id ? String(data.project_id) : '';
                     this.projectLabel = data?.project_name || '';
                     this.lastBeepAt = Math.floor(this.elapsed / this.beepEvery) * this.beepEvery;

@@ -123,6 +123,7 @@ class TimerPersistenceTest extends TestCase
             ->assertOk()
             ->assertSee($expected, false)
             ->assertSee('this.manualTaskName = label ? String(label) : \'\';', false)
+            ->assertSee('this.manualTaskName = data?.task_label || \'\';', false)
             ->assertSee('window.scrollTo({ top: 0, behavior: \'smooth\' });', false);
     }
 
@@ -150,6 +151,62 @@ class TimerPersistenceTest extends TestCase
         $this->assertNotNull($task);
         $this->assertSame('Demo timer', $task->name);
         $this->assertEqualsWithDelta(round(125 / 3600, 2), (float) $task->points, 0.01);
+
+        $this->getJson(route('timer.status'))
+            ->assertOk()
+            ->assertJson([
+                'running' => false,
+                'elapsed' => 0,
+            ]);
+    }
+
+    public function test_store_updates_selected_task_instead_of_creating_a_new_one(): void
+    {
+        $user = User::factory()->create();
+        $this->grantModulePermissions($user, '/timer', ['create', 'read', 'update']);
+        $this->actingAs($user->refresh());
+
+        $project = Project::query()->create([
+            'name' => 'Proyecto Timer',
+            'status_id' => 3,
+        ]);
+
+        $task = Task::query()->create([
+            'name' => 'Tarea programada',
+            'project_id' => $project->id,
+            'user_id' => $user->id,
+            'status_id' => 1,
+            'priority' => 1,
+        ]);
+
+        $this->postJson(route('timer.start'), [
+            'task_id' => $task->id,
+            'task_label' => $task->name,
+            'project_id' => $project->id,
+            'project_name' => $project->name,
+        ])->assertOk()->assertJson([
+            'task_id' => $task->id,
+            'task_label' => $task->name,
+        ]);
+
+        $this->travel(600)->seconds();
+
+        $response = $this->postJson(route('timer.store'), [
+            'name' => $task->name,
+            'project_id' => $project->id,
+            'seconds' => 1,
+        ])->assertOk()->json();
+
+        $this->assertTrue($response['ok']);
+        $this->assertSame($task->id, $response['task_id']);
+        $this->assertSame(1, Task::query()->count());
+
+        $task->refresh();
+
+        $this->assertSame(6, (int) $task->status_id);
+        $this->assertSame($project->id, (int) $task->project_id);
+        $this->assertEqualsWithDelta(round(600 / 3600, 2), (float) $task->points, 0.01);
+        $this->assertTrue((bool) $task->value_generated);
 
         $this->getJson(route('timer.status'))
             ->assertOk()

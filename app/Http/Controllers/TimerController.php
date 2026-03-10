@@ -134,19 +134,41 @@ class TimerController extends Controller
         }
 
         $points = round($seconds / 3600, 2);
+        $taskId = isset($session['task_id']) ? (int) $session['task_id'] : null;
 
-        $task = Task::create([
-            'name' => $validated['name'],
-            'project_id' => $validated['project_id'] ?? null,
-            'user_id' => Auth::id(),
-            'status_id' => 6,
-            'priority' => 1,
-            'points' => $points,
-            'creator_user_id' => Auth::id(),
-            'updator_user_id' => Auth::id(),
-            'due_date' => now()->startOfDay(),
-            'value_generated' => true,
-        ]);
+        $task = null;
+        if ($taskId) {
+            $task = Task::query()
+                ->where('id', $taskId)
+                ->where('user_id', Auth::id())
+                ->first();
+        }
+
+        if ($task) {
+            $task->fill([
+                'name' => $validated['name'],
+                'project_id' => $validated['project_id'] ?? $task->project_id,
+                'status_id' => 6,
+                'points' => $points,
+                'updator_user_id' => Auth::id(),
+                'due_date' => now()->startOfDay(),
+                'value_generated' => true,
+            ]);
+            $task->save();
+        } else {
+            $task = Task::create([
+                'name' => $validated['name'],
+                'project_id' => $validated['project_id'] ?? null,
+                'user_id' => Auth::id(),
+                'status_id' => 6,
+                'priority' => 1,
+                'points' => $points,
+                'creator_user_id' => Auth::id(),
+                'updator_user_id' => Auth::id(),
+                'due_date' => now()->startOfDay(),
+                'value_generated' => true,
+            ]);
+        }
 
         $this->clearSession();
 
