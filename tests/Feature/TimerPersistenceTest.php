@@ -122,8 +122,13 @@ class TimerPersistenceTest extends TestCase
             ->get(route('timer.index'))
             ->assertOk()
             ->assertSee($expected, false)
+            ->assertSee('async setTask(id, label, projectId = \'\', projectName = \'\', autoStart = true) {', false)
             ->assertSee('this.manualTaskName = label ? String(label) : \'\';', false)
             ->assertSee('this.manualTaskName = data?.task_label || \'\';', false)
+            ->assertSee('if (autoStart && !this.running && this.elapsed < this.maxSeconds) {', false)
+            ->assertSee('await this.start();', false)
+            ->assertSee('taskData.project_name ?? \'\',', false)
+            ->assertSee('                        false', false)
             ->assertSee('window.scrollTo({ top: 0, behavior: \'smooth\' });', false);
     }
 

@@ -245,7 +245,7 @@
                     }
                     return this.projectLabel || '';
                 },
-                setTask(id, label, projectId = '', projectName = '') {
+                async setTask(id, label, projectId = '', projectName = '', autoStart = true) {
                     this.selectedTask = id ? String(id) : '';
                     this.selectedTaskLabel = label ? String(label) : '';
                     this.manualTaskName = label ? String(label) : '';
@@ -254,6 +254,9 @@
                     this.$nextTick(() => {
                         window.scrollTo({ top: 0, behavior: 'smooth' });
                     });
+                    if (autoStart && !this.running && this.elapsed < this.maxSeconds) {
+                        await this.start();
+                    }
                 },
                 applyPrefill(taskData) {
                     if (!taskData) {
@@ -263,7 +266,8 @@
                         taskData.id ?? '',
                         taskData.name ?? '',
                         taskData.project_id ?? '',
-                        taskData.project_name ?? ''
+                        taskData.project_name ?? '',
+                        false
                     );
                     if (taskData.name) {
                         this.manualTaskName = taskData.name;
