@@ -229,7 +229,7 @@ class TasksPointsSummaryTest extends TestCase
         $this->assertStringContainsString('attachment; filename=', (string) $response->headers->get('content-disposition'));
 
         $csvContent = $response->streamedContent();
-        $this->assertStringContainsString('ID,Tarea,Proyecto,Estado,Responsable,Cobrable,Puntos,Vence,Entrega,Creada', $csvContent);
+        $this->assertStringContainsString('ID,Tarea,Proyecto,Estado,Responsable,"Genera valor",Puntos,Vence,Entrega,Creada', $csvContent);
         $this->assertStringContainsString('Tarea Alpha', $csvContent);
         $this->assertStringNotContainsString('Tarea Beta', $csvContent);
         $this->assertStringNotContainsString('Tarea Alpha Externa', $csvContent);

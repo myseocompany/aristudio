@@ -316,7 +316,7 @@
                         <div class="flex items-end">
                             <label class="inline-flex items-center gap-2 text-sm text-gray-600">
                                 <input type="checkbox" name="value_generated" value="1" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" @checked($filters['value_generated'])>
-                                Solo cobrables
+                                Solo generan valor
                             </label>
                         </div>
                         <div class="flex items-center gap-2 md:col-span-3">
@@ -345,7 +345,7 @@
                                 <th class="px-4 py-3">Estado</th>
                                 <th class="px-4 py-3">Vence</th>
                                 <th class="px-4 py-3">Trabajo</th>
-                                <th class="px-4 py-3 text-center">Cobrable</th>
+                                <th class="px-4 py-3 text-center">Genera valor</th>
                                 <th class="px-4 py-3 text-center w-16">Resp.</th>
                             </tr>
                         </thead>
@@ -1308,7 +1308,7 @@
                                             :class="valueGenerated ? 'translate-x-4' : 'translate-x-1'"
                                         ></span>
                                     </span>
-                                    <span x-text="valueGenerated ? 'Cobrable' : 'No cobrable'"></span>
+                                    <span x-text="valueGenerated ? 'Genera valor' : 'No genera valor'"></span>
                                 </button>
                             </div>
                             <p class="mt-2 text-xs text-red-600" x-show="rowError" x-text="rowError"></p>
@@ -1434,11 +1434,11 @@
                                 </div>
                             </div>
                             <div>
-                                <x-input-label for="quick_value_generated" value="Cobrable / genera valor" />
+                                <x-input-label for="quick_value_generated" value="Generación de valor" />
                                 <label class="mt-2 inline-flex items-center gap-3 cursor-pointer select-none">
                                     <input type="hidden" name="value_generated" value="0">
                                     <input id="quick_value_generated" name="value_generated" type="checkbox" value="1" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" checked>
-                                    <span class="text-sm text-gray-700">Marcar si esta tarea es cobrable.</span>
+                                    <span class="text-sm text-gray-700">Marcar si esta tarea genera valor.</span>
                                 </label>
                             </div>
                             <div>
