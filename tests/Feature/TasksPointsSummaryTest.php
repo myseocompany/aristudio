@@ -220,6 +220,7 @@ class TasksPointsSummaryTest extends TestCase
 
         $response = $this->get(route('tasks.export', [
             'q' => 'Alpha',
+            'user_id' => $user->id,
             'from_date' => now()->startOfMonth()->toDateString(),
             'to_date' => now()->endOfMonth()->toDateString(),
         ]));
@@ -233,6 +234,71 @@ class TasksPointsSummaryTest extends TestCase
         $this->assertStringContainsString('Tarea Alpha', $csvContent);
         $this->assertStringNotContainsString('Tarea Beta', $csvContent);
         $this->assertStringNotContainsString('Tarea Alpha Externa', $csvContent);
+    }
+
+    public function test_tasks_export_with_empty_user_filter_includes_all_users_tasks(): void
+    {
+        $user = User::factory()->create([
+            'status_id' => 1,
+        ]);
+        $otherUser = User::factory()->create([
+            'status_id' => 1,
+        ]);
+
+        $this->grantModulePermissions($user, '/tasks', ['list']);
+        $this->actingAs($user->refresh());
+
+        DB::table('projects')->insert([
+            'id' => 1,
+            'name' => 'Proyecto Demo',
+            'status_id' => 3,
+            'weight' => 1,
+            'color' => '#000000',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        DB::table('task_statuses')->insert([
+            'id' => 1,
+            'name' => 'Pendiente',
+            'pending' => true,
+            'status_id' => 1,
+            'weight' => 1,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        Task::create([
+            'name' => 'Tarea Alpha',
+            'project_id' => 1,
+            'user_id' => $user->id,
+            'status_id' => 1,
+            'value_generated' => true,
+            'points' => 3.50,
+            'due_date' => now(),
+        ]);
+
+        Task::create([
+            'name' => 'Tarea Alpha Externa',
+            'project_id' => 1,
+            'user_id' => $otherUser->id,
+            'status_id' => 1,
+            'value_generated' => true,
+            'points' => 5.00,
+            'due_date' => now(),
+        ]);
+
+        $response = $this->get('/tasks/export?from_date='
+            .now()->startOfMonth()->toDateString()
+            .'&to_date='
+            .now()->endOfMonth()->toDateString()
+            .'&q=Alpha&status_id=&project_id=&user_id=');
+
+        $response->assertOk();
+
+        $csvContent = $response->streamedContent();
+        $this->assertStringContainsString('Tarea Alpha', $csvContent);
+        $this->assertStringContainsString('Tarea Alpha Externa', $csvContent);
     }
 
     public function test_tasks_export_requires_list_permission(): void

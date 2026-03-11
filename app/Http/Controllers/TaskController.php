@@ -47,6 +47,7 @@ class TaskController extends Controller
             $isClientRole,
             $defaultFromDate,
             $defaultToDate,
+            true,
         );
 
         $statuses = TaskStatus::active()->orderBy('weight')->get();
@@ -181,6 +182,7 @@ class TaskController extends Controller
             $isClientRole,
             $defaultFromDate,
             $defaultToDate,
+            false,
         );
 
         $tasksQuery = $this->buildFilteredTasksQuery(
@@ -500,14 +502,15 @@ class TaskController extends Controller
         Request $request,
         bool $isClientRole,
         Carbon $defaultFromDate,
-        Carbon $defaultToDate
+        Carbon $defaultToDate,
+        bool $defaultToAuthenticatedUserWhenMissing = true,
     ): array {
         $statusId = $request->input('status_id');
         $projectId = $request->input('project_id');
         $userIdParam = $request->input('user_id');
         $userId = $request->has('user_id')
             ? ($userIdParam === '' ? null : $userIdParam)
-            : ($isClientRole ? null : Auth::id());
+            : ($isClientRole || ! $defaultToAuthenticatedUserWhenMissing ? null : Auth::id());
         $fromDate = $request->input('from_date');
         $toDate = $request->input('to_date');
 
