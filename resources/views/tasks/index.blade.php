@@ -255,6 +255,9 @@
                             <span x-show="!showFilters">Mostrar filtros</span>
                             <span x-show="showFilters">Ocultar filtros</span>
                         </button>
+                        <a href="{{ route('tasks.export', request()->query()) }}" class="px-3 py-2 text-sm bg-emerald-600 hover:bg-emerald-500 rounded border border-emerald-600 text-white">
+                            Descargar CSV
+                        </a>
                         <button
                             type="button"
                             @click="showCreate = true; createClicked = true; setTimeout(() => createClicked = false, 800)"

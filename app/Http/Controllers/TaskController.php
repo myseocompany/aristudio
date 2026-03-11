@@ -8,9 +8,11 @@ use App\Models\TaskStatus;
 use App\Models\TaskType;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class TaskController extends Controller
 {
@@ -20,6 +22,7 @@ class TaskController extends Controller
         $this->middleware(function ($request, $next) {
             $this->authorizeModule($request, '/tasks', [
                 'index' => 'list',
+                'export' => 'list',
                 'create' => 'create',
                 'store' => 'create',
                 'show' => 'read',
@@ -35,42 +38,16 @@ class TaskController extends Controller
 
     public function index(Request $request)
     {
-        $authUser = Auth::user();
-        $isClientRole = (int) ($authUser?->role_id ?? 0) === 4;
-        $clientProjectIds = $isClientRole
-            ? $authUser->projects()->pluck('projects.id')->all()
-            : [];
-
-        $statusId = $request->input('status_id');
-        $projectId = $request->input('project_id');
+        [$isClientRole, $clientProjectIds] = $this->taskVisibilityScope();
         $now = Carbon::now();
         $defaultFromDate = $now->copy()->startOfMonth();
         $defaultToDate = $now->copy()->endOfMonth();
-
-        $userIdParam = $request->input('user_id');
-        $userId = $request->has('user_id')
-            ? ($userIdParam === '' ? null : $userIdParam)
-            : ($isClientRole ? null : Auth::id());
-        $fromDate = $request->input('from_date');
-        $toDate = $request->input('to_date');
-        if ($request->filled('range')) {
-            $parts = explode('|', $request->input('range'));
-            if (count($parts) === 2) {
-                try {
-                    $start = Carbon::createFromFormat('Y-m-d', trim($parts[0]))->toDateString();
-                    $end = Carbon::createFromFormat('Y-m-d', trim($parts[1]))->toDateString();
-                    $fromDate = $start;
-                    $toDate = $end;
-                } catch (\Exception $e) {
-                    // Ignore invalid range format.
-                }
-            }
-        } else {
-            $fromDate = $fromDate ? Carbon::parse($fromDate)->toDateString() : $defaultFromDate->toDateString();
-            $toDate = $toDate ? Carbon::parse($toDate)->toDateString() : $defaultToDate->toDateString();
-        }
-        $onlyValueGenerated = $request->boolean('value_generated');
-        $search = $request->input('q');
+        $filters = $this->resolveTaskFilters(
+            $request,
+            $isClientRole,
+            $defaultFromDate,
+            $defaultToDate,
+        );
 
         $statuses = TaskStatus::active()->orderBy('weight')->get();
         $projects = Project::where('status_id', 3)
@@ -151,37 +128,18 @@ class TaskController extends Controller
             ],
         ];
 
-        $tasksQuery = Task::query()
-            ->with([
-                'project:id,name,color',
-                'user:id,name,image_url,status_id',
-                'status:id,name,alias,color,background_color,pending',
-            ])
-            ->when($isClientRole, fn ($q) => $q->whereIn('project_id', $clientProjectIds))
-            ->when($statusId, fn ($q) => $q->where('status_id', $statusId))
-            ->when($projectId, fn ($q) => $q->where('project_id', $projectId))
-            ->when($userId, fn ($q) => $q->where('user_id', $userId))
-            ->when($onlyValueGenerated, fn ($q) => $q->where('value_generated', 1))
-            ->when($fromDate && $toDate, function ($q) use ($fromDate, $toDate) {
-                $start = Carbon::parse($fromDate)->startOfDay();
-                $end = Carbon::parse($toDate)->endOfDay();
+        $tasksQuery = $this->buildFilteredTasksQuery(
+            $filters,
+            $isClientRole,
+            $clientProjectIds,
+        );
 
-                $q->whereBetween('due_date', [$start, $end]);
-            })
-            ->when($search, function ($q) use ($search) {
-                $q->where(function ($inner) use ($search) {
-                    $inner->where('name', 'like', "%{$search}%")
-                        ->orWhere('description', 'like', "%{$search}%")
-                        ->orWhere('caption', 'like', "%{$search}%");
-                });
-            });
-
-        $selectedPointsTotal = (clone $tasksQuery)->sum('points');
+        $selectedPointsTotal = (clone $tasksQuery)->sum('tasks.points');
 
         $tasks = $tasksQuery
-            ->orderByDesc('created_at')
-            ->orderByRaw('CASE WHEN due_date IS NULL THEN 1 ELSE 0 END')
-            ->orderBy('due_date')
+            ->orderByDesc('tasks.created_at')
+            ->orderByRaw('CASE WHEN tasks.due_date IS NULL THEN 1 ELSE 0 END')
+            ->orderBy('tasks.due_date')
             ->paginate(15)
             ->withQueryString();
 
@@ -201,14 +159,95 @@ class TaskController extends Controller
             'defaultToDate' => $defaultToDate->toDateString(),
             'defaultDueDateTime' => $defaultDueDateTime,
             'filters' => [
-                'status_id' => $statusId,
-                'project_id' => $projectId,
-                'user_id' => $userId,
-                'value_generated' => $onlyValueGenerated,
-                'from_date' => $fromDate,
-                'to_date' => $toDate,
-                'q' => $search,
+                'status_id' => $filters['status_id'],
+                'project_id' => $filters['project_id'],
+                'user_id' => $filters['user_id'],
+                'value_generated' => $filters['value_generated'],
+                'from_date' => $filters['from_date'],
+                'to_date' => $filters['to_date'],
+                'q' => $filters['q'],
             ],
+        ]);
+    }
+
+    public function export(Request $request): StreamedResponse
+    {
+        [$isClientRole, $clientProjectIds] = $this->taskVisibilityScope();
+        $now = Carbon::now();
+        $defaultFromDate = $now->copy()->startOfMonth();
+        $defaultToDate = $now->copy()->endOfMonth();
+        $filters = $this->resolveTaskFilters(
+            $request,
+            $isClientRole,
+            $defaultFromDate,
+            $defaultToDate,
+        );
+
+        $tasksQuery = $this->buildFilteredTasksQuery(
+            $filters,
+            $isClientRole,
+            $clientProjectIds,
+            false
+        )
+            ->leftJoin('projects', 'projects.id', '=', 'tasks.project_id')
+            ->leftJoin('users', 'users.id', '=', 'tasks.user_id')
+            ->leftJoin('task_statuses', 'task_statuses.id', '=', 'tasks.status_id')
+            ->orderByDesc('tasks.created_at')
+            ->orderByRaw('CASE WHEN tasks.due_date IS NULL THEN 1 ELSE 0 END')
+            ->orderBy('tasks.due_date')
+            ->select([
+                'tasks.id',
+                'tasks.name',
+                'projects.name as project_name',
+                'task_statuses.name as status_name',
+                'users.name as user_name',
+                'tasks.value_generated',
+                'tasks.points',
+                'tasks.due_date',
+                'tasks.delivery_date',
+                'tasks.created_at',
+            ]);
+
+        $filename = 'tareas-'.now()->format('Ymd_His').'.csv';
+
+        return response()->streamDownload(function () use ($tasksQuery): void {
+            $output = fopen('php://output', 'w');
+            if ($output === false) {
+                return;
+            }
+
+            fwrite($output, "\xEF\xBB\xBF");
+            fputcsv($output, [
+                'ID',
+                'Tarea',
+                'Proyecto',
+                'Estado',
+                'Responsable',
+                'Cobrable',
+                'Puntos',
+                'Vence',
+                'Entrega',
+                'Creada',
+            ]);
+
+            foreach ($tasksQuery->cursor() as $task) {
+                fputcsv($output, [
+                    $task->id,
+                    $task->name,
+                    $task->project_name ?? '',
+                    $task->status_name ?? '',
+                    $task->user_name ?? '',
+                    $task->value_generated ? 'Si' : 'No',
+                    $task->points !== null ? number_format((float) $task->points, 2, '.', '') : '',
+                    $task->due_date?->format('Y-m-d H:i') ?? '',
+                    $task->delivery_date?->format('Y-m-d') ?? '',
+                    $task->created_at?->format('Y-m-d H:i') ?? '',
+                ]);
+            }
+
+            fclose($output);
+        }, $filename, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
         ]);
     }
 
@@ -430,5 +469,120 @@ class TaskController extends Controller
     protected function parseDateTime(?string $value): ?Carbon
     {
         return $value ? Carbon::parse($value) : null;
+    }
+
+    /**
+     * @return array{0: bool, 1: array<int, int>}
+     */
+    protected function taskVisibilityScope(): array
+    {
+        $authUser = Auth::user();
+        $isClientRole = (int) ($authUser?->role_id ?? 0) === 4;
+        $clientProjectIds = $isClientRole
+            ? $authUser->projects()->pluck('projects.id')->all()
+            : [];
+
+        return [$isClientRole, $clientProjectIds];
+    }
+
+    /**
+     * @return array{
+     *     status_id: mixed,
+     *     project_id: mixed,
+     *     user_id: mixed,
+     *     from_date: ?string,
+     *     to_date: ?string,
+     *     value_generated: bool,
+     *     q: ?string
+     * }
+     */
+    protected function resolveTaskFilters(
+        Request $request,
+        bool $isClientRole,
+        Carbon $defaultFromDate,
+        Carbon $defaultToDate
+    ): array {
+        $statusId = $request->input('status_id');
+        $projectId = $request->input('project_id');
+        $userIdParam = $request->input('user_id');
+        $userId = $request->has('user_id')
+            ? ($userIdParam === '' ? null : $userIdParam)
+            : ($isClientRole ? null : Auth::id());
+        $fromDate = $request->input('from_date');
+        $toDate = $request->input('to_date');
+
+        if ($request->filled('range')) {
+            $parts = explode('|', $request->input('range'));
+            if (count($parts) === 2) {
+                try {
+                    $fromDate = Carbon::createFromFormat('Y-m-d', trim($parts[0]))->toDateString();
+                    $toDate = Carbon::createFromFormat('Y-m-d', trim($parts[1]))->toDateString();
+                } catch (\Exception $e) {
+                    // Ignore invalid range format.
+                }
+            }
+        } else {
+            $fromDate = $fromDate ? Carbon::parse($fromDate)->toDateString() : $defaultFromDate->toDateString();
+            $toDate = $toDate ? Carbon::parse($toDate)->toDateString() : $defaultToDate->toDateString();
+        }
+
+        return [
+            'status_id' => $statusId,
+            'project_id' => $projectId,
+            'user_id' => $userId,
+            'from_date' => $fromDate,
+            'to_date' => $toDate,
+            'value_generated' => $request->boolean('value_generated'),
+            'q' => $request->input('q'),
+        ];
+    }
+
+    /**
+     * @param  array{
+     *     status_id: mixed,
+     *     project_id: mixed,
+     *     user_id: mixed,
+     *     from_date: ?string,
+     *     to_date: ?string,
+     *     value_generated: bool,
+     *     q: ?string
+     * }  $filters
+     * @param  array<int, int>  $clientProjectIds
+     */
+    protected function buildFilteredTasksQuery(
+        array $filters,
+        bool $isClientRole,
+        array $clientProjectIds,
+        bool $withRelations = true
+    ): Builder {
+        $tasksQuery = Task::query();
+
+        if ($withRelations) {
+            $tasksQuery->with([
+                'project:id,name,color',
+                'user:id,name,image_url,status_id',
+                'status:id,name,alias,color,background_color,pending',
+            ]);
+        }
+
+        return $tasksQuery
+            ->when($isClientRole, fn ($query) => $query->whereIn('tasks.project_id', $clientProjectIds))
+            ->when($filters['status_id'], fn ($query, $statusId) => $query->where('tasks.status_id', $statusId))
+            ->when($filters['project_id'], fn ($query, $projectId) => $query->where('tasks.project_id', $projectId))
+            ->when($filters['user_id'], fn ($query, $userId) => $query->where('tasks.user_id', $userId))
+            ->when($filters['value_generated'], fn ($query) => $query->where('tasks.value_generated', 1))
+            ->when($filters['from_date'] && $filters['to_date'], function ($query) use ($filters) {
+                $start = Carbon::parse($filters['from_date'])->startOfDay();
+                $end = Carbon::parse($filters['to_date'])->endOfDay();
+
+                $query->whereBetween('tasks.due_date', [$start, $end]);
+            })
+            ->when($filters['q'], function ($query, $search) {
+                $query->where(function ($inner) use ($search) {
+                    $inner->where('tasks.name', 'like', "%{$search}%")
+                        ->orWhere('tasks.description', 'like', "%{$search}%")
+                        ->orWhere('tasks.caption', 'like', "%{$search}%");
+                });
+            });
     }
 }

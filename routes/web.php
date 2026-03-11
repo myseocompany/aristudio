@@ -36,6 +36,7 @@ Route::middleware('auth')->group(function () {
     Route::post('roles/{role}/permissions', [RoleController::class, 'updatePermissions'])->name('roles.permissions');
     Route::post('modules/reorder', [ModuleController::class, 'reorder'])->name('modules.reorder');
     Route::resource('modules', ModuleController::class);
+    Route::get('tasks/export', [TaskController::class, 'export'])->name('tasks.export');
     Route::resource('tasks', TaskController::class);
     Route::get('config', function () {
         abort_unless(auth()->user()?->hasModulePermission('/config', 'read'), 403, 'No autorizado.');
