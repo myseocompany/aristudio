@@ -75,6 +75,15 @@
                     <x-input-error :messages="$errors->get('estimated_points')" class="mt-1" />
                 </div>
             </div>
+            <div>
+                <x-input-label for="panel_value_generated" value="Cobrable / genera valor" />
+                <label class="mt-2 inline-flex items-center gap-3 cursor-pointer select-none">
+                    <input type="hidden" name="value_generated" value="0">
+                    <input id="panel_value_generated" name="value_generated" type="checkbox" value="1" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" @checked(old('value_generated', (int) ($task->value_generated ?? true)))>
+                    <span class="text-sm text-gray-700">Marcar si esta tarea es cobrable.</span>
+                </label>
+                <x-input-error :messages="$errors->get('value_generated')" class="mt-1" />
+            </div>
             <div class="grid grid-cols-2 gap-3">
                 <div>
                     <x-input-label for="panel_due_date" value="Fecha de vencimiento" />

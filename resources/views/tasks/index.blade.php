@@ -160,6 +160,22 @@
                     task.userAvatar = previous.userAvatar;
                 }
             },
+            async updateRecentTaskBillable(task, valueGenerated) {
+                if (task.updatingField) {
+                    return;
+                }
+
+                const previous = !!task.valueGenerated;
+                task.valueGenerated = !!valueGenerated;
+
+                try {
+                    await this.updateRecentTaskAssignment(task, {
+                        value_generated: task.valueGenerated,
+                    }, 'value_generated');
+                } catch (error) {
+                    task.valueGenerated = previous;
+                }
+            },
             handleTaskCreated(task) {
                 if (!task || !task.id) {
                     return;
@@ -169,6 +185,7 @@
                     ...task,
                     projectId: String(task.projectId ?? ''),
                     userId: String(task.userId ?? ''),
+                    valueGenerated: task.valueGenerated ?? true,
                     showProjectPicker: false,
                     showUserPicker: false,
                     updatingField: null,
@@ -232,6 +249,7 @@
                             <input type="hidden" name="project_id" value="{{ $filters['project_id'] }}">
                             <input type="hidden" name="user_id" value="{{ $filters['user_id'] }}">
                             <input type="hidden" name="q" value="{{ $filters['q'] }}">
+                            <input type="hidden" name="value_generated" value="{{ $filters['value_generated'] ? 1 : 0 }}">
                         </form>
                         <button type="button" @click="showFilters = !showFilters" class="px-3 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded border border-gray-200 text-gray-700">
                             <span x-show="!showFilters">Mostrar filtros</span>
@@ -292,6 +310,12 @@
                                 @endforeach
                             </select>
                         </div>
+                        <div class="flex items-end">
+                            <label class="inline-flex items-center gap-2 text-sm text-gray-600">
+                                <input type="checkbox" name="value_generated" value="1" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" @checked($filters['value_generated'])>
+                                Solo cobrables
+                            </label>
+                        </div>
                         <div class="flex items-center gap-2 md:col-span-3">
                             <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-500 text-sm">Aplicar filtros</button>
                             @php
@@ -318,6 +342,7 @@
                                 <th class="px-4 py-3">Estado</th>
                                 <th class="px-4 py-3">Vence</th>
                                 <th class="px-4 py-3">Trabajo</th>
+                                <th class="px-4 py-3 text-center">Cobrable</th>
                                 <th class="px-4 py-3 text-center w-16">Resp.</th>
                             </tr>
                         </thead>
@@ -515,6 +540,7 @@
                                                         userName: this.selectedUserName ?? 'Sin asignar',
                                                         userInitials: this.selectedUserId ? this.selectedUserInitials : '—',
                                                         userAvatar: this.selectedUserId ? (this.selectedUserAvatar ?? null) : null,
+                                                        valueGenerated: createdTask.value_generated ?? true,
                                                         showUrl: `{{ url('tasks') }}/${createdTask.id}?sidebar=1`,
                                                     },
                                                 });
@@ -543,6 +569,7 @@
                                             <input type="hidden" name="status_id" value="{{ $defaultStatusId }}">
                                             <input type="hidden" name="user_id" :value="selectedUserId">
                                             <input type="hidden" name="project_id" :value="selectedProjectId">
+                                            <input type="hidden" name="value_generated" value="1">
                                             <div class="relative shrink-0">
                                                 <button
                                                     id="tasks-inline-quick-project-toggle"
@@ -608,6 +635,9 @@
                                         ></span>
                                     </td>
                                     <td class="px-4 py-3 text-center">
+                                        <span class="inline-flex items-center rounded-full bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-700">Sí</span>
+                                    </td>
+                                    <td class="px-4 py-3 text-center">
                                         <div class="relative inline-flex">
                                             <button
                                                 id="tasks-inline-quick-user-toggle"
@@ -666,7 +696,7 @@
                                 </tr>
                             @else
                                 <tr class="bg-white">
-                                    <td colspan="5" class="px-4 py-2">
+                                    <td colspan="6" class="px-4 py-2">
                                         <p class="text-sm text-amber-700">No hay estados activos para crear tareas rápidas.</p>
                                     </td>
                                 </tr>
@@ -729,6 +759,20 @@
                                     </td>
                                     <td class="px-4 py-3 text-gray-400 whitespace-nowrap">Sin fecha</td>
                                     <td class="px-4 py-3 text-xs font-semibold text-emerald-700">Recién creada</td>
+                                    <td class="px-4 py-3 text-center">
+                                        <button
+                                            type="button"
+                                            class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200"
+                                            :class="recentTask.valueGenerated ? 'bg-emerald-500' : 'bg-gray-300'"
+                                            :disabled="recentTask.updatingField !== null"
+                                            @click="updateRecentTaskBillable(recentTask, !recentTask.valueGenerated)"
+                                        >
+                                            <span
+                                                class="inline-block h-5 w-5 transform rounded-full bg-white transition duration-200"
+                                                :class="recentTask.valueGenerated ? 'translate-x-5' : 'translate-x-1'"
+                                            ></span>
+                                        </button>
+                                    </td>
                                     <td class="px-4 py-3 text-center">
                                         <div class="relative inline-flex" @click.outside="recentTask.showUserPicker = false">
                                             <button
@@ -821,6 +865,7 @@
                                         selectedUserName: @js($user?->name ?? 'Sin asignar'),
                                         selectedUserInitials: @js($initials ?: 'SA'),
                                         selectedUserAvatar: @js($selectedUserAvatarUrl),
+                                        valueGenerated: @js((bool) $task->value_generated),
                                         updatingField: null,
                                         rowError: '',
                                         async persistAssignment(payload, field) {
@@ -906,6 +951,22 @@
                                                 this.selectedUserName = previous.name;
                                                 this.selectedUserInitials = previous.initials;
                                                 this.selectedUserAvatar = previous.avatar;
+                                            }
+                                        },
+                                        async setValueGenerated(valueGenerated) {
+                                            if (this.updatingField) {
+                                                return;
+                                            }
+
+                                            const previous = !!this.valueGenerated;
+                                            this.valueGenerated = !!valueGenerated;
+
+                                            try {
+                                                await this.persistAssignment({
+                                                    value_generated: this.valueGenerated,
+                                                }, 'value_generated');
+                                            } catch (error) {
+                                                this.valueGenerated = previous;
                                             }
                                         },
                                     }"
@@ -995,6 +1056,20 @@
                                         </div>
                                     </td>
                                     <td class="px-4 py-3 text-center">
+                                        <button
+                                            type="button"
+                                            class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200"
+                                            :class="valueGenerated ? 'bg-emerald-500' : 'bg-gray-300'"
+                                            :disabled="updatingField !== null"
+                                            @click="setValueGenerated(!valueGenerated)"
+                                        >
+                                            <span
+                                                class="inline-block h-5 w-5 transform rounded-full bg-white transition duration-200"
+                                                :class="valueGenerated ? 'translate-x-5' : 'translate-x-1'"
+                                            ></span>
+                                        </button>
+                                    </td>
+                                    <td class="px-4 py-3 text-center">
                                         <div class="relative inline-flex">
                                             <button
                                                 type="button"
@@ -1055,7 +1130,7 @@
                                 </tr>
                             @empty
                                 <tr x-show="recentTasks.length === 0">
-                                    <td colspan="5" class="px-4 py-6 text-center text-gray-500">No hay tareas que coincidan con el filtro.</td>
+                                    <td colspan="6" class="px-4 py-6 text-center text-gray-500">No hay tareas que coincidan con el filtro.</td>
                                 </tr>
                             @endforelse
                         </tbody>
@@ -1114,7 +1189,49 @@
                             ];
                             $colorClass = $user ? $palette[$user->id % count($palette)] : 'bg-gray-100 text-gray-600';
                         @endphp
-                        <div class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+                        <div
+                            class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm"
+                            x-data="{
+                                valueGenerated: @js((bool) $task->value_generated),
+                                isUpdating: false,
+                                rowError: '',
+                                async toggleValueGenerated() {
+                                    if (this.isUpdating) {
+                                        return;
+                                    }
+
+                                    const previous = !!this.valueGenerated;
+                                    this.valueGenerated = !this.valueGenerated;
+                                    this.isUpdating = true;
+                                    this.rowError = '';
+
+                                    try {
+                                        const response = await fetch('{{ route('tasks.quick-assign', $task) }}', {
+                                            method: 'POST',
+                                            headers: {
+                                                'Content-Type': 'application/json',
+                                                'Accept': 'application/json',
+                                                'X-Requested-With': 'XMLHttpRequest',
+                                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                            },
+                                            body: JSON.stringify({
+                                                value_generated: this.valueGenerated,
+                                            }),
+                                        });
+                                        const data = await response.json().catch(() => ({}));
+
+                                        if (!response.ok) {
+                                            throw new Error(data?.message ?? 'No se pudo actualizar.');
+                                        }
+                                    } catch (error) {
+                                        this.valueGenerated = previous;
+                                        this.rowError = error?.message ?? 'No se pudo actualizar.';
+                                    } finally {
+                                        this.isUpdating = false;
+                                    }
+                                },
+                            }"
+                        >
                             <div class="flex items-start justify-between gap-3">
                                 <div class="flex items-start gap-3">
                                     <div class="h-11 w-11 rounded-full flex items-center justify-center text-xs font-semibold text-white ring-2 ring-white" style="background: {{ $project->color ?? '#9ca3af' }}">
@@ -1172,7 +1289,26 @@
                                     <span class="px-2 py-1 rounded-full bg-gray-100 text-gray-700 text-xs">{{ $task->subType->name }}</span>
                                 @endif
                                 <span class="px-2 py-1 rounded-full bg-indigo-50 text-indigo-700 text-xs">{{ $pointsUsed }} / {{ $maxPoints }} pts</span>
+                                <button
+                                    type="button"
+                                    class="inline-flex items-center gap-2 rounded-full border px-2 py-1 text-xs"
+                                    :class="valueGenerated ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-gray-200 bg-gray-50 text-gray-600'"
+                                    :disabled="isUpdating"
+                                    @click="toggleValueGenerated"
+                                >
+                                    <span
+                                        class="relative inline-flex h-5 w-9 items-center rounded-full transition-colors duration-200"
+                                        :class="valueGenerated ? 'bg-emerald-500' : 'bg-gray-300'"
+                                    >
+                                        <span
+                                            class="inline-block h-4 w-4 transform rounded-full bg-white transition duration-200"
+                                            :class="valueGenerated ? 'translate-x-4' : 'translate-x-1'"
+                                        ></span>
+                                    </span>
+                                    <span x-text="valueGenerated ? 'Cobrable' : 'No cobrable'"></span>
+                                </button>
                             </div>
+                            <p class="mt-2 text-xs text-red-600" x-show="rowError" x-text="rowError"></p>
                             <div class="mt-2 space-y-1">
                                 <div class="bg-gray-100 rounded-full h-2 overflow-hidden">
                                     <div class="h-2 rounded-full" style="width: {{ $progressPct }}%; background: linear-gradient(90deg, #6366f1, #22c55e);"></div>
@@ -1293,6 +1429,14 @@
                                         @endforeach
                                     </select>
                                 </div>
+                            </div>
+                            <div>
+                                <x-input-label for="quick_value_generated" value="Cobrable / genera valor" />
+                                <label class="mt-2 inline-flex items-center gap-3 cursor-pointer select-none">
+                                    <input type="hidden" name="value_generated" value="0">
+                                    <input id="quick_value_generated" name="value_generated" type="checkbox" value="1" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" checked>
+                                    <span class="text-sm text-gray-700">Marcar si esta tarea es cobrable.</span>
+                                </label>
                             </div>
                             <div>
                                 <x-input-label for="quick_sub_type_id" value="Subtipo" />

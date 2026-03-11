@@ -411,6 +411,7 @@ class TasksPointsSummaryTest extends TestCase
         $task = Task::create([
             'name' => 'Tarea editable',
             'project_id' => 11,
+            'value_generated' => true,
             'status_id' => 1,
             'due_date' => now(),
         ]);
@@ -418,6 +419,7 @@ class TasksPointsSummaryTest extends TestCase
         $response = $this->postJson(route('tasks.quick-assign', $task), [
             'project_id' => 12,
             'user_id' => $assignee->id,
+            'value_generated' => false,
         ]);
 
         $response->assertOk();
@@ -425,11 +427,53 @@ class TasksPointsSummaryTest extends TestCase
         $response->assertJsonPath('task.id', $task->id);
         $response->assertJsonPath('task.project_id', 12);
         $response->assertJsonPath('task.user_id', $assignee->id);
+        $response->assertJsonPath('task.value_generated', false);
 
         $this->assertDatabaseHas('tasks', [
             'id' => $task->id,
             'project_id' => 12,
             'user_id' => $assignee->id,
+            'value_generated' => false,
+            'updator_user_id' => $editor->id,
+        ]);
+    }
+
+    public function test_update_keeps_value_generated_when_field_is_missing(): void
+    {
+        $editor = User::factory()->create([
+            'status_id' => 1,
+        ]);
+
+        $this->grantModulePermissions($editor, '/tasks', ['update']);
+        $this->actingAs($editor->refresh());
+
+        DB::table('task_statuses')->insert([
+            'id' => 1,
+            'name' => 'Pendiente',
+            'pending' => true,
+            'status_id' => 1,
+            'weight' => 1,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $task = Task::create([
+            'name' => 'Tarea editable',
+            'status_id' => 1,
+            'value_generated' => true,
+            'due_date' => now(),
+        ]);
+
+        $response = $this->put(route('tasks.update', $task), [
+            'name' => 'Tarea editable actualizada',
+            'status_id' => 1,
+        ]);
+
+        $response->assertRedirect(route('tasks.index'));
+        $this->assertDatabaseHas('tasks', [
+            'id' => $task->id,
+            'name' => 'Tarea editable actualizada',
+            'value_generated' => true,
             'updator_user_id' => $editor->id,
         ]);
     }

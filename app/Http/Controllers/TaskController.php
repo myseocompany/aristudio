@@ -262,6 +262,7 @@ class TaskController extends Controller
                     'project_id' => $task->project_id,
                     'user_id' => $task->user_id,
                     'status_id' => $task->status_id,
+                    'value_generated' => (bool) $task->value_generated,
                 ],
             ], 201);
         }
@@ -285,6 +286,7 @@ class TaskController extends Controller
         $data = $request->validate([
             'project_id' => ['nullable', 'exists:projects,id'],
             'user_id' => ['nullable', 'exists:users,id'],
+            'value_generated' => ['nullable', 'boolean'],
         ]);
 
         $task->fill($data);
@@ -298,6 +300,7 @@ class TaskController extends Controller
                 'id' => $task->id,
                 'project_id' => $task->project_id,
                 'user_id' => $task->user_id,
+                'value_generated' => (bool) $task->value_generated,
                 'project' => $task->project ? [
                     'id' => $task->project->id,
                     'name' => $task->project->name,
@@ -333,8 +336,12 @@ class TaskController extends Controller
     {
         $data = $this->validateData($request);
         $data['updator_user_id'] = Auth::id();
-        $data['value_generated'] = $request->boolean('value_generated');
-        $data['not_billing'] = $request->boolean('not_billing');
+        $data['value_generated'] = $request->has('value_generated')
+            ? $request->boolean('value_generated')
+            : $task->value_generated;
+        $data['not_billing'] = $request->has('not_billing')
+            ? $request->boolean('not_billing')
+            : $task->not_billing;
         $data['due_date'] = $this->parseDateTime($request->input('due_date'));
         $data['delivery_date'] = $this->parseDateTime($request->input('delivery_date'));
 

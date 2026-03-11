@@ -80,6 +80,10 @@
             <p class="font-medium">{{ $task->points ?? '—' }}</p>
         </div>
         <div>
+            <p class="text-xs text-gray-500">Cobrable</p>
+            <p class="font-medium">{{ $task->value_generated ? 'Sí' : 'No' }}</p>
+        </div>
+        <div>
             <p class="text-xs text-gray-500">Estimado</p>
             <p class="font-medium">{{ $task->estimated_points ?? '—' }}</p>
         </div>
