@@ -71,6 +71,12 @@
                     'avatarUrl' => $avatarPath ? asset('storage/'.$avatarPath) : null,
                 ];
             })->values()),
+            statusesCatalog: @js($statuses->map(fn ($status) => [
+                'id' => (string) $status->id,
+                'name' => $status->name,
+                'color' => $status->color ?? '#312e81',
+                'backgroundColor' => $status->background_color ?? '#eef2ff',
+            ])->values()),
             recentTasks: [],
             quickAssignUrl(taskId) {
                 return `${this.tasksBaseUrl}/${taskId}/quick-assign`;
@@ -160,6 +166,34 @@
                     task.userAvatar = previous.userAvatar;
                 }
             },
+            async updateRecentTaskStatus(task, statusId, statusName, statusColor, statusBackgroundColor) {
+                if (task.updatingField) {
+                    return;
+                }
+
+                const previous = {
+                    statusId: task.statusId,
+                    statusName: task.statusName,
+                    statusColor: task.statusColor,
+                    statusBackgroundColor: task.statusBackgroundColor,
+                };
+
+                task.statusId = String(statusId ?? '');
+                task.statusName = statusName;
+                task.statusColor = statusColor;
+                task.statusBackgroundColor = statusBackgroundColor;
+
+                try {
+                    await this.updateRecentTaskAssignment(task, {
+                        status_id: task.statusId !== '' ? Number(task.statusId) : null,
+                    }, 'status');
+                } catch (error) {
+                    task.statusId = previous.statusId;
+                    task.statusName = previous.statusName;
+                    task.statusColor = previous.statusColor;
+                    task.statusBackgroundColor = previous.statusBackgroundColor;
+                }
+            },
             async updateRecentTaskBillable(task, valueGenerated) {
                 if (task.updatingField) {
                     return;
@@ -184,6 +218,7 @@
                 this.recentTasks.unshift({
                     ...task,
                     projectId: String(task.projectId ?? ''),
+                    statusId: String(task.statusId ?? task.status_id ?? ''),
                     userId: String(task.userId ?? ''),
                     valueGenerated: task.valueGenerated ?? true,
                     showProjectPicker: false,
@@ -754,11 +789,35 @@
                                         </div>
                                     </td>
                                     <td class="px-4 py-3">
-                                        <span
-                                            class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold"
-                                            :style="`background:${recentTask.statusBackgroundColor ?? '#eef2ff'}; color:${recentTask.statusColor ?? '#312e81'}`"
-                                            x-text="recentTask.statusName"
-                                        ></span>
+                                        <label class="sr-only" :for="`recent-task-status-${recentTask.id}`">Estado</label>
+                                        <div class="relative">
+                                            <select
+                                                :id="`recent-task-status-${recentTask.id}`"
+                                                class="w-full min-w-[9rem] rounded-full border-0 py-1 pl-3 pr-8 text-xs font-semibold focus:ring-2 focus:ring-indigo-500"
+                                                :style="`background:${recentTask.statusBackgroundColor ?? '#eef2ff'}; color:${recentTask.statusColor ?? '#312e81'}`"
+                                                x-model="recentTask.statusId"
+                                                :disabled="recentTask.updatingField !== null"
+                                                @change="updateRecentTaskStatus(
+                                                    recentTask,
+                                                    $event.target.value,
+                                                    $event.target.selectedOptions[0]?.dataset.name ?? '',
+                                                    $event.target.selectedOptions[0]?.dataset.color ?? '#312e81',
+                                                    $event.target.selectedOptions[0]?.dataset.backgroundColor ?? '#eef2ff'
+                                                )"
+                                            >
+                                                <template x-for="statusOption in statusesCatalog" :key="`recent-status-${recentTask.id}-${statusOption.id}`">
+                                                    <option
+                                                        :value="statusOption.id"
+                                                        :selected="String(recentTask.statusId) === String(statusOption.id)"
+                                                        :data-name="statusOption.name"
+                                                        :data-color="statusOption.color"
+                                                        :data-background-color="statusOption.backgroundColor"
+                                                        x-text="statusOption.name"
+                                                    ></option>
+                                                </template>
+                                            </select>
+                                            <span class="pointer-events-none absolute inset-y-0 right-3 flex items-center text-[10px] text-current">▾</span>
+                                        </div>
                                     </td>
                                     <td class="px-4 py-3 text-gray-400 whitespace-nowrap">Sin fecha</td>
                                     <td class="px-4 py-3 text-xs font-semibold text-emerald-700">Recién creada</td>
@@ -868,6 +927,10 @@
                                         selectedUserName: @js($user?->name ?? 'Sin asignar'),
                                         selectedUserInitials: @js($initials ?: 'SA'),
                                         selectedUserAvatar: @js($selectedUserAvatarUrl),
+                                        selectedStatusId: @js((string) ($task->status_id ?? '')),
+                                        selectedStatusName: @js($status?->name ?? 'N/A'),
+                                        selectedStatusColor: @js($status?->color ?? '#312e81'),
+                                        selectedStatusBackgroundColor: @js($status?->background_color ?? '#eef2ff'),
                                         valueGenerated: @js((bool) $task->value_generated),
                                         updatingField: null,
                                         rowError: '',
@@ -956,6 +1019,34 @@
                                                 this.selectedUserAvatar = previous.avatar;
                                             }
                                         },
+                                        async setStatus(statusId, statusName, statusColor, statusBackgroundColor) {
+                                            if (this.updatingField) {
+                                                return;
+                                            }
+
+                                            const previous = {
+                                                id: this.selectedStatusId,
+                                                name: this.selectedStatusName,
+                                                color: this.selectedStatusColor,
+                                                backgroundColor: this.selectedStatusBackgroundColor,
+                                            };
+
+                                            this.selectedStatusId = String(statusId ?? '');
+                                            this.selectedStatusName = statusName;
+                                            this.selectedStatusColor = statusColor;
+                                            this.selectedStatusBackgroundColor = statusBackgroundColor;
+
+                                            try {
+                                                await this.persistAssignment({
+                                                    status_id: this.selectedStatusId !== '' ? Number(this.selectedStatusId) : null,
+                                                }, 'status');
+                                            } catch (error) {
+                                                this.selectedStatusId = previous.id;
+                                                this.selectedStatusName = previous.name;
+                                                this.selectedStatusColor = previous.color;
+                                                this.selectedStatusBackgroundColor = previous.backgroundColor;
+                                            }
+                                        },
                                         async setValueGenerated(valueGenerated) {
                                             if (this.updatingField) {
                                                 return;
@@ -1033,13 +1124,36 @@
                                         </div>
                                     </td>
                                     <td class="px-4 py-3">
-                                        @if($status)
-                                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold" style="background: {{ $status->background_color ?? '#eef2ff' }}; color: {{ $status->color ?? '#312e81' }}">
-                                                {{ $status->name }}
-                                            </span>
-                                        @else
-                                            <span class="text-gray-400">N/A</span>
-                                        @endif
+                                        <label class="sr-only" for="task-status-{{ $task->id }}">Estado</label>
+                                        <div class="relative">
+                                            <select
+                                                id="task-status-{{ $task->id }}"
+                                                class="w-full min-w-[9rem] rounded-full border-0 py-1 pl-3 pr-8 text-xs font-semibold focus:ring-2 focus:ring-indigo-500"
+                                                data-task-row-status-select="{{ $task->id }}"
+                                                :style="`background:${selectedStatusBackgroundColor}; color:${selectedStatusColor}`"
+                                                x-model="selectedStatusId"
+                                                :disabled="updatingField !== null"
+                                                @change="setStatus(
+                                                    $event.target.value,
+                                                    $event.target.selectedOptions[0]?.dataset.name ?? '',
+                                                    $event.target.selectedOptions[0]?.dataset.color ?? '#312e81',
+                                                    $event.target.selectedOptions[0]?.dataset.backgroundColor ?? '#eef2ff'
+                                                )"
+                                            >
+                                                @foreach($statuses as $statusOption)
+                                                    <option
+                                                        value="{{ $statusOption->id }}"
+                                                        @selected((string) ($task->status_id ?? '') === (string) $statusOption->id)
+                                                        data-name="{{ $statusOption->name }}"
+                                                        data-color="{{ $statusOption->color ?? '#312e81' }}"
+                                                        data-background-color="{{ $statusOption->background_color ?? '#eef2ff' }}"
+                                                    >
+                                                        {{ $statusOption->name }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                            <span class="pointer-events-none absolute inset-y-0 right-3 flex items-center text-[10px] text-current">▾</span>
+                                        </div>
                                     </td>
                                     <td class="px-4 py-3 text-gray-700 whitespace-nowrap">
                                         @if($dueDate)
@@ -1195,9 +1309,56 @@
                         <div
                             class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm"
                             x-data="{
+                                selectedStatusId: @js((string) ($task->status_id ?? '')),
+                                selectedStatusColor: @js($status?->color ?? '#312e81'),
+                                selectedStatusBackgroundColor: @js($status?->background_color ?? '#eef2ff'),
                                 valueGenerated: @js((bool) $task->value_generated),
                                 isUpdating: false,
                                 rowError: '',
+                                async setStatus(statusId, statusColor, statusBackgroundColor) {
+                                    if (this.isUpdating) {
+                                        return;
+                                    }
+
+                                    const previous = {
+                                        id: this.selectedStatusId,
+                                        color: this.selectedStatusColor,
+                                        backgroundColor: this.selectedStatusBackgroundColor,
+                                    };
+
+                                    this.selectedStatusId = String(statusId ?? '');
+                                    this.selectedStatusColor = statusColor;
+                                    this.selectedStatusBackgroundColor = statusBackgroundColor;
+                                    this.isUpdating = true;
+                                    this.rowError = '';
+
+                                    try {
+                                        const response = await fetch('{{ route('tasks.quick-assign', $task) }}', {
+                                            method: 'POST',
+                                            headers: {
+                                                'Content-Type': 'application/json',
+                                                'Accept': 'application/json',
+                                                'X-Requested-With': 'XMLHttpRequest',
+                                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                            },
+                                            body: JSON.stringify({
+                                                status_id: Number(this.selectedStatusId),
+                                            }),
+                                        });
+                                        const data = await response.json().catch(() => ({}));
+
+                                        if (!response.ok) {
+                                            throw new Error(data?.message ?? 'No se pudo actualizar.');
+                                        }
+                                    } catch (error) {
+                                        this.selectedStatusId = previous.id;
+                                        this.selectedStatusColor = previous.color;
+                                        this.selectedStatusBackgroundColor = previous.backgroundColor;
+                                        this.rowError = error?.message ?? 'No se pudo actualizar.';
+                                    } finally {
+                                        this.isUpdating = false;
+                                    }
+                                },
                                 async toggleValueGenerated() {
                                     if (this.isUpdating) {
                                         return;
@@ -1258,9 +1419,33 @@
             </p>
         </div>
                                             @if($status)
-                                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold" style="background: {{ $status->background_color ?? '#eef2ff' }}; color: {{ $status->color ?? '#312e81' }}">
-                                                    {{ $status->name }}
-                                                </span>
+                                                <div class="relative">
+                                                    <label class="sr-only" for="mobile-task-status-{{ $task->id }}">Estado</label>
+                                                    <select
+                                                        id="mobile-task-status-{{ $task->id }}"
+                                                        class="rounded-full border-0 py-1 pl-3 pr-8 text-xs font-semibold focus:ring-2 focus:ring-indigo-500"
+                                                        :style="`background:${selectedStatusBackgroundColor}; color:${selectedStatusColor}`"
+                                                        x-model="selectedStatusId"
+                                                        :disabled="isUpdating"
+                                                        @change="setStatus(
+                                                            $event.target.value,
+                                                            $event.target.selectedOptions[0]?.dataset.color ?? '#312e81',
+                                                            $event.target.selectedOptions[0]?.dataset.backgroundColor ?? '#eef2ff'
+                                                        )"
+                                                    >
+                                                        @foreach($statuses as $statusOption)
+                                                            <option
+                                                                value="{{ $statusOption->id }}"
+                                                                @selected((string) ($task->status_id ?? '') === (string) $statusOption->id)
+                                                                data-color="{{ $statusOption->color ?? '#312e81' }}"
+                                                                data-background-color="{{ $statusOption->background_color ?? '#eef2ff' }}"
+                                                            >
+                                                                {{ $statusOption->name }}
+                                                            </option>
+                                                        @endforeach
+                                                    </select>
+                                                    <span class="pointer-events-none absolute inset-y-0 right-3 flex items-center text-[10px] text-current">▾</span>
+                                                </div>
                                             @endif
                                         </div>
                                         <div class="flex items-center gap-2 text-xs text-gray-500 mt-1">

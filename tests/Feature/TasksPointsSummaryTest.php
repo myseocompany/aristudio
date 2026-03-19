@@ -438,6 +438,7 @@ class TasksPointsSummaryTest extends TestCase
         $response->assertSee("x-text=\"recentTask.projectInitials ?? 'SP'\"", false);
         $response->assertSee('updateRecentTaskProject(recentTask', false);
         $response->assertSee('updateRecentTaskUser(recentTask', false);
+        $response->assertSee('updateRecentTaskStatus(', false);
         $response->assertSee('loadPanel(recentTask.showUrl)', false);
         $response->assertSee('recentTask.statusBackgroundColor', false);
         $response->assertSee('x-if="recentTask.userAvatar"', false);
@@ -446,6 +447,7 @@ class TasksPointsSummaryTest extends TestCase
         $response->assertSee('selectedUserAvatar:', false);
         $response->assertSee("storageProjectKey: 'tasks.inline.quick.project_id'", false);
         $response->assertSee("storageUserKey: 'tasks.inline.quick.user_id'", false);
+        $response->assertSee('data-task-row-status-select="', false);
         $response->assertSee('data-task-row-project-toggle="', false);
         $response->assertSee('data-task-row-user-toggle="', false);
         $response->assertSeeInOrder(['id="tasks-inline-quick-name"', 'Tarea existente'], false);
@@ -521,7 +523,7 @@ class TasksPointsSummaryTest extends TestCase
         ]);
     }
 
-    public function test_quick_assign_updates_task_project_and_user(): void
+    public function test_quick_assign_updates_task_project_user_and_status(): void
     {
         $editor = User::factory()->create([
             'status_id' => 1,
@@ -555,13 +557,28 @@ class TasksPointsSummaryTest extends TestCase
         ]);
 
         DB::table('task_statuses')->insert([
-            'id' => 1,
-            'name' => 'Pendiente',
-            'pending' => true,
-            'status_id' => 1,
-            'weight' => 1,
-            'created_at' => now(),
-            'updated_at' => now(),
+            [
+                'id' => 1,
+                'name' => 'Pendiente',
+                'pending' => true,
+                'status_id' => 1,
+                'weight' => 1,
+                'color' => '#312e81',
+                'background_color' => '#eef2ff',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'id' => 2,
+                'name' => 'En progreso',
+                'pending' => true,
+                'status_id' => 1,
+                'weight' => 2,
+                'color' => '#0f766e',
+                'background_color' => '#ccfbf1',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
         ]);
 
         $task = Task::create([
@@ -575,6 +592,7 @@ class TasksPointsSummaryTest extends TestCase
         $response = $this->postJson(route('tasks.quick-assign', $task), [
             'project_id' => 12,
             'user_id' => $assignee->id,
+            'status_id' => 2,
             'value_generated' => false,
         ]);
 
@@ -583,12 +601,15 @@ class TasksPointsSummaryTest extends TestCase
         $response->assertJsonPath('task.id', $task->id);
         $response->assertJsonPath('task.project_id', 12);
         $response->assertJsonPath('task.user_id', $assignee->id);
+        $response->assertJsonPath('task.status_id', 2);
+        $response->assertJsonPath('task.status.name', 'En progreso');
         $response->assertJsonPath('task.value_generated', false);
 
         $this->assertDatabaseHas('tasks', [
             'id' => $task->id,
             'project_id' => 12,
             'user_id' => $assignee->id,
+            'status_id' => 2,
             'value_generated' => false,
             'updator_user_id' => $editor->id,
         ]);

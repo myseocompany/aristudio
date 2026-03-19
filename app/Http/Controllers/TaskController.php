@@ -327,13 +327,14 @@ class TaskController extends Controller
         $data = $request->validate([
             'project_id' => ['nullable', 'exists:projects,id'],
             'user_id' => ['nullable', 'exists:users,id'],
+            'status_id' => ['sometimes', 'required', 'exists:task_statuses,id'],
             'value_generated' => ['nullable', 'boolean'],
         ]);
 
         $task->fill($data);
         $task->updator_user_id = Auth::id();
         $task->save();
-        $task->load(['project:id,name,color', 'user:id,name,image_url']);
+        $task->load(['project:id,name,color', 'user:id,name,image_url', 'status:id,name,color,background_color,pending']);
 
         return response()->json([
             'message' => 'Asignación actualizada.',
@@ -341,6 +342,7 @@ class TaskController extends Controller
                 'id' => $task->id,
                 'project_id' => $task->project_id,
                 'user_id' => $task->user_id,
+                'status_id' => $task->status_id,
                 'value_generated' => (bool) $task->value_generated,
                 'project' => $task->project ? [
                     'id' => $task->project->id,
@@ -351,6 +353,13 @@ class TaskController extends Controller
                     'id' => $task->user->id,
                     'name' => $task->user->name,
                     'image_url' => $task->user->image_url,
+                ] : null,
+                'status' => $task->status ? [
+                    'id' => $task->status->id,
+                    'name' => $task->status->name,
+                    'color' => $task->status->color,
+                    'background_color' => $task->status->background_color,
+                    'pending' => (bool) $task->status->pending,
                 ] : null,
             ],
         ]);
