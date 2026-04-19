@@ -37,4 +37,9 @@ class Project extends Model
     {
         return $this->hasMany(ProjectLogin::class);
     }
+
+    public function briefs(): HasMany
+    {
+        return $this->hasMany(ProjectBrief::class);
+    }
 }

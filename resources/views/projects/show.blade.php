@@ -143,6 +143,34 @@
                 </div>
             </div>
 
+            <div class="bg-white shadow-sm rounded-lg border border-gray-100 p-5 space-y-3" id="briefs">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <h3 class="font-semibold text-gray-900">Briefs</h3>
+                        <span class="text-xs text-gray-500">{{ $project->briefs->count() }} recientes</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <a href="{{ route('projects.briefs.index', $project) }}" class="text-xs text-indigo-600 hover:text-indigo-500 font-semibold">Ver todos</a>
+                        <a href="{{ route('projects.briefs.create', $project) }}" class="text-xs text-indigo-600 hover:text-indigo-500 font-semibold">Nuevo</a>
+                    </div>
+                </div>
+                @if($project->briefs->count())
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        @foreach($project->briefs as $brief)
+                            <a href="{{ route('projects.briefs.show', [$project, $brief]) }}" class="border rounded-lg px-4 py-3 space-y-2 hover:border-indigo-200">
+                                <div class="flex items-center justify-between gap-3">
+                                    <p class="text-sm font-semibold text-gray-900 truncate">{{ $brief->title }}</p>
+                                    <span class="text-xs text-gray-500">{{ $brief->answers_count }} respuestas</span>
+                                </div>
+                                <p class="text-xs text-gray-500">{{ $brief->created_at?->format('Y-m-d H:i') ?? '—' }}</p>
+                            </a>
+                        @endforeach
+                    </div>
+                @else
+                    <p class="text-sm text-gray-500">Sin briefs registrados.</p>
+                @endif
+            </div>
+
             @if($canManageLogins)
                 <div class="bg-white shadow-sm rounded-lg border border-gray-100 p-5 space-y-3" id="logins">
                     <div class="flex items-center justify-between">

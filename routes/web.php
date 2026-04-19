@@ -4,6 +4,7 @@ use App\Http\Controllers\BillingController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ModuleController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ProjectBriefController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProjectLoginController;
 use App\Http\Controllers\ReportController;
@@ -28,6 +29,7 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('users', UserLegacyController::class);
     Route::resource('projects', ProjectController::class);
+    Route::resource('projects.briefs', ProjectBriefController::class);
     Route::get('projects/{project}/logins/export', [ProjectLoginController::class, 'export'])->name('projects.logins.export');
     Route::resource('projects.logins', ProjectLoginController::class)->except(['index', 'show']);
     Route::get('logins', [ProjectLoginController::class, 'index'])->name('logins.index');

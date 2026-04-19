@@ -90,9 +90,12 @@ class ProjectController extends Controller
         $authUser = Auth::user();
         $status = DB::table('project_statuses')->where('id', $project->status_id)->value('name');
         $type = DB::table('project_types')->where('id', $project->type_id)->value('name');
-        $project->load(['users' => function ($query) {
-            $query->select('users.id', 'users.name', 'users.image_url', 'users.status_id', 'users.role_id');
-        }]);
+        $project->load([
+            'briefs' => fn ($query) => $query->latest()->limit(5)->withCount('answers'),
+            'users' => function ($query) {
+                $query->select('users.id', 'users.name', 'users.image_url', 'users.status_id', 'users.role_id');
+            },
+        ]);
         $roleNames = DB::table('roles')->pluck('name', 'id');
         $statusNames = DB::table('user_statuses')->pluck('name', 'id');
         $canManageLogins = DB::table('project_users')
