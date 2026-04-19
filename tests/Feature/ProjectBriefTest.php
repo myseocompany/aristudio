@@ -107,6 +107,7 @@ class ProjectBriefTest extends TestCase
         $brief = ProjectBrief::query()->firstOrFail();
 
         $response->assertRedirect(route('projects.briefs.show', [$project, $brief]));
+        $this->assertNotEmpty($brief->public_token);
         $this->assertDatabaseHas('project_briefs', [
             'project_id' => $project->id,
             'title' => 'Brief inicial',
@@ -145,6 +146,60 @@ class ProjectBriefTest extends TestCase
         $showResponse->assertSee('¿De qué trata tu empresa?');
         $showResponse->assertSee('Vende automatización industrial.');
         $showResponse->assertSee('Instagram');
+    }
+
+    public function test_guest_can_fill_public_brief_link_without_login(): void
+    {
+        Schema::getConnection()->table('project_statuses')->insert(['id' => 3, 'name' => 'Running']);
+        Schema::getConnection()->table('project_types')->insert(['id' => 1, 'name' => 'Web']);
+
+        $project = Project::query()->create([
+            'name' => 'Proyecto Cliente',
+            'type_id' => 1,
+            'status_id' => 3,
+        ]);
+
+        Schema::getConnection()->table('project_meta_datas')->insert([
+            ['id' => 10, 'parent_id' => null, 'value' => 'Empresa', 'type_id' => 1, 'weight' => 1, 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 11, 'parent_id' => 10, 'value' => 'Describe tu empresa', 'type_id' => 4, 'weight' => 1, 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 12, 'parent_id' => null, 'value' => 'Tipo de cliente', 'type_id' => 2, 'weight' => 2, 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 13, 'parent_id' => 12, 'value' => 'B2B', 'type_id' => null, 'weight' => 1, 'created_at' => now(), 'updated_at' => now()],
+        ]);
+
+        $brief = ProjectBrief::query()->create([
+            'project_id' => $project->id,
+            'title' => 'Brief para cliente',
+        ]);
+
+        $this->assertGuest();
+
+        $formResponse = $this->get(route('public.briefs.edit', $brief->public_token));
+
+        $formResponse->assertOk();
+        $formResponse->assertSee('Brief para cliente');
+        $formResponse->assertSee('Describe tu empresa');
+
+        $submitResponse = $this->put(route('public.briefs.update', $brief->public_token), [
+            'title' => $brief->title,
+            'answers' => [
+                11 => 'Somos una empresa industrial.',
+            ],
+            'selected_options' => [
+                12 => [13],
+            ],
+        ]);
+
+        $submitResponse->assertRedirect(route('public.briefs.edit', $brief->public_token));
+        $this->assertDatabaseHas('project_brief_answers', [
+            'project_brief_id' => $brief->id,
+            'project_meta_data_id' => 11,
+            'value' => 'Somos una empresa industrial.',
+        ]);
+        $this->assertDatabaseHas('project_brief_answers', [
+            'project_brief_id' => $brief->id,
+            'project_meta_data_id' => 13,
+            'value' => 'on',
+        ]);
     }
 
     public function test_migration_imports_legacy_project_metas_as_initial_briefs(): void

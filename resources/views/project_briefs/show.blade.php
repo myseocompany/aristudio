@@ -51,6 +51,10 @@
                         <p class="text-sm text-gray-800 whitespace-pre-line">{{ $brief->notes }}</p>
                     </div>
                 @endif
+                <div class="pt-3 border-t border-gray-100">
+                    <p class="text-sm text-gray-500 mb-2">Enlace para el cliente</p>
+                    @include('project_briefs.partials.public_link', ['brief' => $brief])
+                </div>
             </div>
 
             @forelse($answersBySection as $section => $answers)

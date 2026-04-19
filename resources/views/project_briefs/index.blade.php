@@ -37,6 +37,7 @@
                                 <th class="px-4 py-3">Respuestas</th>
                                 <th class="px-4 py-3">Creado por</th>
                                 <th class="px-4 py-3">Fecha</th>
+                                <th class="px-4 py-3">Cliente</th>
                                 <th class="px-4 py-3"></th>
                             </tr>
                         </thead>
@@ -49,13 +50,16 @@
                                     <td class="px-4 py-3 text-gray-700">{{ $brief->answers_count }}</td>
                                     <td class="px-4 py-3 text-gray-700">{{ $brief->creator?->name ?? '—' }}</td>
                                     <td class="px-4 py-3 text-gray-700">{{ $brief->created_at?->format('Y-m-d H:i') ?? '—' }}</td>
+                                    <td class="px-4 py-3">
+                                        @include('project_briefs.partials.public_link', ['brief' => $brief])
+                                    </td>
                                     <td class="px-4 py-3 text-right">
                                         <a href="{{ route('projects.briefs.edit', [$project, $brief]) }}" class="text-indigo-600 hover:text-indigo-500 font-medium">Editar</a>
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="5" class="px-4 py-8 text-center text-gray-500">Sin briefs registrados.</td>
+                                    <td colspan="6" class="px-4 py-8 text-center text-gray-500">Sin briefs registrados.</td>
                                 </tr>
                             @endforelse
                         </tbody>

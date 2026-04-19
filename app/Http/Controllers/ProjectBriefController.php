@@ -17,7 +17,7 @@ class ProjectBriefController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('auth');
+        $this->middleware('auth')->except(['publicEdit', 'publicUpdate']);
         $this->middleware(function (Request $request, $next) {
             $this->authorizeModule($request, '/projects', [
                 'index' => 'read',
@@ -30,7 +30,7 @@ class ProjectBriefController extends Controller
             ]);
 
             return $next($request);
-        });
+        })->except(['publicEdit', 'publicUpdate']);
     }
 
     public function index(Project $project): View
@@ -134,6 +134,32 @@ class ProjectBriefController extends Controller
         $brief->delete();
 
         return redirect()->route('projects.briefs.index', $project)->with('status', 'Brief eliminado.');
+    }
+
+    public function publicEdit(ProjectBrief $brief): View
+    {
+        $brief->load(['project', 'answers']);
+
+        return view('project_briefs.public', [
+            'project' => $brief->project,
+            'brief' => $brief,
+            'answers' => $brief->answers->pluck('value', 'project_meta_data_id'),
+            'questions' => $this->briefQuestions(),
+        ]);
+    }
+
+    public function publicUpdate(ProjectBriefRequest $request, ProjectBrief $brief): RedirectResponse
+    {
+        DB::transaction(function () use ($request, $brief): void {
+            $brief->update([
+                'title' => $brief->title,
+                'notes' => $brief->notes,
+            ]);
+
+            $this->syncAnswers($brief, $request->validated());
+        });
+
+        return redirect()->route('public.briefs.edit', $brief->public_token)->with('status', 'Brief enviado.');
     }
 
     protected function ensureSameProject(Project $project, ProjectBrief $brief): void

@@ -157,13 +157,14 @@
                 @if($project->briefs->count())
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                         @foreach($project->briefs as $brief)
-                            <a href="{{ route('projects.briefs.show', [$project, $brief]) }}" class="border rounded-lg px-4 py-3 space-y-2 hover:border-indigo-200">
+                            <div class="border rounded-lg px-4 py-3 space-y-2 hover:border-indigo-200">
                                 <div class="flex items-center justify-between gap-3">
-                                    <p class="text-sm font-semibold text-gray-900 truncate">{{ $brief->title }}</p>
+                                    <a href="{{ route('projects.briefs.show', [$project, $brief]) }}" class="text-sm font-semibold text-gray-900 truncate hover:underline">{{ $brief->title }}</a>
                                     <span class="text-xs text-gray-500">{{ $brief->answers_count }} respuestas</span>
                                 </div>
                                 <p class="text-xs text-gray-500">{{ $brief->created_at?->format('Y-m-d H:i') ?? '—' }}</p>
-                            </a>
+                                @include('project_briefs.partials.public_link', ['brief' => $brief])
+                            </div>
                         @endforeach
                     </div>
                 @else
