@@ -340,7 +340,7 @@ class ProjectBriefTest extends TestCase
         $response->assertDontSee('Pregunta vacia');
     }
 
-    public function test_create_brief_uses_web_design_campaign_groups_when_project_has_no_legacy_answers(): void
+    public function test_create_brief_uses_brief_campaign_groups_when_project_has_no_legacy_answers(): void
     {
         Schema::getConnection()->table('project_statuses')->insert(['id' => 3, 'name' => 'Running']);
         Schema::getConnection()->table('project_types')->insert(['id' => 1, 'name' => 'Web']);
@@ -360,7 +360,7 @@ class ProjectBriefTest extends TestCase
 
         DB::table('campaigns')->insert([
             'id' => 4,
-            'name' => 'Brief Web Design',
+            'name' => 'Brief',
             'created_at' => now(),
             'updated_at' => now(),
         ]);

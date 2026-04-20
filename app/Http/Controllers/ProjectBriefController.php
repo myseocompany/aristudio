@@ -186,7 +186,7 @@ class ProjectBriefController extends Controller
             $rootIds = $this->answeredRootQuestionIds($project);
 
             if ($rootIds->isEmpty()) {
-                $rootIds = $this->campaignRootQuestionIds('Brief Web Design');
+                $rootIds = $this->campaignRootQuestionIds('Brief');
             }
 
             if ($rootIds->isNotEmpty()) {
