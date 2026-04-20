@@ -24,6 +24,8 @@ class ProjectBriefTest extends TestCase
         Schema::dropIfExists('project_meta_datas');
         Schema::dropIfExists('project_metas');
         Schema::dropIfExists('project_logins');
+        Schema::dropIfExists('campaign_project_meta_data');
+        Schema::dropIfExists('campaigns');
         Schema::dropIfExists('project_users');
         Schema::dropIfExists('projects');
         Schema::dropIfExists('project_statuses');
@@ -89,6 +91,18 @@ class ProjectBriefTest extends TestCase
             $table->string('password')->nullable();
             $table->text('url')->nullable();
             $table->timestamps();
+        });
+
+        Schema::create('campaigns', function (Blueprint $table): void {
+            $table->id();
+            $table->string('name');
+            $table->timestamps();
+        });
+
+        Schema::create('campaign_project_meta_data', function (Blueprint $table): void {
+            $table->id();
+            $table->unsignedBigInteger('campaign_id');
+            $table->unsignedBigInteger('project_meta_data_id');
         });
     }
 
@@ -324,6 +338,45 @@ class ProjectBriefTest extends TestCase
         $response->assertSee('Pregunta llena');
         $response->assertDontSee('Grupo vacio');
         $response->assertDontSee('Pregunta vacia');
+    }
+
+    public function test_create_brief_uses_web_design_campaign_groups_when_project_has_no_legacy_answers(): void
+    {
+        Schema::getConnection()->table('project_statuses')->insert(['id' => 3, 'name' => 'Running']);
+        Schema::getConnection()->table('project_types')->insert(['id' => 1, 'name' => 'Web']);
+
+        $project = Project::query()->create([
+            'name' => 'Proyecto web',
+            'type_id' => 1,
+            'status_id' => 3,
+        ]);
+
+        Schema::getConnection()->table('project_meta_datas')->insert([
+            ['id' => 60, 'parent_id' => null, 'value' => 'Grupo campaña', 'type_id' => 1, 'weight' => 1, 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 61, 'parent_id' => 60, 'value' => 'Pregunta campaña', 'type_id' => 4, 'weight' => 1, 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 70, 'parent_id' => null, 'value' => 'Grupo fuera campaña', 'type_id' => 1, 'weight' => 2, 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 71, 'parent_id' => 70, 'value' => 'Pregunta fuera campaña', 'type_id' => 4, 'weight' => 1, 'created_at' => now(), 'updated_at' => now()],
+        ]);
+
+        DB::table('campaigns')->insert([
+            'id' => 4,
+            'name' => 'Brief Web Design',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        DB::table('campaign_project_meta_data')->insert([
+            'campaign_id' => 4,
+            'project_meta_data_id' => 61,
+        ]);
+
+        $response = $this->get(route('projects.briefs.create', $project));
+
+        $response->assertOk();
+        $response->assertSee('Grupo campaña');
+        $response->assertSee('Pregunta campaña');
+        $response->assertDontSee('Grupo fuera campaña');
+        $response->assertDontSee('Pregunta fuera campaña');
     }
 
     public function test_migration_imports_legacy_project_metas_as_initial_briefs(): void

@@ -12,6 +12,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\View\View;
 
 class ProjectBriefController extends Controller
@@ -184,6 +185,10 @@ class ProjectBriefController extends Controller
         if ($project) {
             $rootIds = $this->answeredRootQuestionIds($project);
 
+            if ($rootIds->isEmpty()) {
+                $rootIds = $this->campaignRootQuestionIds('Brief Web Design');
+            }
+
             if ($rootIds->isNotEmpty()) {
                 $rootIds = $rootIds->merge($this->fixedPublicRootQuestionIds())->unique()->values();
                 $questionQuery->whereIn('id', $rootIds);
@@ -289,6 +294,38 @@ class ProjectBriefController extends Controller
             })
             ->pluck('id')
             ->map(fn ($id): int => (int) $id);
+    }
+
+    protected function campaignRootQuestionIds(string $campaignName): Collection
+    {
+        if (! Schema::hasTable('campaign_project_meta_data') || ! Schema::hasTable('campaigns')) {
+            return collect();
+        }
+
+        $questionIds = DB::table('campaign_project_meta_data')
+            ->join('campaigns', 'campaigns.id', '=', 'campaign_project_meta_data.campaign_id')
+            ->where('campaigns.name', $campaignName)
+            ->pluck('campaign_project_meta_data.project_meta_data_id')
+            ->map(fn ($id): int => (int) $id)
+            ->filter();
+
+        if ($questionIds->isEmpty()) {
+            return collect();
+        }
+
+        return ProjectMetaData::query()
+            ->with('parent.parent.parent')
+            ->whereIn('id', $questionIds)
+            ->get()
+            ->map(function (ProjectMetaData $question): int {
+                while ($question->parent) {
+                    $question = $question->parent;
+                }
+
+                return (int) $question->id;
+            })
+            ->unique()
+            ->values();
     }
 
     /**

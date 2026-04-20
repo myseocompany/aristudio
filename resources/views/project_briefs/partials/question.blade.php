@@ -4,7 +4,9 @@
     $effectiveTypeId = $typeId ?: (int) ($parentTypeId ?? 0);
     $isOptionGroup = in_array($typeId, [2, 3], true) && $children->isNotEmpty();
     $selectedOptions = old("selected_options.{$question->id}");
-    $isAccessSection = str($question->value)->lower()->contains('accesos') && $children->isNotEmpty();
+    $normalizedQuestion = str($question->value)->lower();
+    $isAccessSection = $children->isNotEmpty()
+        && ($normalizedQuestion->contains('accesos') || $normalizedQuestion->contains('dominio') || $normalizedQuestion->contains('hosting'));
 @endphp
 
 @if($isAccessSection)
