@@ -62,9 +62,18 @@
                     <h3 class="font-semibold text-gray-900">{{ $section }}</h3>
                     <div class="space-y-4">
                         @foreach($answers as $answer)
+                            @php
+                                $fileAnswer = is_string($answer->value) ? json_decode($answer->value, true) : null;
+                            @endphp
                             <div class="border-t border-gray-100 pt-4 first:border-t-0 first:pt-0">
                                 <p class="text-sm font-medium text-gray-800 whitespace-pre-line">{{ $answer->question?->value ?? 'Pregunta eliminada' }}</p>
-                                <p class="mt-1 text-sm text-gray-600 whitespace-pre-line">{{ $answer->value === 'on' ? 'Seleccionado' : $answer->value }}</p>
+                                @if(is_array($fileAnswer) && isset($fileAnswer['path']))
+                                    <a href="{{ asset('storage/'.$fileAnswer['path']) }}" target="_blank" rel="noreferrer" class="mt-1 inline-flex text-sm text-indigo-600 hover:underline">
+                                        {{ $fileAnswer['name'] ?? 'Ver archivo' }}
+                                    </a>
+                                @else
+                                    <p class="mt-1 text-sm text-gray-600 whitespace-pre-line">{{ $answer->value === 'on' ? 'Seleccionado' : $answer->value }}</p>
+                                @endif
                             </div>
                         @endforeach
                     </div>

@@ -16,7 +16,7 @@
 
     <div class="py-6">
         <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-            <form action="{{ route('projects.briefs.store', $project) }}" method="POST" class="space-y-6">
+            <form action="{{ route('projects.briefs.store', $project) }}" method="POST" enctype="multipart/form-data" class="space-y-6">
                 @csrf
                 @include('project_briefs.partials.form', [
                     'project' => $project,

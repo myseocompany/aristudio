@@ -5,7 +5,7 @@
             <div class="flex">
                 <!-- Logo -->
                 <div class="shrink-0 flex items-center">
-                    <a href="{{ route('dashboard') }}">
+                    <a href="{{ Auth::check() ? route('dashboard') : url('/') }}">
                         <x-application-logo class="block h-9 w-auto fill-current text-gray-800" />
                     </a>
                 </div>
@@ -25,9 +25,11 @@
                     }
                 @endphp
                 <div class="hidden space-x-4 sm:-my-px sm:ms-10 sm:flex items-center">
-                    <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                        {{ __('Dashboard') }}
-                    </x-nav-link>
+                    @auth
+                        <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
+                            {{ __('Dashboard') }}
+                        </x-nav-link>
+                    @endauth
                     @foreach($moduleLinks as $module)
                         @php
                             $link = $module->slug ? url($module->slug) : '#';
@@ -41,6 +43,7 @@
             </div>
 
             <!-- Settings Dropdown -->
+            @auth
             <div class="hidden sm:flex sm:items-center sm:ms-6 space-x-4" x-data="timerBadge()" x-init="init()">
                 <a x-cloak x-show="running" href="{{ route('timer.index') }}" class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-50 text-indigo-700 text-xs font-semibold border border-indigo-100 hover:bg-indigo-100">
                     <span class="text-[11px] uppercase tracking-wide">Timer</span>
@@ -101,6 +104,7 @@
                     </x-slot>
                 </x-dropdown>
             </div>
+            @endauth
 
             <!-- Hamburger -->
             <div class="-me-2 flex items-center sm:hidden">
@@ -117,9 +121,11 @@
     <!-- Responsive Navigation Menu -->
     <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
         <div class="pt-2 pb-3 space-y-1">
-            <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                {{ __('Dashboard') }}
-            </x-responsive-nav-link>
+            @auth
+                <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
+                    {{ __('Dashboard') }}
+                </x-responsive-nav-link>
+            @endauth
             @foreach($moduleLinks as $module)
                 @php
                     $link = $module->slug ? url($module->slug) : '#';
@@ -129,15 +135,18 @@
                     {{ $module->name }}
                 </x-responsive-nav-link>
             @endforeach
-            <div class="px-4" x-data="timerBadge()" x-init="init()">
-                <a x-cloak x-show="running" href="{{ route('timer.index') }}" class="mt-2 inline-flex items-center gap-2 px-3 py-2 rounded-md bg-indigo-50 text-indigo-700 text-xs font-semibold border border-indigo-100 hover:bg-indigo-100">
-                    <span class="text-[11px] uppercase tracking-wide">Timer</span>
-                    <span class="font-mono text-sm" x-text="formatted"></span>
-                </a>
-            </div>
+            @auth
+                <div class="px-4" x-data="timerBadge()" x-init="init()">
+                    <a x-cloak x-show="running" href="{{ route('timer.index') }}" class="mt-2 inline-flex items-center gap-2 px-3 py-2 rounded-md bg-indigo-50 text-indigo-700 text-xs font-semibold border border-indigo-100 hover:bg-indigo-100">
+                        <span class="text-[11px] uppercase tracking-wide">Timer</span>
+                        <span class="font-mono text-sm" x-text="formatted"></span>
+                    </a>
+                </div>
+            @endauth
         </div>
 
         <!-- Responsive Settings Options -->
+        @auth
         <div class="pt-4 pb-1 border-t border-gray-200">
             <div class="px-4">
                 <div class="font-medium text-base text-gray-800">{{ Auth::user()->name }}</div>
@@ -161,6 +170,7 @@
                 </form>
             </div>
         </div>
+        @endauth
     </div>
 </nav>
 

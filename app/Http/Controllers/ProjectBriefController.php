@@ -6,6 +6,7 @@ use App\Http\Requests\ProjectBrief\ProjectBriefRequest;
 use App\Models\Project;
 use App\Models\ProjectBrief;
 use App\Models\ProjectBriefAnswer;
+use App\Models\ProjectLogin;
 use App\Models\ProjectMetaData;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -17,12 +18,10 @@ class ProjectBriefController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('auth')->except(['publicEdit', 'publicUpdate']);
+        $this->middleware('auth')->except(['create', 'store', 'publicEdit', 'publicUpdate']);
         $this->middleware(function (Request $request, $next) {
             $this->authorizeModule($request, '/projects', [
                 'index' => 'read',
-                'create' => 'create',
-                'store' => 'create',
                 'show' => 'read',
                 'edit' => 'update',
                 'update' => 'update',
@@ -30,7 +29,7 @@ class ProjectBriefController extends Controller
             ]);
 
             return $next($request);
-        })->except(['publicEdit', 'publicUpdate']);
+        })->except(['create', 'store', 'publicEdit', 'publicUpdate']);
     }
 
     public function index(Project $project): View
@@ -55,7 +54,7 @@ class ProjectBriefController extends Controller
                 'title' => 'Brief '.$project->name,
             ]),
             'answers' => collect(),
-            'questions' => $this->briefQuestions(),
+            'questions' => $this->briefQuestions($project),
         ]);
     }
 
@@ -68,12 +67,17 @@ class ProjectBriefController extends Controller
                 'notes' => $request->validated('notes'),
             ]);
 
-            $this->syncAnswers($brief, $request->validated());
+            $this->syncAnswers($brief, $request->validated(), $request);
+            $this->syncLogins($brief->project, $request->validated('access_logins', []));
 
             return $brief;
         });
 
-        return redirect()->route('projects.briefs.show', [$project, $brief])->with('status', 'Brief creado.');
+        if ($request->user()) {
+            return redirect()->route('projects.briefs.show', [$project, $brief])->with('status', 'Brief creado.');
+        }
+
+        return redirect()->route('public.briefs.edit', $brief->public_token)->with('status', 'Brief creado.');
     }
 
     public function show(Project $project, ProjectBrief $brief): View
@@ -107,7 +111,7 @@ class ProjectBriefController extends Controller
             'project' => $project,
             'brief' => $brief,
             'answers' => $brief->answers->pluck('value', 'project_meta_data_id'),
-            'questions' => $this->briefQuestions(),
+            'questions' => $this->briefQuestions($project),
         ]);
     }
 
@@ -121,7 +125,8 @@ class ProjectBriefController extends Controller
                 'notes' => $request->validated('notes'),
             ]);
 
-            $this->syncAnswers($brief, $request->validated());
+            $this->syncAnswers($brief, $request->validated(), $request);
+            $this->syncLogins($brief->project, $request->validated('access_logins', []));
         });
 
         return redirect()->route('projects.briefs.show', [$project, $brief])->with('status', 'Brief actualizado.');
@@ -144,7 +149,7 @@ class ProjectBriefController extends Controller
             'project' => $brief->project,
             'brief' => $brief,
             'answers' => $brief->answers->pluck('value', 'project_meta_data_id'),
-            'questions' => $this->briefQuestions(),
+            'questions' => $this->briefQuestions($brief->project),
         ]);
     }
 
@@ -156,7 +161,8 @@ class ProjectBriefController extends Controller
                 'notes' => $brief->notes,
             ]);
 
-            $this->syncAnswers($brief, $request->validated());
+            $this->syncAnswers($brief, $request->validated(), $request);
+            $this->syncLogins($brief->project, $request->validated('access_logins', []));
         });
 
         return redirect()->route('public.briefs.edit', $brief->public_token)->with('status', 'Brief enviado.');
@@ -167,20 +173,30 @@ class ProjectBriefController extends Controller
         abort_unless($brief->project_id === $project->id, 404);
     }
 
-    protected function briefQuestions(): Collection
+    protected function briefQuestions(?Project $project = null): Collection
     {
-        return ProjectMetaData::query()
+        $questionQuery = ProjectMetaData::query()
             ->with('children.children.children')
             ->whereNull('parent_id')
             ->orderBy('weight')
-            ->orderBy('id')
-            ->get();
+            ->orderBy('id');
+
+        if ($project) {
+            $rootIds = $this->answeredRootQuestionIds($project);
+
+            if ($rootIds->isNotEmpty()) {
+                $rootIds = $rootIds->merge($this->fixedPublicRootQuestionIds())->unique()->values();
+                $questionQuery->whereIn('id', $rootIds);
+            }
+        }
+
+        return $questionQuery->get();
     }
 
     /**
      * @param  array{answers?: array<int|string, string|null>, selected_options?: array<int|string, array<int|string, int|string>>}  $data
      */
-    protected function syncAnswers(ProjectBrief $brief, array $data): void
+    protected function syncAnswers(ProjectBrief $brief, array $data, ProjectBriefRequest $request): void
     {
         $answers = [];
 
@@ -198,6 +214,29 @@ class ProjectBriefController extends Controller
             }
         }
 
+        foreach ($request->file('files', []) as $metaDataId => $file) {
+            if ($file && $file->isValid()) {
+                $answers[(int) $metaDataId] = json_encode([
+                    'path' => $file->store('files/project-briefs/'.$brief->id, 'public'),
+                    'name' => $file->getClientOriginalName(),
+                ]);
+            }
+        }
+
+        $brief->answers()
+            ->pluck('value', 'project_meta_data_id')
+            ->each(function (string $value, int $metaDataId) use (&$answers): void {
+                if (array_key_exists($metaDataId, $answers)) {
+                    return;
+                }
+
+                $fileAnswer = json_decode($value, true);
+
+                if (is_array($fileAnswer) && isset($fileAnswer['path'])) {
+                    $answers[$metaDataId] = $value;
+                }
+            });
+
         $brief->answers()->delete();
 
         foreach ($answers as $metaDataId => $value) {
@@ -205,6 +244,79 @@ class ProjectBriefController extends Controller
                 'project_meta_data_id' => $metaDataId,
                 'value' => $value,
             ]);
+        }
+    }
+
+    protected function answeredRootQuestionIds(Project $project): Collection
+    {
+        $answeredQuestionIds = DB::table('project_metas')
+            ->where('project_id', $project->id)
+            ->whereNotNull('value')
+            ->whereRaw("NULLIF(TRIM(value), '') IS NOT NULL")
+            ->pluck('meta_data_id')
+            ->map(fn ($id): int => (int) $id)
+            ->filter();
+
+        if ($answeredQuestionIds->isEmpty()) {
+            return collect();
+        }
+
+        $questions = ProjectMetaData::query()
+            ->with('parent.parent.parent')
+            ->whereIn('id', $answeredQuestionIds)
+            ->get();
+
+        return $questions
+            ->map(function (ProjectMetaData $question): int {
+                while ($question->parent) {
+                    $question = $question->parent;
+                }
+
+                return (int) $question->id;
+            })
+            ->unique()
+            ->values();
+    }
+
+    protected function fixedPublicRootQuestionIds(): Collection
+    {
+        return ProjectMetaData::query()
+            ->whereNull('parent_id')
+            ->where(function ($query): void {
+                $query
+                    ->where('value', 'like', '%Archivos%')
+                    ->orWhere('value', 'like', '%Accesos%');
+            })
+            ->pluck('id')
+            ->map(fn ($id): int => (int) $id);
+    }
+
+    /**
+     * @param  array<int, array{name?: string|null, user?: string|null, password?: string|null, url?: string|null}>  $logins
+     */
+    protected function syncLogins(Project $project, array $logins): void
+    {
+        foreach ($logins as $login) {
+            $name = trim((string) ($login['name'] ?? ''));
+            $user = trim((string) ($login['user'] ?? ''));
+            $password = trim((string) ($login['password'] ?? ''));
+            $url = trim((string) ($login['url'] ?? ''));
+
+            if ($name === '' && $user === '' && $password === '' && $url === '') {
+                continue;
+            }
+
+            ProjectLogin::query()->updateOrCreate(
+                [
+                    'project_id' => $project->id,
+                    'name' => $name !== '' ? $name : 'Acceso',
+                    'user' => $user,
+                    'url' => $url,
+                ],
+                [
+                    'password' => $password,
+                ],
+            );
         }
     }
 }

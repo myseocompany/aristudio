@@ -38,7 +38,7 @@
                         </div>
                     @endif
 
-                    <form action="{{ route('public.briefs.update', $brief->public_token) }}" method="POST" class="space-y-6">
+                    <form action="{{ route('public.briefs.update', $brief->public_token) }}" method="POST" enctype="multipart/form-data" class="space-y-6">
                         @csrf
                         @method('PUT')
                         <input type="hidden" name="title" value="{{ $brief->title }}">

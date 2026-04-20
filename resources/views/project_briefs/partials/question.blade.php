@@ -1,11 +1,30 @@
 @php
     $children = $question->children ?? collect();
     $typeId = (int) ($question->type_id ?? 0);
+    $effectiveTypeId = $typeId ?: (int) ($parentTypeId ?? 0);
     $isOptionGroup = in_array($typeId, [2, 3], true) && $children->isNotEmpty();
     $selectedOptions = old("selected_options.{$question->id}");
+    $isAccessSection = str($question->value)->lower()->contains('accesos') && $children->isNotEmpty();
 @endphp
 
-@if($isOptionGroup)
+@if($isAccessSection)
+    <div class="bg-white shadow-sm rounded-lg border border-gray-100 p-6 space-y-4">
+        <div>
+            <h3 class="font-semibold text-gray-900 whitespace-pre-line">{{ $question->value }}</h3>
+            <p class="text-sm text-gray-500">Agrega los accesos necesarios. Se guardarán como logins del proyecto.</p>
+        </div>
+        <div class="space-y-3">
+            @for($index = 0; $index < 3; $index++)
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                    <input type="text" name="access_logins[{{ $index }}][name]" value="{{ old("access_logins.{$index}.name") }}" class="w-full border rounded px-3 py-2" placeholder="Nombre">
+                    <input type="text" name="access_logins[{{ $index }}][user]" value="{{ old("access_logins.{$index}.user") }}" class="w-full border rounded px-3 py-2" placeholder="Usuario">
+                    <input type="text" name="access_logins[{{ $index }}][password]" value="{{ old("access_logins.{$index}.password") }}" class="w-full border rounded px-3 py-2" placeholder="Contraseña">
+                    <input type="url" name="access_logins[{{ $index }}][url]" value="{{ old("access_logins.{$index}.url") }}" class="w-full border rounded px-3 py-2" placeholder="URL">
+                </div>
+            @endfor
+        </div>
+    </div>
+@elseif($isOptionGroup)
     <div class="bg-white shadow-sm rounded-lg border border-gray-100 p-6 space-y-3">
         <div>
             <h3 class="font-semibold text-gray-900 whitespace-pre-line">{{ $question->value }}</h3>
@@ -42,6 +61,7 @@
                     'question' => $child,
                     'answers' => $answers,
                     'level' => $level + 1,
+                    'parentTypeId' => $typeId ?: ($parentTypeId ?? null),
                 ])
             @endforeach
         </div>
@@ -52,10 +72,21 @@
     @endphp
     <div class="{{ $level > 0 ? 'border-t border-gray-100 pt-4 first:border-t-0 first:pt-0' : 'bg-white shadow-sm rounded-lg border border-gray-100 p-6' }}">
         <label class="block text-sm font-medium text-gray-800 whitespace-pre-line">{{ $question->value }}</label>
-        @if($typeId === 1)
+        @if($effectiveTypeId === 1)
             <input type="text" name="answers[{{ $question->id }}]" value="{{ $answerValue }}" class="mt-2 w-full border rounded px-3 py-2">
-        @elseif($typeId === 5)
-            <input type="text" name="answers[{{ $question->id }}]" value="{{ $answerValue }}" class="mt-2 w-full border rounded px-3 py-2" placeholder="URL o referencia del archivo">
+        @elseif($effectiveTypeId === 5)
+            @php
+                $fileAnswer = is_string($answerValue) ? json_decode($answerValue, true) : null;
+            @endphp
+            <input type="file" name="files[{{ $question->id }}]" class="mt-2 w-full border rounded px-3 py-2 bg-white">
+            @if(is_array($fileAnswer) && isset($fileAnswer['path']))
+                <p class="mt-2 text-xs text-gray-600">
+                    Actual:
+                    <a href="{{ asset('storage/'.$fileAnswer['path']) }}" target="_blank" rel="noreferrer" class="text-indigo-600 hover:underline">
+                        {{ $fileAnswer['name'] ?? 'Ver archivo' }}
+                    </a>
+                </p>
+            @endif
         @else
             <textarea name="answers[{{ $question->id }}]" rows="3" class="mt-2 w-full border rounded px-3 py-2">{{ $answerValue }}</textarea>
         @endif

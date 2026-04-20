@@ -24,6 +24,8 @@ Route::get('/dashboard', DashboardController::class)
 
 Route::get('briefs/{brief:public_token}', [ProjectBriefController::class, 'publicEdit'])->name('public.briefs.edit');
 Route::put('briefs/{brief:public_token}', [ProjectBriefController::class, 'publicUpdate'])->name('public.briefs.update');
+Route::get('projects/{project}/briefs/create', [ProjectBriefController::class, 'create'])->name('projects.briefs.create');
+Route::post('projects/{project}/briefs', [ProjectBriefController::class, 'store'])->name('projects.briefs.store');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -32,7 +34,7 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('users', UserLegacyController::class);
     Route::resource('projects', ProjectController::class);
-    Route::resource('projects.briefs', ProjectBriefController::class);
+    Route::resource('projects.briefs', ProjectBriefController::class)->except(['create', 'store']);
     Route::get('projects/{project}/logins/export', [ProjectLoginController::class, 'export'])->name('projects.logins.export');
     Route::resource('projects.logins', ProjectLoginController::class)->except(['index', 'show']);
     Route::get('logins', [ProjectLoginController::class, 'index'])->name('logins.index');

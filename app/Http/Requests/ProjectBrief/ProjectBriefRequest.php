@@ -26,9 +26,16 @@ class ProjectBriefRequest extends FormRequest
             'notes' => ['nullable', 'string'],
             'answers' => ['nullable', 'array'],
             'answers.*' => ['nullable', 'string', 'max:10000'],
+            'files' => ['nullable', 'array'],
+            'files.*' => ['nullable', 'file', 'max:20480'],
             'selected_options' => ['nullable', 'array'],
             'selected_options.*' => ['nullable', 'array'],
             'selected_options.*.*' => ['integer', 'exists:project_meta_datas,id'],
+            'access_logins' => ['nullable', 'array'],
+            'access_logins.*.name' => ['nullable', 'string', 'max:255'],
+            'access_logins.*.user' => ['nullable', 'string', 'max:255'],
+            'access_logins.*.password' => ['nullable', 'string', 'max:255'],
+            'access_logins.*.url' => ['nullable', 'string', 'max:2048'],
         ];
     }
 }

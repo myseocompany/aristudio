@@ -7,8 +7,10 @@ use App\Models\ProjectBrief;
 use App\Models\User;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class ProjectBriefTest extends TestCase
@@ -20,6 +22,8 @@ class ProjectBriefTest extends TestCase
         parent::setUp();
 
         Schema::dropIfExists('project_meta_datas');
+        Schema::dropIfExists('project_metas');
+        Schema::dropIfExists('project_logins');
         Schema::dropIfExists('project_users');
         Schema::dropIfExists('projects');
         Schema::dropIfExists('project_statuses');
@@ -66,6 +70,24 @@ class ProjectBriefTest extends TestCase
             $table->string('value', 1000);
             $table->unsignedTinyInteger('type_id')->nullable();
             $table->integer('weight')->nullable();
+            $table->timestamps();
+        });
+
+        Schema::create('project_metas', function (Blueprint $table): void {
+            $table->id();
+            $table->unsignedBigInteger('project_id');
+            $table->unsignedBigInteger('meta_data_id')->nullable();
+            $table->text('value')->nullable();
+            $table->timestamps();
+        });
+
+        Schema::create('project_logins', function (Blueprint $table): void {
+            $table->id();
+            $table->unsignedBigInteger('project_id');
+            $table->string('name');
+            $table->string('user')->nullable();
+            $table->string('password')->nullable();
+            $table->text('url')->nullable();
             $table->timestamps();
         });
     }
@@ -200,6 +222,108 @@ class ProjectBriefTest extends TestCase
             'project_meta_data_id' => 13,
             'value' => 'on',
         ]);
+    }
+
+    public function test_guest_can_create_project_brief_without_login(): void
+    {
+        Storage::fake('public');
+
+        Schema::getConnection()->table('project_statuses')->insert(['id' => 3, 'name' => 'Running']);
+        Schema::getConnection()->table('project_types')->insert(['id' => 1, 'name' => 'Web']);
+
+        $project = Project::query()->create([
+            'name' => 'Proyecto Publico',
+            'type_id' => 1,
+            'status_id' => 3,
+        ]);
+
+        Schema::getConnection()->table('project_meta_datas')->insert([
+            ['id' => 20, 'parent_id' => null, 'value' => 'Archivos', 'type_id' => 5, 'weight' => 1, 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 21, 'parent_id' => 20, 'value' => 'Logo', 'type_id' => null, 'weight' => 1, 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 30, 'parent_id' => null, 'value' => 'Accesos', 'type_id' => 1, 'weight' => 2, 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 31, 'parent_id' => 30, 'value' => 'Cuentas', 'type_id' => null, 'weight' => 1, 'created_at' => now(), 'updated_at' => now()],
+        ]);
+
+        $this->assertGuest();
+
+        $formResponse = $this->get(route('projects.briefs.create', $project));
+
+        $formResponse->assertOk();
+        $formResponse->assertSee('Crear brief');
+        $formResponse->assertSee('type="file"', false);
+        $formResponse->assertSee('access_logins', false);
+
+        $submitResponse = $this->post(route('projects.briefs.store', $project), [
+            'title' => 'Brief desde cliente',
+            'files' => [
+                21 => UploadedFile::fake()->create('logo.pdf', 100, 'application/pdf'),
+            ],
+            'access_logins' => [
+                [
+                    'name' => 'WordPress',
+                    'user' => 'cliente',
+                    'password' => 'secreto',
+                    'url' => 'https://example.com/wp-admin',
+                ],
+            ],
+        ]);
+
+        $brief = ProjectBrief::query()->firstOrFail();
+
+        $submitResponse->assertRedirect(route('public.briefs.edit', $brief->public_token));
+        $this->assertDatabaseHas('project_logins', [
+            'project_id' => $project->id,
+            'name' => 'WordPress',
+            'user' => 'cliente',
+            'password' => 'secreto',
+            'url' => 'https://example.com/wp-admin',
+        ]);
+
+        $answer = DB::table('project_brief_answers')
+            ->where('project_brief_id', $brief->id)
+            ->where('project_meta_data_id', 21)
+            ->value('value');
+
+        $storedFile = json_decode((string) $answer, true);
+
+        $this->assertIsArray($storedFile);
+        $this->assertSame('logo.pdf', $storedFile['name']);
+        Storage::disk('public')->assertExists($storedFile['path']);
+    }
+
+    public function test_create_brief_uses_answered_project_meta_groups_when_the_project_has_legacy_answers(): void
+    {
+        Schema::getConnection()->table('project_statuses')->insert(['id' => 3, 'name' => 'Running']);
+        Schema::getConnection()->table('project_types')->insert(['id' => 1, 'name' => 'Web']);
+
+        $project = Project::query()->create([
+            'name' => 'Proyecto con metadata',
+            'type_id' => 1,
+            'status_id' => 3,
+        ]);
+
+        Schema::getConnection()->table('project_meta_datas')->insert([
+            ['id' => 40, 'parent_id' => null, 'value' => 'Grupo lleno', 'type_id' => 1, 'weight' => 1, 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 41, 'parent_id' => 40, 'value' => 'Pregunta llena', 'type_id' => 4, 'weight' => 1, 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 50, 'parent_id' => null, 'value' => 'Grupo vacio', 'type_id' => 1, 'weight' => 2, 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 51, 'parent_id' => 50, 'value' => 'Pregunta vacia', 'type_id' => 4, 'weight' => 1, 'created_at' => now(), 'updated_at' => now()],
+        ]);
+
+        DB::table('project_metas')->insert([
+            'project_id' => $project->id,
+            'meta_data_id' => 41,
+            'value' => 'Respuesta previa',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $response = $this->get(route('projects.briefs.create', $project));
+
+        $response->assertOk();
+        $response->assertSee('Grupo lleno');
+        $response->assertSee('Pregunta llena');
+        $response->assertDontSee('Grupo vacio');
+        $response->assertDontSee('Pregunta vacia');
     }
 
     public function test_migration_imports_legacy_project_metas_as_initial_briefs(): void
