@@ -1,0 +1,877 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Referents Top 24 Viewer</title>
+  <style>
+    :root {
+      --bg: #f6f1e8;
+      --surface: rgba(255, 250, 244, 0.9);
+      --surface-strong: #fffaf4;
+      --border: #d9c7b3;
+      --text: #1f1a17;
+      --muted: #6f6258;
+      --accent: #a6472a;
+      --accent-soft: #f1d6c7;
+      --shadow: 0 18px 40px rgba(79, 46, 26, 0.10);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(166, 71, 42, 0.12), transparent 28%),
+        radial-gradient(circle at top right, rgba(130, 93, 57, 0.16), transparent 32%),
+        linear-gradient(180deg, #f7efe4 0%, #f4ece2 42%, #efe6db 100%);
+      min-height: 100vh;
+    }
+
+    .shell {
+      width: min(1200px, calc(100% - 32px));
+      margin: 32px auto 48px;
+    }
+
+    .hero {
+      background: linear-gradient(145deg, rgba(255, 250, 244, 0.96), rgba(246, 235, 220, 0.95));
+      border: 1px solid rgba(217, 199, 179, 0.8);
+      border-radius: 24px;
+      padding: 28px;
+      box-shadow: var(--shadow);
+    }
+
+    .eyebrow {
+      margin: 0 0 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      font-size: 12px;
+      color: var(--accent);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(28px, 4vw, 48px);
+      line-height: 0.98;
+      font-weight: 700;
+    }
+
+    .hero p {
+      max-width: 780px;
+      margin: 14px 0 0;
+      font-size: 17px;
+      line-height: 1.5;
+      color: var(--muted);
+    }
+
+    .toolbar {
+      margin-top: 18px;
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid rgba(217, 199, 179, 0.8);
+      border-radius: 18px;
+      padding: 14px;
+    }
+
+    .panel label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 13px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .panel select,
+    .panel input {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 12px;
+      font: inherit;
+      background: var(--surface-strong);
+      color: var(--text);
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin: 18px 0 22px;
+    }
+
+    .stat {
+      background: rgba(255, 250, 244, 0.88);
+      border: 1px solid rgba(217, 199, 179, 0.82);
+      border-radius: 18px;
+      padding: 16px;
+      box-shadow: 0 10px 24px rgba(79, 46, 26, 0.08);
+    }
+
+    .stat strong {
+      display: block;
+      font-size: 28px;
+      margin-top: 2px;
+    }
+
+    .stat span {
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-size: 12px;
+    }
+
+    .stat button {
+      margin-top: 10px;
+      border: 1px solid var(--border);
+      background: var(--surface-strong);
+      color: var(--text);
+      border-radius: 999px;
+      padding: 8px 12px;
+      font: inherit;
+      cursor: pointer;
+    }
+
+    .cards {
+      display: grid;
+      gap: 16px;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    }
+
+    .cards.standalone {
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .chip {
+      border: 1px solid var(--border);
+      background: rgba(255, 250, 244, 0.85);
+      color: var(--text);
+      border-radius: 999px;
+      padding: 10px 14px;
+      font: inherit;
+      cursor: pointer;
+      transition: 120ms ease;
+    }
+
+    .chip:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .chip.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff8f2;
+    }
+
+    .section-title {
+      margin: 28px 0 12px;
+      font-size: 22px;
+    }
+
+    .group {
+      margin-top: 28px;
+    }
+
+    .group-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .group-header h3 {
+      margin: 0;
+      font-size: 24px;
+    }
+
+    .group-header p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .card {
+      background: rgba(255, 250, 244, 0.92);
+      border: 1px solid rgba(217, 199, 179, 0.82);
+      border-radius: 22px;
+      padding: 18px;
+      box-shadow: 0 12px 30px rgba(79, 46, 26, 0.08);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      overflow: hidden;
+    }
+
+    .media {
+      position: relative;
+      margin: -18px -18px 0;
+      aspect-ratio: 9 / 16;
+      background: linear-gradient(180deg, rgba(69, 47, 33, 0.88), rgba(27, 20, 17, 0.98));
+      border-bottom: 1px solid rgba(217, 199, 179, 0.72);
+      overflow: hidden;
+    }
+
+    .media iframe,
+    .media video {
+      width: 100%;
+      height: 100%;
+      display: block;
+      background: #fff;
+      border: 0;
+    }
+
+    .media-fallback {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 24px;
+      color: rgba(255, 248, 242, 0.88);
+      line-height: 1.5;
+      font-size: 14px;
+      background: linear-gradient(180deg, rgba(69, 47, 33, 0.55), rgba(27, 20, 17, 0.88));
+    }
+
+
+    .media-trigger {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      border: 0;
+      width: 100%;
+      height: 100%;
+      background: transparent;
+      cursor: pointer;
+      color: rgba(255, 248, 242, 0.9);
+      font: inherit;
+    }
+
+    .play-icon {
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      background: rgba(166, 71, 42, 0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .play-icon svg {
+      width: 26px;
+      height: 26px;
+      margin-left: 3px;
+    }
+
+    .play-label {
+      font-size: 13px;
+      letter-spacing: 0.04em;
+    }
+
+    .card-body {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .select-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .check {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 14px;
+      user-select: none;
+      cursor: pointer;
+    }
+
+    .check input {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: flex-start;
+    }
+
+    .rank {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 42px;
+      height: 42px;
+      padding: 0 12px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-weight: 700;
+      font-size: 15px;
+    }
+
+    .account {
+      margin: 0;
+      font-size: 20px;
+      line-height: 1.1;
+    }
+
+    .meta {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .score {
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    .score span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .score strong {
+      font-size: 24px;
+    }
+
+    .caption {
+      margin: 0;
+      font-size: 15px;
+      line-height: 1.55;
+      color: var(--text);
+    }
+
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .tag {
+      border-radius: 999px;
+      padding: 7px 10px;
+      background: rgba(241, 214, 199, 0.56);
+      color: #6b351f;
+      font-size: 13px;
+    }
+
+    .actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-top: auto;
+      padding-top: 4px;
+    }
+
+    .actions a {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 700;
+    }
+
+    .actions a:hover {
+      text-decoration: underline;
+    }
+
+    .empty,
+    .loading,
+    .error {
+      margin-top: 18px;
+      background: rgba(255, 250, 244, 0.92);
+      border: 1px solid rgba(217, 199, 179, 0.82);
+      border-radius: 18px;
+      padding: 18px;
+      color: var(--muted);
+    }
+
+    .error {
+      color: #8b2d18;
+      background: #fff1eb;
+      border-color: #f1c4b4;
+    }
+
+    @media (max-width: 700px) {
+      .shell {
+        width: min(100% - 20px, 1200px);
+        margin-top: 18px;
+      }
+
+      .hero {
+        padding: 20px;
+      }
+
+      .card-top,
+      .actions {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .score {
+        text-align: left;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="hero">
+      <p class="eyebrow">AMIA · Referents Viewer</p>
+      <h1>Top 24 reels para modelar el contenido</h1>
+      <p>
+        Visualizador de los 24 videos con mejor engagement de las tres cuentas priorizadas:
+        <strong>@ginecomiladaza</strong>, <strong>@dralucianadeister</strong> y <strong>@soniacolemancoach</strong>.
+        Calcula automáticamente el top 8 por cuenta desde los JSON del proyecto.
+      </p>
+      <div class="toolbar">
+        <div class="panel">
+          <label for="account-filter">Cuenta</label>
+          <select id="account-filter">
+            <option value="all">Todas</option>
+          </select>
+        </div>
+        <div class="panel">
+          <label for="sort-by">Orden</label>
+          <select id="sort-by">
+            <option value="score">Engagement score</option>
+            <option value="likes">Likes</option>
+            <option value="comments">Comments</option>
+            <option value="views">Views</option>
+            <option value="date">Fecha</option>
+          </select>
+        </div>
+        <div class="panel">
+          <label for="search">Buscar</label>
+          <input id="search" type="search" placeholder="perimenopausia, humor, sueño...">
+        </div>
+        <div class="panel">
+          <label for="view-mode">Vista</label>
+          <select id="view-mode">
+            <option value="all">Ranking global</option>
+            <option value="grouped">Agrupado por cuenta</option>
+          </select>
+        </div>
+      </div>
+      <div class="chips" id="account-chips"></div>
+    </section>
+
+    <section id="status" class="loading">Cargando datasets...</section>
+    <section id="stats" class="stats" hidden></section>
+    <section id="cards" class="cards" hidden></section>
+  </main>
+
+  <script>
+    const TARGET_ACCOUNTS = [
+      "ginecomiladaza",
+      "dralucianadeister",
+      "soniacolemancoach",
+    ];
+
+    const state = {
+      rows: [],
+      filtered: [],
+      selected: new Set(),
+    };
+
+    const statusEl = document.getElementById("status");
+    const statsEl = document.getElementById("stats");
+    const cardsEl = document.getElementById("cards");
+    const accountFilterEl = document.getElementById("account-filter");
+    const sortByEl = document.getElementById("sort-by");
+    const searchEl = document.getElementById("search");
+    const viewModeEl = document.getElementById("view-mode");
+    const accountChipsEl = document.getElementById("account-chips");
+    const STORAGE_KEY = "amia_referents_selected";
+
+    function formatNumber(value) {
+      return new Intl.NumberFormat("es-CO").format(value || 0);
+    }
+
+    function scoreRow(post) {
+      const likes = post.likesCount || 0;
+      const comments = post.commentsCount || 0;
+      return likes + comments * 3;
+    }
+
+    function simplifyCaption(caption) {
+      return (caption || "").replace(/\s+/g, " ").trim();
+    }
+
+    async function loadData() {
+      hydrateSelection();
+      const [postsResponse, profilesResponse] = await Promise.all([
+        fetch("./posts_referents_2026-04-19_19-02.json"),
+        fetch("./profile_referents_2026-04-22_09-24.json"),
+      ]);
+
+      if (!postsResponse.ok || !profilesResponse.ok) {
+        throw new Error("No pude leer los JSON. Abre esta página con un servidor local.");
+      }
+
+      const posts = await postsResponse.json();
+      const profiles = await profilesResponse.json();
+      const followersByUser = Object.fromEntries(
+        profiles.map((profile) => [profile.username, profile.followersCount || 0])
+      );
+
+      const rows = [];
+
+      for (const username of TARGET_ACCOUNTS) {
+        const top = posts
+          .filter((post) => post.ownerUsername === username && post.type === "Video")
+          .map((post) => ({
+            account: username,
+            ownerFullName: post.ownerFullName || username,
+            followers: followersByUser[username] || 0,
+            score: scoreRow(post),
+            likes: post.likesCount || 0,
+            comments: post.commentsCount || 0,
+            views: post.videoViewCount || 0,
+            plays: post.videoPlayCount || 0,
+            date: (post.timestamp || "").slice(0, 10),
+            url: post.url || "",
+            id: post.id || `${username}-${post.shortCode || post.url || Math.random()}`,
+            caption: simplifyCaption(post.caption),
+          }))
+          .sort((a, b) =>
+            b.score - a.score ||
+            b.likes - a.likes ||
+            b.comments - a.comments ||
+            b.views - a.views
+          )
+          .slice(0, 8);
+
+        top.forEach((row, index) => {
+          rows.push({
+            ...row,
+            accountRank: index + 1,
+          });
+        });
+      }
+
+      state.rows = rows;
+      hydrateAccountFilter(rows);
+      applyFilters();
+    }
+
+    function hydrateAccountFilter(rows) {
+      const accounts = [...new Set(rows.map((row) => row.account))];
+      for (const account of accounts) {
+        const option = document.createElement("option");
+        option.value = account;
+        option.textContent = `@${account}`;
+        accountFilterEl.append(option);
+      }
+
+      accountChipsEl.innerHTML = [
+        `<button class="chip active" data-account="all" type="button">Todas</button>`,
+        ...accounts.map(
+          (account) => `<button class="chip" data-account="${account}" type="button">@${account}</button>`
+        ),
+      ].join("");
+
+      accountChipsEl.addEventListener("click", (event) => {
+        const button = event.target.closest(".chip");
+        if (!button) return;
+        accountFilterEl.value = button.dataset.account;
+        syncActiveChip();
+        applyFilters();
+      });
+    }
+
+    function applyFilters() {
+      const account = accountFilterEl.value;
+      const search = searchEl.value.trim().toLowerCase();
+      const sortBy = sortByEl.value;
+      syncActiveChip();
+
+      let filtered = state.rows.filter((row) => {
+        const matchesAccount = account === "all" || row.account === account;
+        const matchesSearch = !search || row.caption.toLowerCase().includes(search);
+        return matchesAccount && matchesSearch;
+      });
+
+      filtered = filtered.sort((a, b) => {
+        if (sortBy === "date") {
+          return b.date.localeCompare(a.date);
+        }
+        return (b[sortBy] || 0) - (a[sortBy] || 0);
+      });
+
+      state.filtered = filtered;
+      render();
+    }
+
+    function syncActiveChip() {
+      const value = accountFilterEl.value;
+      const chips = accountChipsEl.querySelectorAll(".chip");
+      for (const chip of chips) {
+        chip.classList.toggle("active", chip.dataset.account === value);
+      }
+    }
+
+    function render() {
+      if (!state.filtered.length) {
+        statusEl.hidden = false;
+        statusEl.className = "empty";
+        statusEl.textContent = "No hay resultados para ese filtro.";
+        statsEl.hidden = true;
+        cardsEl.hidden = true;
+        return;
+      }
+
+      statusEl.hidden = true;
+      statsEl.hidden = false;
+      cardsEl.hidden = false;
+
+      const totalLikes = state.filtered.reduce((sum, row) => sum + row.likes, 0);
+      const totalComments = state.filtered.reduce((sum, row) => sum + row.comments, 0);
+      const avgScore = Math.round(
+        state.filtered.reduce((sum, row) => sum + row.score, 0) / state.filtered.length
+      );
+      const selectedVisible = state.filtered.filter((row) => state.selected.has(row.id)).length;
+
+      statsEl.innerHTML = `
+        <article class="stat">
+          <span>Videos visibles</span>
+          <strong>${formatNumber(state.filtered.length)}</strong>
+        </article>
+        <article class="stat">
+          <span>Likes acumulados</span>
+          <strong>${formatNumber(totalLikes)}</strong>
+        </article>
+        <article class="stat">
+          <span>Comments acumulados</span>
+          <strong>${formatNumber(totalComments)}</strong>
+        </article>
+        <article class="stat">
+          <span>Avg engagement score</span>
+          <strong>${formatNumber(avgScore)}</strong>
+        </article>
+        <article class="stat">
+          <span>Seleccionados</span>
+          <strong>${formatNumber(state.selected.size)}</strong>
+          <div class="meta">${formatNumber(selectedVisible)} visibles en esta vista</div>
+          <button id="clear-selected" type="button">Limpiar seleccionados</button>
+        </article>
+      `;
+
+      const clearButton = document.getElementById("clear-selected");
+      if (clearButton) {
+        clearButton.addEventListener("click", () => {
+          state.selected.clear();
+          persistSelection();
+          render();
+        });
+      }
+
+      if (viewModeEl.value === "grouped") {
+        const grouped = groupRows(state.filtered);
+        cardsEl.className = "";
+        cardsEl.innerHTML = Object.entries(grouped)
+          .map(([account, rows]) => `
+            <section class="group">
+              <div class="group-header">
+                <h3>@${account}</h3>
+                <p>${formatNumber(rows.length)} reels · ${formatNumber(rows[0]?.followers || 0)} followers</p>
+              </div>
+              <div class="cards">
+                ${rows.map((row, index) => renderCard(row, index + 1)).join("")}
+              </div>
+            </section>
+          `)
+          .join("");
+      } else {
+        cardsEl.className = "cards standalone";
+        cardsEl.innerHTML = state.filtered.map((row, index) => renderCard(row, index + 1)).join("");
+      }
+    }
+
+    function groupRows(rows) {
+      return rows.reduce((groups, row) => {
+        groups[row.account] = groups[row.account] || [];
+        groups[row.account].push(row);
+        return groups;
+      }, {});
+    }
+
+    function buildEmbedUrl(url) {
+      if (!url) return "";
+      try {
+        const parsed = new URL(url);
+        const cleanPath = parsed.pathname.replace(/\/+$/, "");
+        if (!cleanPath) return "";
+        return `https://www.instagram.com${cleanPath}/embed/?cr=1&v=14&rd=https%3A%2F%2Fwww.instagram.com&rp=%2F`;
+      } catch {
+        return "";
+      }
+    }
+
+    function renderCard(row, index) {
+      const checked = state.selected.has(row.id) ? "checked" : "";
+      const embedUrl = buildEmbedUrl(row.url);
+      const media = embedUrl
+        ? `
+          <div class="media" data-src="${escapeAttribute(embedUrl)}">
+            <button class="media-trigger" type="button">
+              <span class="play-icon">
+                <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z" fill="#fff8f2"/></svg>
+              </span>
+              <span class="play-label">Cargar video</span>
+            </button>
+          </div>
+        `
+        : `
+          <div class="media">
+            <div class="media-fallback">Sin URL válida.</div>
+          </div>
+        `;
+
+      return `
+        <article class="card">
+          ${media}
+          <div class="card-body">
+            <div class="select-row">
+              <label class="check">
+                <input type="checkbox" data-select-id="${escapeAttribute(row.id)}" ${checked}>
+                <span>Seleccionar reel</span>
+              </label>
+            </div>
+            <div class="card-top">
+              <div>
+                <div class="rank">#${index}</div>
+                <h2 class="account">@${row.account}</h2>
+                <p class="meta">Top ${row.accountRank} de su cuenta · ${row.date || "sin fecha"} · ${formatNumber(row.followers)} followers</p>
+              </div>
+              <div class="score">
+                <span>Score</span>
+                <strong>${formatNumber(row.score)}</strong>
+              </div>
+            </div>
+            <p class="caption">${escapeHtml(row.caption)}</p>
+            <div class="tags">
+              <span class="tag">${formatNumber(row.likes)} likes</span>
+              <span class="tag">${formatNumber(row.comments)} comments</span>
+              <span class="tag">${formatNumber(row.views)} views</span>
+              <span class="tag">${formatNumber(row.plays)} plays</span>
+            </div>
+            <div class="actions">
+              <span class="meta">Cuenta modelo: ${escapeHtml(row.ownerFullName)}</span>
+              <a href="${row.url}" target="_blank" rel="noreferrer">Abrir post en Instagram</a>
+            </div>
+          </div>
+        </article>
+      `;
+    }
+
+    function escapeHtml(text) {
+      return text
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function escapeAttribute(text) {
+      return escapeHtml(text || "");
+    }
+
+
+    function persistSelection() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify([...state.selected]));
+    }
+
+    function hydrateSelection() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return;
+        const ids = JSON.parse(raw);
+        if (Array.isArray(ids)) {
+          state.selected = new Set(ids);
+        }
+      } catch (error) {
+        console.error("No pude leer seleccionados guardados", error);
+      }
+    }
+
+    document.addEventListener("click", (e) => {
+      const trigger = e.target.closest(".media-trigger");
+      if (!trigger) return;
+      const media = trigger.closest(".media[data-src]");
+      if (!media) return;
+      const iframe = document.createElement("iframe");
+      iframe.src = media.dataset.src;
+      iframe.allowTransparency = true;
+      iframe.allowFullscreen = true;
+      iframe.frameBorder = "0";
+      iframe.scrolling = "no";
+      media.innerHTML = "";
+      media.appendChild(iframe);
+    });
+
+    accountFilterEl.addEventListener("change", applyFilters);
+    sortByEl.addEventListener("change", applyFilters);
+    searchEl.addEventListener("input", applyFilters);
+    viewModeEl.addEventListener("change", applyFilters);
+    cardsEl.addEventListener("change", (event) => {
+      const input = event.target.closest("input[data-select-id]");
+      if (!input) return;
+      const id = input.dataset.selectId;
+      if (input.checked) {
+        state.selected.add(id);
+      } else {
+        state.selected.delete(id);
+      }
+      persistSelection();
+      render();
+    });
+
+    loadData().catch((error) => {
+      statusEl.hidden = false;
+      statusEl.className = "error";
+      statusEl.textContent = `${error.message} Si la abriste con doble clic, levanta un servidor local en esta carpeta.`;
+      statsEl.hidden = true;
+      cardsEl.hidden = true;
+      console.error(error);
+    });
+  </script>
+</body>
+</html>
