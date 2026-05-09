@@ -440,6 +440,50 @@ class TasksPointsSummaryTest extends TestCase
         $response->assertDontSee('Tarea sin vencimiento');
     }
 
+    public function test_tasks_index_shows_active_filter_chips(): void
+    {
+        $user = User::factory()->create([
+            'name' => 'Responsable Demo',
+            'status_id' => 1,
+        ]);
+
+        $this->grantModulePermissions($user, '/tasks', ['list']);
+        $this->actingAs($user->refresh());
+
+        DB::table('projects')->insert([
+            'id' => 278,
+            'name' => 'AMIA',
+            'status_id' => 3,
+            'weight' => 1,
+            'color' => '#000000',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        DB::table('task_statuses')->insert([
+            'id' => 1,
+            'name' => 'Pendiente',
+            'pending' => true,
+            'status_id' => 1,
+            'weight' => 1,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $response = $this->get('/tasks?from_date=2026-01-01&to_date=2026-12-31&q=Alpha&status_id=1&project_id=278&user_id='.$user->id.'&value_generated=1');
+
+        $response->assertOk();
+        $response->assertSee('Filtros');
+        $response->assertSee('Fechas: 2026-01-01 - 2026-12-31');
+        $response->assertSee('Buscar: Alpha');
+        $response->assertSee('Estado: Pendiente');
+        $response->assertSee('Proyecto: AMIA');
+        $response->assertSee('Responsable: Responsable Demo');
+        $response->assertSee('Valor: Genera valor');
+        $response->assertSee('Quitar filtro Proyecto');
+        $response->assertSee('Limpiar todos');
+    }
+
     public function test_tasks_export_requires_list_permission(): void
     {
         $user = User::factory()->create();

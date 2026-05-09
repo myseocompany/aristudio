@@ -263,6 +263,60 @@
             $currentRangeValue = $filters['from_date'] && $filters['to_date']
                 ? $filters['from_date'].'|'.$filters['to_date']
                 : $defaultRangeStart.'|'.$defaultRangeEnd;
+            $activeFilterQuery = request()->query();
+            unset($activeFilterQuery['page']);
+            $removeFilterUrl = function (array $keys) use ($activeFilterQuery) {
+                return route('tasks.index', collect($activeFilterQuery)->except($keys)->all());
+            };
+            $activeFilterChips = [];
+
+            if ($filters['from_date'] !== $defaultRangeStart || $filters['to_date'] !== $defaultRangeEnd) {
+                $activeFilterChips[] = [
+                    'label' => 'Fechas',
+                    'value' => ($filters['from_date'] ?? '').' - '.($filters['to_date'] ?? ''),
+                    'url' => $removeFilterUrl(['from_date', 'to_date', 'range']),
+                ];
+            }
+
+            if ($filters['q']) {
+                $activeFilterChips[] = [
+                    'label' => 'Buscar',
+                    'value' => $filters['q'],
+                    'url' => $removeFilterUrl(['q']),
+                ];
+            }
+
+            if ($filters['status_id']) {
+                $activeFilterChips[] = [
+                    'label' => 'Estado',
+                    'value' => $statuses->firstWhere('id', (int) $filters['status_id'])?->name ?? $filters['status_id'],
+                    'url' => $removeFilterUrl(['status_id']),
+                ];
+            }
+
+            if ($filters['project_id']) {
+                $activeFilterChips[] = [
+                    'label' => 'Proyecto',
+                    'value' => $projects->firstWhere('id', (int) $filters['project_id'])?->name ?? $filters['project_id'],
+                    'url' => $removeFilterUrl(['project_id']),
+                ];
+            }
+
+            if ($filters['user_id']) {
+                $activeFilterChips[] = [
+                    'label' => 'Responsable',
+                    'value' => $users->firstWhere('id', (int) $filters['user_id'])?->name ?? $filters['user_id'],
+                    'url' => $removeFilterUrl(['user_id']),
+                ];
+            }
+
+            if ($filters['value_generated']) {
+                $activeFilterChips[] = [
+                    'label' => 'Valor',
+                    'value' => 'Genera valor',
+                    'url' => $removeFilterUrl(['value_generated']),
+                ];
+            }
             @endphp
             <div class="relative bg-white shadow-sm rounded border border-gray-100" x-data="{ showFilters: false }">
                 <div class="px-4 py-3 border-b border-gray-100 flex flex-wrap items-center gap-3">
@@ -303,6 +357,19 @@
                         </button>
                     </div>
                 </div>
+                @if(count($activeFilterChips) > 0)
+                    <div class="px-4 py-3 border-b border-gray-100 bg-gray-50 flex flex-wrap items-center gap-2 text-sm">
+                        <span class="text-xs font-semibold uppercase tracking-wide text-gray-500">Filtros</span>
+                        @foreach($activeFilterChips as $chip)
+                            <a href="{{ $chip['url'] }}" class="inline-flex max-w-full items-center gap-1 rounded-full border border-indigo-100 bg-white px-2.5 py-1 text-indigo-700 shadow-sm hover:border-indigo-200 hover:bg-indigo-50">
+                                <span class="truncate">{{ $chip['label'] }}: {{ $chip['value'] }}</span>
+                                <span class="text-indigo-400" aria-hidden="true">&times;</span>
+                                <span class="sr-only">Quitar filtro {{ $chip['label'] }}</span>
+                            </a>
+                        @endforeach
+                        <a href="{{ route('tasks.index') }}" class="text-sm text-gray-500 hover:text-gray-800">Limpiar todos</a>
+                    </div>
+                @endif
 
                 <div class="px-4 py-4 border-b border-gray-100" x-show="showFilters" x-transition x-cloak>
                     <form method="get" id="tasksFiltersForm" class="grid gap-3 md:grid-cols-4" x-data="{
