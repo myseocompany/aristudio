@@ -301,6 +301,73 @@ class TasksPointsSummaryTest extends TestCase
         $this->assertStringContainsString('Tarea Alpha Externa', $csvContent);
     }
 
+    public function test_tasks_index_pagination_keeps_empty_user_filter_on_second_page(): void
+    {
+        $user = User::factory()->create([
+            'status_id' => 1,
+        ]);
+        $otherUser = User::factory()->create([
+            'status_id' => 1,
+        ]);
+
+        $this->grantModulePermissions($user, '/tasks', ['list']);
+        $this->actingAs($user->refresh());
+
+        DB::table('projects')->insert([
+            'id' => 278,
+            'name' => 'Proyecto Paginado',
+            'status_id' => 3,
+            'weight' => 1,
+            'color' => '#000000',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        DB::table('task_statuses')->insert([
+            'id' => 1,
+            'name' => 'Pendiente',
+            'pending' => true,
+            'status_id' => 1,
+            'weight' => 1,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $oldestCreatedAt = now()->subDay();
+
+        DB::table('tasks')->insert([
+            'name' => 'Tarea externa pagina 2',
+            'project_id' => 278,
+            'user_id' => $otherUser->id,
+            'status_id' => 1,
+            'due_date' => '2026-06-01 09:00:00',
+            'created_at' => $oldestCreatedAt,
+            'updated_at' => $oldestCreatedAt,
+        ]);
+
+        for ($taskNumber = 1; $taskNumber <= 15; $taskNumber++) {
+            DB::table('tasks')->insert([
+                'name' => "Tarea usuario {$taskNumber}",
+                'project_id' => 278,
+                'user_id' => $user->id,
+                'status_id' => 1,
+                'due_date' => '2026-06-01 09:00:00',
+                'created_at' => $oldestCreatedAt->copy()->addMinutes($taskNumber),
+                'updated_at' => $oldestCreatedAt->copy()->addMinutes($taskNumber),
+            ]);
+        }
+
+        $response = $this->get('/tasks?from_date=2026-01-01&to_date=2026-12-31&q=&status_id=&project_id=278&user_id=');
+
+        $response->assertOk();
+        $this->assertMatchesRegularExpression('/href="[^"]*project_id=278[^"]*user_id=[^"]*page=2/', $response->getContent());
+
+        $pageTwoResponse = $this->get('/tasks?from_date=2026-01-01&to_date=2026-12-31&q=&status_id=&project_id=278&user_id=&page=2');
+
+        $pageTwoResponse->assertOk();
+        $pageTwoResponse->assertSee('Tarea externa pagina 2');
+    }
+
     public function test_tasks_export_requires_list_permission(): void
     {
         $user = User::factory()->create();

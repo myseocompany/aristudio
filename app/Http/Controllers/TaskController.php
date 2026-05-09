@@ -142,7 +142,7 @@ class TaskController extends Controller
             ->orderByRaw('CASE WHEN tasks.due_date IS NULL THEN 1 ELSE 0 END')
             ->orderBy('tasks.due_date')
             ->paginate(15)
-            ->withQueryString();
+            ->appends($this->taskPaginationQuery($filters));
 
         $defaultDueDateTime = now()->format('Y-m-d\TH:i');
 
@@ -596,5 +596,30 @@ class TaskController extends Controller
                         ->orWhere('tasks.caption', 'like', "%{$search}%");
                 });
             });
+    }
+
+    /**
+     * @param  array{
+     *     status_id: mixed,
+     *     project_id: mixed,
+     *     user_id: mixed,
+     *     from_date: ?string,
+     *     to_date: ?string,
+     *     value_generated: bool,
+     *     q: ?string
+     * }  $filters
+     * @return array<string, mixed>
+     */
+    protected function taskPaginationQuery(array $filters): array
+    {
+        return [
+            'from_date' => $filters['from_date'],
+            'to_date' => $filters['to_date'],
+            'q' => $filters['q'] ?? '',
+            'status_id' => $filters['status_id'] ?? '',
+            'project_id' => $filters['project_id'] ?? '',
+            'user_id' => $filters['user_id'] ?? '',
+            'value_generated' => $filters['value_generated'] ? 1 : 0,
+        ];
     }
 }
