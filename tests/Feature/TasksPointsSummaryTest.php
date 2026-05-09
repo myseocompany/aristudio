@@ -499,6 +499,9 @@ class TasksPointsSummaryTest extends TestCase
         $response->assertSee('id="tasks-inline-quick-project-toggle"', false);
         $response->assertSee('id="tasks-inline-quick-user-toggle"', false);
         $response->assertSee('id="tasks-inline-quick-name"', false);
+        $response->assertSee('id="tasksRangeForm"', false);
+        $response->assertSee('id="tasksFiltersForm"', false);
+        $response->assertSee('syncRangeFormFilters();', false);
         $response->assertSee('@submit.prevent="submitQuickTask"', false);
         $response->assertSee('@task-created="handleTaskCreated($event.detail.task)"', false);
         $response->assertSee('x-for="recentTask in recentTasks"', false);

@@ -305,7 +305,7 @@
                 </div>
 
                 <div class="px-4 py-4 border-b border-gray-100" x-show="showFilters" x-transition x-cloak>
-                    <form method="get" class="grid gap-3 md:grid-cols-4" x-data="{
+                    <form method="get" id="tasksFiltersForm" class="grid gap-3 md:grid-cols-4" x-data="{
                         presets: @js($timePresets),
                         applyPreset(id) {
                             if (!id) return;
@@ -1707,6 +1707,7 @@
         const fromField = $('#tasksFromDate');
         const toField = $('#tasksToDate');
         const rangeForm = document.getElementById('tasksRangeForm');
+        const filtersForm = document.getElementById('tasksFiltersForm');
         const filterFromField = $('#tasksFiltersFrom');
         const filterToField = $('#tasksFiltersTo');
 
@@ -1730,6 +1731,26 @@
             toField.val(endStr);
             filterFromField.val(startStr);
             filterToField.val(endStr);
+        }
+
+        function syncRangeFormFilters() {
+            if (!filtersForm) {
+                return;
+            }
+
+            ['q', 'status_id', 'project_id', 'user_id'].forEach((fieldName) => {
+                const filterField = filtersForm.elements[fieldName];
+                const rangeField = rangeForm.elements[fieldName];
+
+                if (filterField && rangeField) {
+                    rangeField.value = filterField.value;
+                }
+            });
+
+            const valueGeneratedField = filtersForm.elements.value_generated;
+            if (rangeForm.elements.value_generated) {
+                rangeForm.elements.value_generated.value = valueGeneratedField?.checked ? '1' : '0';
+            }
         }
 
         rangeInput.daterangepicker({
@@ -1756,6 +1777,7 @@
             opens: 'left',
         }, function(start, end) {
             updateDisplay(start, end);
+            syncRangeFormFilters();
             rangeForm.submit();
         });
 
