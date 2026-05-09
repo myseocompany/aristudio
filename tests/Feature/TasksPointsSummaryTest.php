@@ -368,6 +368,78 @@ class TasksPointsSummaryTest extends TestCase
         $pageTwoResponse->assertSee('Tarea externa pagina 2');
     }
 
+    public function test_tasks_index_orders_tasks_by_due_date_before_creation_date(): void
+    {
+        $user = User::factory()->create([
+            'status_id' => 1,
+        ]);
+        $otherUser = User::factory()->create([
+            'status_id' => 1,
+        ]);
+
+        $this->grantModulePermissions($user, '/tasks', ['list']);
+        $this->actingAs($user->refresh());
+
+        DB::table('projects')->insert([
+            'id' => 278,
+            'name' => 'Proyecto Orden',
+            'status_id' => 3,
+            'weight' => 1,
+            'color' => '#000000',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        DB::table('task_statuses')->insert([
+            'id' => 1,
+            'name' => 'Pendiente',
+            'pending' => true,
+            'status_id' => 1,
+            'weight' => 1,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        DB::table('tasks')->insert([
+            'name' => 'Tarea vence despues creada reciente',
+            'project_id' => 278,
+            'user_id' => $otherUser->id,
+            'status_id' => 1,
+            'due_date' => '2026-12-15 09:00:00',
+            'created_at' => '2026-05-03 09:00:00',
+            'updated_at' => '2026-05-03 09:00:00',
+        ]);
+
+        DB::table('tasks')->insert([
+            'name' => 'Tarea vence primero creada antigua',
+            'project_id' => 278,
+            'user_id' => $otherUser->id,
+            'status_id' => 1,
+            'due_date' => '2026-01-15 09:00:00',
+            'created_at' => '2026-05-01 09:00:00',
+            'updated_at' => '2026-05-01 09:00:00',
+        ]);
+
+        DB::table('tasks')->insert([
+            'name' => 'Tarea sin vencimiento',
+            'project_id' => 278,
+            'user_id' => $otherUser->id,
+            'status_id' => 1,
+            'due_date' => null,
+            'created_at' => '2026-05-04 09:00:00',
+            'updated_at' => '2026-05-04 09:00:00',
+        ]);
+
+        $response = $this->get('/tasks?from_date=2026-01-01&to_date=2026-12-31&q=&status_id=&project_id=278&user_id=');
+
+        $response->assertOk();
+        $response->assertSeeInOrder([
+            'Tarea vence primero creada antigua',
+            'Tarea vence despues creada reciente',
+        ]);
+        $response->assertDontSee('Tarea sin vencimiento');
+    }
+
     public function test_tasks_export_requires_list_permission(): void
     {
         $user = User::factory()->create();

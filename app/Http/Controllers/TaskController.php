@@ -138,9 +138,9 @@ class TaskController extends Controller
         $selectedPointsTotal = (clone $tasksQuery)->sum('tasks.points');
 
         $tasks = $tasksQuery
-            ->orderByDesc('tasks.created_at')
             ->orderByRaw('CASE WHEN tasks.due_date IS NULL THEN 1 ELSE 0 END')
             ->orderBy('tasks.due_date')
+            ->orderByDesc('tasks.created_at')
             ->paginate(15)
             ->appends($this->taskPaginationQuery($filters));
 
@@ -194,9 +194,9 @@ class TaskController extends Controller
             ->leftJoin('projects', 'projects.id', '=', 'tasks.project_id')
             ->leftJoin('users', 'users.id', '=', 'tasks.user_id')
             ->leftJoin('task_statuses', 'task_statuses.id', '=', 'tasks.status_id')
-            ->orderByDesc('tasks.created_at')
             ->orderByRaw('CASE WHEN tasks.due_date IS NULL THEN 1 ELSE 0 END')
             ->orderBy('tasks.due_date')
+            ->orderByDesc('tasks.created_at')
             ->select([
                 'tasks.id',
                 'tasks.name',
