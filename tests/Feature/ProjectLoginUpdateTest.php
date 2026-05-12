@@ -206,6 +206,55 @@ class ProjectLoginUpdateTest extends TestCase
         ]);
     }
 
+    public function test_user_creates_login_inactive_by_default(): void
+    {
+        $moduleId = DB::table('modules')->insertGetId([
+            'name' => 'Logins',
+            'slug' => 'logins',
+            'weight' => 0,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $roleId = DB::table('roles')->insertGetId(['name' => 'Equipo', 'created_at' => now(), 'updated_at' => now()]);
+        $user = User::factory()->create(['role_id' => $roleId]);
+
+        DB::table('role_modules')->insert([
+            'role_id' => $roleId,
+            'module_id' => $moduleId,
+            'created' => true,
+            'view_scope' => 0,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $project = Project::create(['name' => 'Uno', 'color' => '#10b981', 'status_id' => 3]);
+
+        DB::table('project_users')->insert([
+            'project_id' => $project->id,
+            'user_id' => $user->id,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $response = $this->actingAs($user)->post(route('logins.quick-store'), [
+            'project_id' => $project->id,
+            'name' => 'New Platform',
+            'user' => 'new_user',
+            'password' => 'secret',
+            'url' => 'https://platform.test',
+            'is_paid' => '1',
+        ]);
+
+        $response->assertRedirect(route('logins.index'));
+
+        $this->assertDatabaseHas('project_logins', [
+            'name' => 'New Platform',
+            'is_active' => false,
+            'is_paid' => true,
+        ]);
+    }
+
     public function test_user_cannot_reassign_login_to_unassigned_project(): void
     {
         $moduleId = DB::table('modules')->insertGetId([
