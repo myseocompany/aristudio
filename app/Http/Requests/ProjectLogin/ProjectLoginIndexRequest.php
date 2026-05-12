@@ -24,6 +24,8 @@ class ProjectLoginIndexRequest extends FormRequest
         return [
             'q' => ['nullable', 'string', 'max:240'],
             'project_id' => ['nullable', 'integer', 'exists:projects,id'],
+            'status' => ['nullable', 'in:active,inactive'],
+            'billing' => ['nullable', 'in:paid,free'],
         ];
     }
 }

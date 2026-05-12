@@ -82,6 +82,8 @@ class ProjectLoginIndexTest extends TestCase
             $table->string('user');
             $table->string('password');
             $table->string('url')->nullable();
+            $table->boolean('is_active')->default(true);
+            $table->boolean('is_paid')->default(false);
             $table->timestamps();
         });
     }
@@ -173,6 +175,7 @@ class ProjectLoginIndexTest extends TestCase
             'user' => 'gamma_user',
             'password' => 'gamma_pass',
             'url' => null,
+            'is_paid' => true,
         ]);
 
         $loginDelta = ProjectLogin::create([
@@ -181,6 +184,7 @@ class ProjectLoginIndexTest extends TestCase
             'user' => 'delta_user',
             'password' => 'delta_pass',
             'url' => null,
+            'is_active' => false,
         ]);
 
         $response = $this->actingAs($user)->get(route('logins.index'));
@@ -197,5 +201,70 @@ class ProjectLoginIndexTest extends TestCase
         $filtered->assertOk();
         $filtered->assertSee($loginGamma->name);
         $filtered->assertDontSee($loginDelta->name);
+    }
+
+    public function test_role_todos_can_filter_project_logins_by_status_and_billing(): void
+    {
+        $moduleId = DB::table('modules')->insertGetId([
+            'name' => 'Logins',
+            'slug' => 'logins',
+            'weight' => 0,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $roleAllId = DB::table('roles')->insertGetId(['name' => 'Todos', 'created_at' => now(), 'updated_at' => now()]);
+        $user = User::factory()->create(['role_id' => $roleAllId]);
+
+        DB::table('role_modules')->insert([
+            'role_id' => $roleAllId,
+            'module_id' => $moduleId,
+            'list' => true,
+            'created_at' => now(),
+            'updated_at' => now(),
+            'view_scope' => 1,
+        ]);
+
+        $project = Project::create(['name' => 'Gamma', 'color' => '#0ea5e9', 'status_id' => 3]);
+
+        ProjectLogin::create([
+            'project_id' => $project->id,
+            'name' => 'Paid Platform',
+            'user' => 'paid_user',
+            'password' => 'paid_pass',
+            'url' => null,
+            'is_active' => true,
+            'is_paid' => true,
+        ]);
+
+        ProjectLogin::create([
+            'project_id' => $project->id,
+            'name' => 'Inactive Platform',
+            'user' => 'inactive_user',
+            'password' => 'inactive_pass',
+            'url' => null,
+            'is_active' => false,
+            'is_paid' => true,
+        ]);
+
+        ProjectLogin::create([
+            'project_id' => $project->id,
+            'name' => 'Free Access',
+            'user' => 'free_user',
+            'password' => 'free_pass',
+            'url' => null,
+            'is_active' => true,
+            'is_paid' => false,
+        ]);
+
+        $response = $this->actingAs($user)->get(route('logins.index', [
+            'status' => 'active',
+            'billing' => 'paid',
+        ]));
+
+        $response->assertOk();
+        $response->assertSee('Paid Platform');
+        $response->assertDontSee('Inactive Platform');
+        $response->assertDontSee('Free Access');
     }
 }

@@ -3,7 +3,7 @@
         <div class="flex items-center justify-between">
             <div>
                 <p class="text-sm text-gray-500">Accesos</p>
-                <h2 class="font-semibold text-xl text-gray-800 leading-tight">Logins de proyectos</h2>
+                <h2 class="font-semibold text-xl text-gray-800 leading-tight">Accesos y plataformas</h2>
                 <p class="text-xs text-gray-500">
                     @if($canSeeAll)
                         Puedes ver todos los proyectos (view scope: todos).
@@ -21,7 +21,7 @@
             <div class="grid gap-4 lg:grid-cols-4">
                 <div class="lg:col-span-3 space-y-4">
                     <form method="GET" action="{{ route('logins.index') }}" class="bg-white border border-gray-100 rounded-lg shadow-sm p-4 sm:p-5">
-                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-5 gap-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">Buscar</label>
                                 <input type="text" name="q" value="{{ $filters['q'] ?? '' }}" placeholder="Nombre, usuario, URL..." class="mt-1 w-full rounded border-gray-300 text-sm px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500">
@@ -35,6 +35,22 @@
                                     @endforeach
                                 </select>
                             </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Estado</label>
+                                <select name="status" class="mt-1 w-full rounded border-gray-300 text-sm px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500">
+                                    <option value="">Todos</option>
+                                    <option value="active" @selected(($filters['status'] ?? '') === 'active')>Activos</option>
+                                    <option value="inactive" @selected(($filters['status'] ?? '') === 'inactive')>Inactivos</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Pago</label>
+                                <select name="billing" class="mt-1 w-full rounded border-gray-300 text-sm px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500">
+                                    <option value="">Todos</option>
+                                    <option value="paid" @selected(($filters['billing'] ?? '') === 'paid')>Pagos</option>
+                                    <option value="free" @selected(($filters['billing'] ?? '') === 'free')>Sin pago</option>
+                                </select>
+                            </div>
                             <div class="flex items-end gap-2">
                                 <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-500 text-sm">Filtrar</button>
                                 <a href="{{ route('logins.index') }}" class="px-4 py-2 border rounded text-sm text-gray-700 hover:bg-gray-50">Limpiar</a>
@@ -46,7 +62,7 @@
                         <div class="border-b border-gray-100 px-4 py-3">
                             <div>
                                 <p class="text-sm text-gray-500">Resultados</p>
-                                <p class="font-semibold text-gray-900">{{ $logins->total() }} logins</p>
+                                <p class="font-semibold text-gray-900">{{ $logins->total() }} accesos</p>
                             </div>
                         </div>
 
@@ -58,7 +74,15 @@
                                             {{ collect(explode(' ', trim($login->project->name ?? '?')))->filter()->map(fn($w) => mb_substr($w, 0, 1))->take(2)->implode('') ?: '?' }}
                                         </div>
                                         <div>
-                                            <p class="text-sm font-semibold text-gray-900">{{ $login->name }}</p>
+                                            <div class="flex flex-wrap items-center gap-2">
+                                                <p class="text-sm font-semibold text-gray-900">{{ $login->name }}</p>
+                                                <span class="px-2 py-0.5 rounded-full text-[11px] font-medium {{ $login->is_active ? 'bg-emerald-50 text-emerald-700' : 'bg-gray-100 text-gray-600' }}">
+                                                    {{ $login->is_active ? 'Activo' : 'Inactivo' }}
+                                                </span>
+                                                <span class="px-2 py-0.5 rounded-full text-[11px] font-medium {{ $login->is_paid ? 'bg-amber-50 text-amber-700' : 'bg-sky-50 text-sky-700' }}">
+                                                    {{ $login->is_paid ? 'Pago' : 'Sin pago' }}
+                                                </span>
+                                            </div>
                                             <p class="text-xs text-gray-500">{{ $login->project->name ?? 'Sin proyecto' }}</p>
                                             <div class="text-xs text-gray-600 mt-1 space-y-0.5">
                                                 <p><span class="font-semibold">Usuario:</span> {{ $login->user }}</p>
@@ -79,7 +103,7 @@
                                     </div>
                                 </div>
                             @empty
-                                <p class="px-4 sm:px-5 py-6 text-sm text-gray-600">No hay logins para los filtros aplicados.</p>
+                                <p class="px-4 sm:px-5 py-6 text-sm text-gray-600">No hay accesos para los filtros aplicados.</p>
                             @endforelse
                         </div>
 

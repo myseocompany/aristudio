@@ -176,7 +176,7 @@
                 <div class="bg-white shadow-sm rounded-lg border border-gray-100 p-5 space-y-3" id="logins">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-2">
-                            <h3 class="font-semibold text-gray-900">Logins del proyecto</h3>
+                            <h3 class="font-semibold text-gray-900">Accesos y plataformas</h3>
                             <span class="text-xs text-gray-500">{{ $logins->count() }} registros</span>
                         </div>
                         <div class="flex items-center gap-3">
@@ -192,7 +192,15 @@
                                 <div class="border rounded-lg px-4 py-3 space-y-2 hover:border-indigo-200">
                                     <div class="flex items-center justify-between">
                                         <div>
-                                            <p class="text-sm font-semibold text-gray-900">{{ $login->name }}</p>
+                                            <div class="flex flex-wrap items-center gap-2">
+                                                <p class="text-sm font-semibold text-gray-900">{{ $login->name }}</p>
+                                                <span class="px-2 py-0.5 rounded-full text-[11px] font-medium {{ $login->is_active ? 'bg-emerald-50 text-emerald-700' : 'bg-gray-100 text-gray-600' }}">
+                                                    {{ $login->is_active ? 'Activo' : 'Inactivo' }}
+                                                </span>
+                                                <span class="px-2 py-0.5 rounded-full text-[11px] font-medium {{ $login->is_paid ? 'bg-amber-50 text-amber-700' : 'bg-sky-50 text-sky-700' }}">
+                                                    {{ $login->is_paid ? 'Pago' : 'Sin pago' }}
+                                                </span>
+                                            </div>
                                             <p class="text-xs text-gray-500 truncate">{{ $login->url }}</p>
                                         </div>
                                         <div class="flex items-center gap-2 text-xs">
@@ -218,7 +226,7 @@
                             @endforeach
                         </div>
                     @else
-                        <p class="text-sm text-gray-500">Sin logins registrados.</p>
+                        <p class="text-sm text-gray-500">Sin accesos registrados.</p>
                     @endif
                 </div>
             @endif

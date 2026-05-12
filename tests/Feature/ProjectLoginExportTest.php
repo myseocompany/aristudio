@@ -81,6 +81,8 @@ class ProjectLoginExportTest extends TestCase
             $table->string('user');
             $table->string('password');
             $table->string('url')->nullable();
+            $table->boolean('is_active')->default(true);
+            $table->boolean('is_paid')->default(false);
             $table->timestamps();
         });
     }
@@ -106,6 +108,7 @@ class ProjectLoginExportTest extends TestCase
             'user' => 'alpha_user',
             'password' => 'alpha_pass',
             'url' => 'https://alpha.test',
+            'is_paid' => true,
         ]);
 
         $response = $this->actingAs($user)->get(route('projects.logins.export', $project));
@@ -115,8 +118,9 @@ class ProjectLoginExportTest extends TestCase
         $this->assertStringContainsString('attachment; filename=', (string) $response->headers->get('content-disposition'));
 
         $csvContent = $response->streamedContent();
-        $this->assertStringContainsString('Proyecto,Login,Usuario,Contrasena,URL', $csvContent);
+        $this->assertStringContainsString('Proyecto,Login,Usuario,Contrasena,URL,Estado,Pago', $csvContent);
         $this->assertStringContainsString('Login Alpha', $csvContent);
+        $this->assertStringContainsString('Activo,Pago', $csvContent);
     }
 
     public function test_user_with_role_id_1_but_different_id_cannot_export_project_logins(): void

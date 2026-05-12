@@ -81,6 +81,8 @@ class ProjectLoginUpdateTest extends TestCase
             $table->string('user');
             $table->string('password');
             $table->string('url')->nullable();
+            $table->boolean('is_active')->default(true);
+            $table->boolean('is_paid')->default(false);
             $table->timestamps();
         });
     }
@@ -129,6 +131,8 @@ class ProjectLoginUpdateTest extends TestCase
             'user' => 'user_example',
             'password' => 'nueva',
             'url' => 'https://hosting.test',
+            'is_active' => '1',
+            'is_paid' => '1',
         ]);
 
         $response->assertRedirect(route('projects.show', $projectB));
@@ -137,6 +141,68 @@ class ProjectLoginUpdateTest extends TestCase
             'id' => $login->id,
             'project_id' => $projectB->id,
             'password' => 'nueva',
+            'is_active' => true,
+            'is_paid' => true,
+        ]);
+    }
+
+    public function test_user_can_mark_login_as_inactive_and_unpaid(): void
+    {
+        $moduleId = DB::table('modules')->insertGetId([
+            'name' => 'Logins',
+            'slug' => 'logins',
+            'weight' => 0,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $roleId = DB::table('roles')->insertGetId(['name' => 'Equipo', 'created_at' => now(), 'updated_at' => now()]);
+        $user = User::factory()->create(['role_id' => $roleId]);
+
+        DB::table('role_modules')->insert([
+            'role_id' => $roleId,
+            'module_id' => $moduleId,
+            'updated' => true,
+            'view_scope' => 0,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $project = Project::create(['name' => 'Uno', 'color' => '#10b981', 'status_id' => 3]);
+
+        DB::table('project_users')->insert([
+            'project_id' => $project->id,
+            'user_id' => $user->id,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $login = ProjectLogin::create([
+            'project_id' => $project->id,
+            'name' => 'Paid Platform',
+            'user' => 'user_example',
+            'password' => 'secret',
+            'url' => 'https://platform.test',
+            'is_active' => true,
+            'is_paid' => true,
+        ]);
+
+        $response = $this->actingAs($user)->put(route('projects.logins.update', [$project, $login]), [
+            'project_id' => $project->id,
+            'name' => 'Paid Platform',
+            'user' => 'user_example',
+            'password' => 'secret',
+            'url' => 'https://platform.test',
+            'is_active' => '0',
+            'is_paid' => '0',
+        ]);
+
+        $response->assertRedirect(route('projects.show', $project));
+
+        $this->assertDatabaseHas('project_logins', [
+            'id' => $login->id,
+            'is_active' => false,
+            'is_paid' => false,
         ]);
     }
 
@@ -178,6 +244,8 @@ class ProjectLoginUpdateTest extends TestCase
             'user' => 'dns_user',
             'password' => 'dns_pass',
             'url' => null,
+            'is_active' => '1',
+            'is_paid' => '0',
         ]);
 
         $response = $this->actingAs($user)->put(route('projects.logins.update', [$projectA, $login]), [

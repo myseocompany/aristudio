@@ -55,6 +55,24 @@
                 <label class="block text-sm font-medium text-gray-700">URL</label>
                 <input type="text" name="url" value="{{ old('url', $login->url) }}" class="mt-1 w-full border rounded px-3 py-2" placeholder="https://">
             </div>
+            <div class="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <label class="flex items-start gap-3 rounded border border-gray-200 px-3 py-3">
+                    <input type="hidden" name="is_active" value="0">
+                    <input type="checkbox" name="is_active" value="1" @checked((bool) old('is_active', $login->exists ? $login->is_active : true)) class="mt-1 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                    <span>
+                        <span class="block text-sm font-medium text-gray-800">Activo</span>
+                        <span class="block text-xs text-gray-500">El acceso sigue vigente para el proyecto.</span>
+                    </span>
+                </label>
+                <label class="flex items-start gap-3 rounded border border-gray-200 px-3 py-3">
+                    <input type="hidden" name="is_paid" value="0">
+                    <input type="checkbox" name="is_paid" value="1" @checked((bool) old('is_paid', $login->is_paid)) class="mt-1 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                    <span>
+                        <span class="block text-sm font-medium text-gray-800">Pago</span>
+                        <span class="block text-xs text-gray-500">Marca plataformas o servicios que generan cobro.</span>
+                    </span>
+                </label>
+            </div>
         </div>
     </div>
 

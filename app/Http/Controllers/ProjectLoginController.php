@@ -99,7 +99,7 @@ class ProjectLoginController extends Controller
             }
 
             fwrite($output, "\xEF\xBB\xBF");
-            fputcsv($output, ['Proyecto', 'Login', 'Usuario', 'Contrasena', 'URL']);
+            fputcsv($output, ['Proyecto', 'Login', 'Usuario', 'Contrasena', 'URL', 'Estado', 'Pago']);
 
             foreach ($loginsQuery->cursor() as $login) {
                 fputcsv($output, [
@@ -108,6 +108,8 @@ class ProjectLoginController extends Controller
                     $login->user,
                     $login->password,
                     $login->url ?? '',
+                    $login->is_active ? 'Activo' : 'Inactivo',
+                    $login->is_paid ? 'Pago' : 'Sin pago',
                 ]);
             }
 
@@ -229,13 +231,19 @@ class ProjectLoginController extends Controller
             'user' => ['required', 'string', 'max:250'],
             'password' => ['required', 'string', 'max:250'],
             'url' => ['nullable', 'string'],
+            'is_active' => ['nullable', 'boolean'],
+            'is_paid' => ['nullable', 'boolean'],
         ];
 
         if ($includeProject) {
             $rules['project_id'] = ['required', 'exists:projects,id'];
         }
 
-        return $request->validate($rules);
+        $data = $request->validate($rules);
+        $data['is_active'] = $request->boolean('is_active');
+        $data['is_paid'] = $request->boolean('is_paid');
+
+        return $data;
     }
 
     /**
@@ -255,6 +263,22 @@ class ProjectLoginController extends Controller
                     ->orWhere('url', 'like', "%{$term}%")
                     ->orWhereHas('project', fn ($projectQuery) => $projectQuery->where('name', 'like', "%{$term}%"));
             });
+        }
+
+        if (($filters['status'] ?? null) === 'active') {
+            $loginsQuery->where('is_active', true);
+        }
+
+        if (($filters['status'] ?? null) === 'inactive') {
+            $loginsQuery->where('is_active', false);
+        }
+
+        if (($filters['billing'] ?? null) === 'paid') {
+            $loginsQuery->where('is_paid', true);
+        }
+
+        if (($filters['billing'] ?? null) === 'free') {
+            $loginsQuery->where('is_paid', false);
         }
     }
 
