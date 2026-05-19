@@ -21,6 +21,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Passport::tokensCan([
+            'mcp:use' => 'Use MCP server',
+        ]);
+
         Passport::authorizationView(function (array $parameters): View {
             return view('mcp.authorize', $parameters);
         });
