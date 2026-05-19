@@ -2,6 +2,7 @@
 
 namespace App\Mcp\Servers;
 
+use App\Mcp\Tools\CreateTask;
 use App\Mcp\Tools\ListTasks;
 use Laravel\Mcp\Server;
 
@@ -21,7 +22,7 @@ class AriStudioServer extends Server
      * The MCP server's instructions for the LLM.
      */
     protected string $instructions = <<<'MARKDOWN'
-        Use this server to read operational Ari Studio data. Prefer narrow filters and small limits before requesting larger result sets.
+        Use this server to read and create operational Ari Studio tasks. Prefer narrow filters and small limits before requesting larger result sets.
     MARKDOWN;
 
     /**
@@ -30,6 +31,7 @@ class AriStudioServer extends Server
      * @var array<int, class-string<\Laravel\Mcp\Server\Tool>>
      */
     protected array $tools = [
+        CreateTask::class,
         ListTasks::class,
     ];
 

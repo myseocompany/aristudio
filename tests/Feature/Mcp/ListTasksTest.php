@@ -3,6 +3,7 @@
 namespace Tests\Feature\Mcp;
 
 use App\Mcp\Servers\AriStudioServer;
+use App\Mcp\Tools\CreateTask;
 use App\Mcp\Tools\ListTasks;
 use App\Models\Task;
 use App\Models\User;
@@ -46,10 +47,14 @@ class ListTasksTest extends TestCase
             $table->unsignedBigInteger('project_id')->nullable();
             $table->unsignedBigInteger('user_id')->nullable();
             $table->unsignedBigInteger('status_id')->nullable();
+            $table->unsignedBigInteger('creator_user_id')->nullable();
+            $table->unsignedBigInteger('updator_user_id')->nullable();
             $table->integer('priority')->nullable();
             $table->decimal('points', 8, 2)->nullable();
             $table->timestamp('due_date')->nullable();
+            $table->timestamp('delivery_date')->nullable();
             $table->boolean('value_generated')->default(false);
+            $table->boolean('not_billing')->default(false);
             $table->timestamps();
         });
     }
@@ -115,6 +120,129 @@ class ListTasksTest extends TestCase
         ])->assertHasErrors([
             'The limit field must not be greater than 100.',
         ]);
+    }
+
+    public function test_create_task_requires_create_permission(): void
+    {
+        $user = User::factory()->create(['status_id' => 1]);
+
+        DB::table('task_statuses')->insert([
+            'id' => 20,
+            'name' => 'Pendiente',
+            'alias' => 'pending',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        AriStudioServer::actingAs($user)
+            ->tool(CreateTask::class, [
+                'name' => 'Tarea sin permiso',
+                'status_id' => 20,
+            ])
+            ->assertHasErrors(['No autorizado.']);
+    }
+
+    public function test_create_task_creates_task_for_authenticated_user(): void
+    {
+        $user = User::factory()->create([
+            'name' => 'Nicolas',
+            'status_id' => 1,
+        ]);
+        $assignee = User::factory()->create(['status_id' => 1]);
+
+        $this->grantModulePermissions($user, '/tasks', ['create']);
+
+        DB::table('projects')->insert([
+            'id' => 10,
+            'name' => 'AMIA',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        DB::table('task_statuses')->insert([
+            'id' => 20,
+            'name' => 'Pendiente',
+            'alias' => 'pending',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        AriStudioServer::actingAs($user->refresh())
+            ->tool(CreateTask::class, [
+                'name' => 'Crear pauta MCP',
+                'description' => 'Brief generado desde Claude',
+                'project_id' => 10,
+                'user_id' => $assignee->id,
+                'status_id' => 20,
+                'due_date' => '2026-06-01 10:30:00',
+                'priority' => 3,
+                'points' => 2.5,
+                'value_generated' => true,
+            ])
+            ->assertOk()
+            ->assertSee([
+                'Tarea creada.',
+                'Crear pauta MCP',
+                '"project_id": 10',
+                '"user_id": '.$assignee->id,
+            ]);
+
+        $this->assertDatabaseHas('tasks', [
+            'name' => 'Crear pauta MCP',
+            'description' => 'Brief generado desde Claude',
+            'project_id' => 10,
+            'user_id' => $assignee->id,
+            'status_id' => 20,
+            'creator_user_id' => $user->id,
+            'updator_user_id' => $user->id,
+            'priority' => 3,
+            'value_generated' => true,
+        ]);
+    }
+
+    public function test_create_task_defaults_assignee_to_authenticated_user(): void
+    {
+        $user = User::factory()->create(['status_id' => 1]);
+
+        $this->grantModulePermissions($user, '/tasks', ['create']);
+
+        DB::table('task_statuses')->insert([
+            'id' => 20,
+            'name' => 'Pendiente',
+            'alias' => 'pending',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        AriStudioServer::actingAs($user->refresh())
+            ->tool(CreateTask::class, [
+                'name' => 'Tarea asignada por defecto',
+                'status_id' => 20,
+            ])
+            ->assertOk();
+
+        $this->assertDatabaseHas('tasks', [
+            'name' => 'Tarea asignada por defecto',
+            'user_id' => $user->id,
+            'status_id' => 20,
+            'priority' => 1,
+            'value_generated' => true,
+            'not_billing' => false,
+        ]);
+    }
+
+    public function test_create_task_validates_required_fields(): void
+    {
+        $user = User::factory()->create(['status_id' => 1]);
+
+        $this->grantModulePermissions($user, '/tasks', ['create']);
+
+        AriStudioServer::actingAs($user->refresh())
+            ->tool(CreateTask::class, [])
+            ->assertHasErrors([
+                'The name field is required.',
+                'The status id field is required.',
+            ]);
     }
 
     public function test_remote_server_requires_oauth_access_token(): void
