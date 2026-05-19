@@ -115,4 +115,56 @@ class ListTasksTest extends TestCase
             'The limit field must not be greater than 100.',
         ]);
     }
+
+    public function test_remote_server_rejects_requests_without_configured_token(): void
+    {
+        config(['services.mcp.token' => null]);
+
+        $response = $this->postJson('/mcp/aristudio', $this->initializePayload());
+
+        $response->assertServiceUnavailable();
+    }
+
+    public function test_remote_server_requires_valid_bearer_token(): void
+    {
+        config(['services.mcp.token' => 'secret-token']);
+
+        $this->postJson('/mcp/aristudio', $this->initializePayload())
+            ->assertUnauthorized();
+
+        $this->withToken('wrong-token')
+            ->postJson('/mcp/aristudio', $this->initializePayload())
+            ->assertUnauthorized();
+    }
+
+    public function test_remote_server_accepts_valid_bearer_token(): void
+    {
+        config(['services.mcp.token' => 'secret-token']);
+
+        $response = $this->withToken('secret-token')
+            ->postJson('/mcp/aristudio', $this->initializePayload());
+
+        $response->assertOk();
+        $response->assertJsonPath('result.serverInfo.name', 'Ari Studio Server');
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function initializePayload(): array
+    {
+        return [
+            'jsonrpc' => '2.0',
+            'id' => 'test-request',
+            'method' => 'initialize',
+            'params' => [
+                'protocolVersion' => '2025-11-25',
+                'capabilities' => [],
+                'clientInfo' => [
+                    'name' => 'phpunit',
+                    'version' => '1.0.0',
+                ],
+            ],
+        ];
+    }
 }
