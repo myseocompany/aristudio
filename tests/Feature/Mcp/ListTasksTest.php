@@ -5,6 +5,7 @@ namespace Tests\Feature\Mcp;
 use App\Mcp\Servers\AriStudioServer;
 use App\Mcp\Tools\CreateTask;
 use App\Mcp\Tools\ListTasks;
+use App\Mcp\Tools\UpdateTask;
 use App\Models\Task;
 use App\Models\User;
 use Illuminate\Database\Schema\Blueprint;
@@ -242,6 +243,154 @@ class ListTasksTest extends TestCase
             ->assertHasErrors([
                 'The name field is required.',
                 'The status id field is required.',
+            ]);
+    }
+
+    public function test_update_task_requires_update_permission(): void
+    {
+        $user = User::factory()->create(['status_id' => 1]);
+
+        DB::table('task_statuses')->insert([
+            'id' => 20,
+            'name' => 'Pendiente',
+            'alias' => 'pending',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $task = Task::query()->create([
+            'name' => 'Tarea sin permiso',
+            'status_id' => 20,
+        ]);
+
+        AriStudioServer::actingAs($user)
+            ->tool(UpdateTask::class, [
+                'id' => $task->id,
+                'name' => 'No debe actualizar',
+            ])
+            ->assertHasErrors(['No autorizado.']);
+    }
+
+    public function test_update_task_updates_sent_fields(): void
+    {
+        $editor = User::factory()->create(['status_id' => 1]);
+        $assignee = User::factory()->create(['status_id' => 1]);
+
+        $this->grantModulePermissions($editor, '/tasks', ['update']);
+
+        DB::table('projects')->insert([
+            'id' => 10,
+            'name' => 'AMIA',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        DB::table('task_statuses')->insert([
+            'id' => 20,
+            'name' => 'Pendiente',
+            'alias' => 'pending',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $task = Task::query()->create([
+            'name' => 'Tarea antes',
+            'status_id' => 20,
+            'value_generated' => true,
+            'not_billing' => false,
+        ]);
+
+        AriStudioServer::actingAs($editor->refresh())
+            ->tool(UpdateTask::class, [
+                'id' => $task->id,
+                'name' => 'Tarea actualizada MCP',
+                'description' => 'Descripción actualizada',
+                'project_id' => 10,
+                'user_id' => $assignee->id,
+                'due_date' => '2026-07-02 09:15:00',
+                'priority' => 4,
+                'points' => 5.25,
+                'value_generated' => false,
+                'not_billing' => true,
+            ])
+            ->assertOk()
+            ->assertSee([
+                'Tarea actualizada.',
+                'Tarea actualizada MCP',
+                '"project_id": 10',
+                '"user_id": '.$assignee->id,
+            ]);
+
+        $this->assertDatabaseHas('tasks', [
+            'id' => $task->id,
+            'name' => 'Tarea actualizada MCP',
+            'description' => 'Descripción actualizada',
+            'project_id' => 10,
+            'user_id' => $assignee->id,
+            'status_id' => 20,
+            'priority' => 4,
+            'value_generated' => false,
+            'not_billing' => true,
+            'updator_user_id' => $editor->id,
+        ]);
+    }
+
+    public function test_update_task_keeps_booleans_when_omitted_and_can_clear_nullable_fields(): void
+    {
+        $editor = User::factory()->create(['status_id' => 1]);
+
+        $this->grantModulePermissions($editor, '/tasks', ['update']);
+
+        DB::table('task_statuses')->insert([
+            'id' => 20,
+            'name' => 'Pendiente',
+            'alias' => 'pending',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $task = Task::query()->create([
+            'name' => 'Tarea con datos',
+            'description' => 'Debe limpiarse',
+            'user_id' => $editor->id,
+            'status_id' => 20,
+            'due_date' => '2026-07-02 09:15:00',
+            'value_generated' => true,
+            'not_billing' => true,
+        ]);
+
+        AriStudioServer::actingAs($editor->refresh())
+            ->tool(UpdateTask::class, [
+                'id' => $task->id,
+                'description' => null,
+                'user_id' => null,
+                'due_date' => null,
+            ])
+            ->assertOk();
+
+        $task->refresh();
+
+        $this->assertNull($task->description);
+        $this->assertNull($task->user_id);
+        $this->assertNull($task->due_date);
+        $this->assertTrue((bool) $task->value_generated);
+        $this->assertTrue((bool) $task->not_billing);
+        $this->assertSame($editor->id, $task->updator_user_id);
+    }
+
+    public function test_update_task_validates_id(): void
+    {
+        $user = User::factory()->create(['status_id' => 1]);
+
+        $this->grantModulePermissions($user, '/tasks', ['update']);
+
+        AriStudioServer::actingAs($user->refresh())
+            ->tool(UpdateTask::class, [
+                'id' => 999,
+                'name' => 'No existe',
+            ])
+            ->assertHasErrors([
+                'The selected id is invalid.',
             ]);
     }
 
