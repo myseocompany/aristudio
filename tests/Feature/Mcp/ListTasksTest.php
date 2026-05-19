@@ -10,6 +10,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Laravel\Passport\Passport;
 use Tests\TestCase;
 
 class ListTasksTest extends TestCase
@@ -116,36 +117,57 @@ class ListTasksTest extends TestCase
         ]);
     }
 
-    public function test_remote_server_rejects_requests_without_configured_token(): void
+    public function test_remote_server_requires_oauth_access_token(): void
     {
-        config(['services.mcp.token' => null]);
+        $this->postJson('/mcp/aristudio', $this->initializePayload())
+            ->assertUnauthorized();
+    }
+
+    public function test_remote_server_accepts_passport_access_token(): void
+    {
+        Passport::actingAs(User::factory()->create());
 
         $response = $this->postJson('/mcp/aristudio', $this->initializePayload());
 
-        $response->assertServiceUnavailable();
-    }
-
-    public function test_remote_server_requires_valid_bearer_token(): void
-    {
-        config(['services.mcp.token' => 'secret-token']);
-
-        $this->postJson('/mcp/aristudio', $this->initializePayload())
-            ->assertUnauthorized();
-
-        $this->withToken('wrong-token')
-            ->postJson('/mcp/aristudio', $this->initializePayload())
-            ->assertUnauthorized();
-    }
-
-    public function test_remote_server_accepts_valid_bearer_token(): void
-    {
-        config(['services.mcp.token' => 'secret-token']);
-
-        $response = $this->withToken('secret-token')
-            ->postJson('/mcp/aristudio', $this->initializePayload());
-
         $response->assertOk();
         $response->assertJsonPath('result.serverInfo.name', 'Ari Studio Server');
+    }
+
+    public function test_oauth_discovery_routes_are_available(): void
+    {
+        $this->getJson('/.well-known/oauth-protected-resource/mcp/aristudio')
+            ->assertOk()
+            ->assertJsonPath('scopes_supported.0', 'mcp:use');
+
+        $this->getJson('/.well-known/oauth-authorization-server/mcp/aristudio')
+            ->assertOk()
+            ->assertJsonPath('grant_types_supported.0', 'authorization_code')
+            ->assertJsonPath('scopes_supported.0', 'mcp:use');
+    }
+
+    public function test_oauth_dynamic_client_registration_creates_public_client(): void
+    {
+        $response = $this->postJson('/oauth/register', [
+            'client_name' => 'Claude',
+            'redirect_uris' => [
+                'https://claude.ai/api/mcp/auth_callback',
+            ],
+        ]);
+
+        $response->assertOk();
+        $response->assertJsonPath('response_types.0', 'code');
+        $response->assertJsonPath('scope', 'mcp:use');
+        $response->assertJsonPath('token_endpoint_auth_method', 'none');
+    }
+
+    public function test_oauth_dynamic_client_registration_rejects_untrusted_redirects(): void
+    {
+        $this->postJson('/oauth/register', [
+            'client_name' => 'Untrusted',
+            'redirect_uris' => [
+                'https://example.com/callback',
+            ],
+        ])->assertUnprocessable();
     }
 
     /**
