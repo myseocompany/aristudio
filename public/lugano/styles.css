@@ -315,6 +315,37 @@ h3 {
   text-transform: uppercase;
 }
 
+.whatsapp-bubble {
+  position: fixed;
+  right: clamp(18px, 3vw, 34px);
+  bottom: clamp(18px, 3vw, 34px);
+  z-index: 5;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 58px;
+  padding: 0 18px 0 15px;
+  border-radius: 999px;
+  background: #25d366;
+  color: #ffffff;
+  box-shadow: 0 18px 32px rgba(17, 24, 20, 0.24);
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+.whatsapp-bubble:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 22px 38px rgba(17, 24, 20, 0.3);
+}
+
+.whatsapp-bubble svg {
+  width: 30px;
+  height: 30px;
+  fill: currentColor;
+}
+
 @media (max-width: 820px) {
   .site-header {
     align-items: flex-start;
@@ -372,5 +403,19 @@ h3 {
 
   .site-footer {
     flex-direction: column;
+  }
+
+  .whatsapp-bubble {
+    min-height: 54px;
+    padding: 0 15px;
+  }
+
+  .whatsapp-bubble span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
   }
 }
