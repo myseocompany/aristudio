@@ -899,9 +899,11 @@ select {
 
 .footer img {
   width: 170px;
+  height: auto;
   padding: 8px;
   border-radius: 6px;
   background: var(--white);
+  object-fit: contain;
 }
 
 .footer p,
