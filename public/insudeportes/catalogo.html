@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Catalogo | Insudeportes</title>
+  <title>Catálogo | Insudeportes</title>
   <link rel="icon" href="favicon/favicon.ico" sizes="any">
   <link rel="icon" href="favicon/favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="favicon/apple-touch-icon.png">
@@ -13,7 +13,7 @@
 <body>
   <div class="topbar">
     <div class="topbar-inner">
-      <span>Catalogo demostrativo con productos reales extraidos del sitio actual</span>
+      <span>Catálogo deportivo con productos destacados por categoría</span>
       <span>Cotiza por WhatsApp antes de visitar la tienda</span>
     </div>
   </div>
@@ -23,8 +23,8 @@
       <a class="logo" href="index.html" aria-label="Insudeportes">
         <img src="assets/logo.png" alt="Insudeportes" width="845" height="278" decoding="async">
       </a>
-      <form class="search">
-        <input placeholder="Buscar en 180 productos">
+      <form class="search" action="catalogo.html">
+        <input name="q" aria-label="Buscar productos" placeholder="Buscar en 180 productos">
         <button type="submit" aria-label="Buscar"><span>Buscar</span></button>
       </form>
       <nav class="nav">
@@ -38,9 +38,9 @@
   <main>
     <section class="catalog-hero">
       <div class="section page-title">
-        <span class="eyebrow">Catalogo</span>
+        <span class="eyebrow">Catálogo</span>
         <h1>Productos deportivos</h1>
-        <p>Vista de concepto para navegar por deporte, marca y precio con una experiencia mas cercana a un e-commerce.</p>
+        <p>Navega por deporte, marca y precio para encontrar productos y consultar disponibilidad.</p>
       </div>
     </section>
 
@@ -76,7 +76,7 @@
           <div class="catalog-tools">
             <div>
               <strong>180 productos</strong>
-              <span style="color: var(--muted);"> | Mostrando concepto con 6 destacados</span>
+              <span class="muted-note"> | Mostrando 6 destacados</span>
             </div>
             <select aria-label="Ordenar productos">
               <option>Ordenar por relevancia</option>
@@ -87,14 +87,14 @@
 
           <div class="product-grid">
             <article class="product-card">
-              <div class="product-image"><img src="assets/eliptica.jpg" alt="Eliptica combo Oxford Sport Fitness" width="800" height="800" loading="lazy" decoding="async"></div>
+              <div class="product-image"><img src="assets/eliptica.jpg" alt="Elíptica combo Oxford Sport Fitness" width="800" height="800" loading="lazy" decoding="async"></div>
               <div class="product-body">
                 <div class="product-meta">Sport fitness | Fitness</div>
-                <h3>Eliptica combo Oxford Sport Fitness</h3>
+                <h3>Elíptica combo Oxford Sport Fitness</h3>
                 <div class="price">$1.107.900</div>
                 <div class="card-actions">
                   <a class="small-btn" href="producto.html">Ver detalle</a>
-                  <button class="small-btn fill">WhatsApp</button>
+                  <a class="small-btn fill" href="https://wa.me/573000000000?text=Hola%2C%20quiero%20consultar%20la%20El%C3%ADptica%20combo%20Oxford%20Sport%20Fitness.">WhatsApp</a>
                 </div>
               </div>
             </article>
@@ -107,7 +107,7 @@
                 <div class="price">$99.500</div>
                 <div class="card-actions">
                   <a class="small-btn" href="producto.html">Ver detalle</a>
-                  <button class="small-btn fill">WhatsApp</button>
+                  <a class="small-btn fill" href="https://wa.me/573000000000?text=Hola%2C%20quiero%20consultar%20el%20Set%20raquetas%20soport%20duo.">WhatsApp</a>
                 </div>
               </div>
             </article>
@@ -120,7 +120,7 @@
                 <div class="price">$119.900</div>
                 <div class="card-actions">
                   <a class="small-btn" href="producto.html">Ver detalle</a>
-                  <button class="small-btn fill">WhatsApp</button>
+                  <a class="small-btn fill" href="https://wa.me/573000000000?text=Hola%2C%20quiero%20consultar%20el%20Bal%C3%B3n%20de%20f%C3%BAtbol%20profesional%20origen%20%235.">WhatsApp</a>
                 </div>
               </div>
             </article>
@@ -133,7 +133,7 @@
                 <div class="price">$115.900</div>
                 <div class="card-actions">
                   <a class="small-btn" href="producto.html">Ver detalle</a>
-                  <button class="small-btn fill">WhatsApp</button>
+                  <a class="small-btn fill" href="https://wa.me/573000000000?text=Hola%2C%20quiero%20consultar%20la%20Raqueta%20Cornilleau%20Sport%20400.">WhatsApp</a>
                 </div>
               </div>
             </article>
@@ -146,7 +146,7 @@
                 <div class="price">$1.650.000</div>
                 <div class="card-actions">
                   <a class="small-btn" href="producto.html">Ver detalle</a>
-                  <button class="small-btn fill">WhatsApp</button>
+                  <a class="small-btn fill" href="https://wa.me/573000000000?text=Hola%2C%20quiero%20consultar%20la%20Bicicleta%20de%20Spinning%20Ferrara.">WhatsApp</a>
                 </div>
               </div>
             </article>
@@ -159,7 +159,7 @@
                 <div class="price">$439.900</div>
                 <div class="card-actions">
                   <a class="small-btn" href="producto.html">Ver detalle</a>
-                  <button class="small-btn fill">WhatsApp</button>
+                  <a class="small-btn fill" href="https://wa.me/573000000000?text=Hola%2C%20quiero%20consultar%20el%20Bal%C3%B3n%20molten%20BG4500%20%237.">WhatsApp</a>
                 </div>
               </div>
             </article>
@@ -173,15 +173,15 @@
     <div class="footer-inner">
       <div>
         <img src="assets/logo.png" alt="Insudeportes" width="845" height="278" loading="lazy" decoding="async">
-        <p>Footer transaccional: contacto, direccion, politicas y ayuda.</p>
+        <p>Contacto, dirección, políticas y ayuda para compradores.</p>
       </div>
       <div>
-        <h3>Categorias</h3>
+        <h3>Categorías</h3>
         <p>Fitness, Tenis de Mesa, Futbol, Boxeo, Ciclismo, Baloncesto.</p>
       </div>
       <div>
-        <h3>Cotizacion</h3>
-        <p>Flujo recomendado para el primer lanzamiento antes de agregar pagos online.</p>
+        <h3>Cotización</h3>
+        <p>Consulta disponibilidad, envío y compras institucionales por WhatsApp.</p>
       </div>
     </div>
   </footer>

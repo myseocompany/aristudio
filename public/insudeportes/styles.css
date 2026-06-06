@@ -420,6 +420,10 @@ select {
   gap: 18px;
 }
 
+.muted-note {
+  color: var(--muted);
+}
+
 .product-card {
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -473,6 +477,9 @@ select {
 }
 
 .small-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   min-height: 38px;
   border: 1px solid var(--line);
   border-radius: 6px;
@@ -793,6 +800,9 @@ select {
 }
 
 .wide-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   min-height: 48px;
   border: 1px solid var(--line);
   border-radius: 6px;
