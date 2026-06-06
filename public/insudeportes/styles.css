@@ -430,23 +430,12 @@ select {
 .product-image {
   display: grid;
   place-items: center;
-  aspect-ratio: 1.32;
-  padding: 8px;
+  aspect-ratio: 2.35;
+  padding: 0;
   background: var(--soft);
 }
 
 .product-image img {
-  max-width: 96%;
-  max-height: 96%;
-  object-fit: contain;
-}
-
-.featured-products .product-image {
-  aspect-ratio: 1.85;
-  padding: 0;
-}
-
-.featured-products .product-image img {
   width: 100%;
   height: 100%;
   max-width: none;
