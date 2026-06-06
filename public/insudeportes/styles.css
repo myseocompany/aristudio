@@ -347,23 +347,25 @@ select {
   display: grid;
   min-height: 118px;
   align-content: end;
-  padding: 16px;
   border-radius: 8px;
-  color: var(--white);
+  color: var(--blue);
   background: linear-gradient(145deg, var(--blue), var(--blue-2));
   position: relative;
   overflow: hidden;
 }
 
 .sport-card.image-card {
-  min-height: 190px;
-  background:
-    linear-gradient(180deg, rgba(7, 39, 90, 0.08), rgba(7, 39, 90, 0.88)),
-    var(--sport-image) center / cover no-repeat;
+  grid-template-rows: 170px auto;
+  min-height: 0;
+  align-content: stretch;
+  border: 1px solid var(--line);
+  background: var(--white);
 }
 
-.sport-card.image-card::after {
-  display: none;
+.sport-card.image-card::before {
+  display: block;
+  background: var(--sport-image) center / cover no-repeat;
+  content: "";
 }
 
 .sport-card.fitness {
@@ -390,7 +392,7 @@ select {
   --sport-image: url("assets/category-futbol.jpg");
 }
 
-.sport-card::after {
+.sport-card:not(.image-card)::after {
   content: "";
   position: absolute;
   width: 82px;
@@ -406,12 +408,19 @@ select {
 .sport-card span {
   position: relative;
   z-index: 1;
+  padding: 0 14px;
+}
+
+.sport-card strong {
+  align-self: end;
+  padding-top: 14px;
+  font-size: 17px;
 }
 
 .sport-card span {
-  margin-top: 4px;
+  padding-bottom: 14px;
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.78);
+  color: var(--muted);
 }
 
 .product-grid {
