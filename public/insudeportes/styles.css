@@ -126,7 +126,7 @@ select {
 .hero {
   background:
     linear-gradient(270deg, rgba(7, 39, 90, 0.92) 0%, rgba(7, 39, 90, 0.78) 38%, rgba(7, 39, 90, 0.12) 72%),
-    url("assets/hero-home.png") center / cover no-repeat,
+    url("assets/hero-home.jpg") center / cover no-repeat,
     #082654;
   color: var(--white);
 }
@@ -282,7 +282,7 @@ select {
 .category-feature-image {
   min-height: 360px;
   border-radius: 8px;
-  background: url("assets/category-general.png") center / cover no-repeat;
+  background: url("assets/category-general.jpg") center / cover no-repeat;
 }
 
 .category-feature-copy {
@@ -330,27 +330,27 @@ select {
 }
 
 .sport-card.fitness {
-  --sport-image: url("assets/category-fitness.png");
+  --sport-image: url("assets/category-fitness.jpg");
 }
 
 .sport-card.tenis-mesa {
-  --sport-image: url("assets/category-tenis-mesa.png");
+  --sport-image: url("assets/category-tenis-mesa.jpg");
 }
 
 .sport-card.badminton {
-  --sport-image: url("assets/category-badmington.png");
+  --sport-image: url("assets/category-badmington.jpg");
 }
 
 .sport-card.ciclismo {
-  --sport-image: url("assets/category-ciclismo.png");
+  --sport-image: url("assets/category-ciclismo.jpg");
 }
 
 .sport-card.boxeo {
-  --sport-image: url("assets/category-boxeo.png");
+  --sport-image: url("assets/category-boxeo.jpg");
 }
 
 .sport-card.futbol {
-  --sport-image: url("assets/category-futbol.png");
+  --sport-image: url("assets/category-futbol.jpg");
 }
 
 .sport-card::after {
@@ -468,7 +468,7 @@ select {
 .tech-image {
   min-height: 390px;
   border-radius: 8px;
-  background: url("assets/petos-electronicos.png") center / cover no-repeat;
+  background: url("assets/petos-electronicos.jpg") center / cover no-repeat;
 }
 
 .tech-copy {
@@ -897,7 +897,7 @@ select {
   .hero {
     background:
       linear-gradient(180deg, rgba(7, 39, 90, 0.92) 0%, rgba(7, 39, 90, 0.74) 58%, rgba(7, 39, 90, 0.24) 100%),
-      url("assets/hero-home.png") left center / cover no-repeat,
+      url("assets/hero-home.jpg") left center / cover no-repeat,
       #082654;
   }
 
