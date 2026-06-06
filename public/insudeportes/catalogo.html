@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Catalogo | Insudeportes</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="topbar">
+    <div class="topbar-inner">
+      <span>Catalogo demostrativo con productos reales extraidos del sitio actual</span>
+      <span>Cotiza por WhatsApp antes de visitar la tienda</span>
+    </div>
+  </div>
+
+  <header class="header">
+    <div class="header-inner">
+      <a class="logo" href="index.html" aria-label="Insudeportes">
+        <img src="assets/logo.png" alt="Insudeportes">
+      </a>
+      <form class="search">
+        <input placeholder="Buscar en 180 productos">
+        <button>Buscar</button>
+      </form>
+      <nav class="nav">
+        <a href="index.html">Inicio</a>
+        <a href="#deportes">Deportes</a>
+        <a class="quote-link" href="https://wa.me/573000000000">Cotizar</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="catalog-hero">
+      <div class="section page-title">
+        <span class="eyebrow">Catalogo</span>
+        <h1>Productos deportivos</h1>
+        <p>Vista de concepto para navegar por deporte, marca y precio con una experiencia mas cercana a un e-commerce.</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="catalog-layout">
+        <aside class="filters" id="deportes">
+          <h2>Filtros</h2>
+          <div class="filter-group">
+            <strong>Deporte</strong>
+            <label class="check"><input type="checkbox" checked> Fitness</label>
+            <label class="check"><input type="checkbox" checked> Tenis de Mesa</label>
+            <label class="check"><input type="checkbox"> Futbol</label>
+            <label class="check"><input type="checkbox"> Ciclismo</label>
+            <label class="check"><input type="checkbox"> Boxeo</label>
+          </div>
+          <div class="filter-group">
+            <strong>Marca</strong>
+            <label class="check"><input type="checkbox"> Adidas</label>
+            <label class="check"><input type="checkbox" checked> Sport fitness</label>
+            <label class="check"><input type="checkbox" checked> Cornilleau</label>
+            <label class="check"><input type="checkbox"> Golty</label>
+            <label class="check"><input type="checkbox"> Wish</label>
+          </div>
+          <div class="filter-group">
+            <strong>Precio</strong>
+            <label class="check"><input type="radio" name="price"> Hasta $50.000</label>
+            <label class="check"><input type="radio" name="price" checked> $50.000 - $200.000</label>
+            <label class="check"><input type="radio" name="price"> Mas de $200.000</label>
+          </div>
+        </aside>
+
+        <div>
+          <div class="catalog-tools">
+            <div>
+              <strong>180 productos</strong>
+              <span style="color: var(--muted);"> | Mostrando concepto con 6 destacados</span>
+            </div>
+            <select aria-label="Ordenar productos">
+              <option>Ordenar por relevancia</option>
+              <option>Precio menor a mayor</option>
+              <option>Precio mayor a menor</option>
+            </select>
+          </div>
+
+          <div class="product-grid">
+            <article class="product-card">
+              <div class="product-image"><img src="assets/eliptica.png" alt="Eliptica combo Oxford Sport Fitness"></div>
+              <div class="product-body">
+                <div class="product-meta">Sport fitness | Fitness</div>
+                <h3>Eliptica combo Oxford Sport Fitness</h3>
+                <div class="price">$1.107.900</div>
+                <div class="card-actions">
+                  <a class="small-btn" href="producto.html">Ver detalle</a>
+                  <button class="small-btn fill">WhatsApp</button>
+                </div>
+              </div>
+            </article>
+
+            <article class="product-card">
+              <div class="product-image"><img src="assets/raquetas.png" alt="Set raquetas soport duo"></div>
+              <div class="product-body">
+                <div class="product-meta">Cornilleau | Tenis de Mesa</div>
+                <h3>Set raquetas soport duo</h3>
+                <div class="price">$99.500</div>
+                <div class="card-actions">
+                  <a class="small-btn" href="producto.html">Ver detalle</a>
+                  <button class="small-btn fill">WhatsApp</button>
+                </div>
+              </div>
+            </article>
+
+            <article class="product-card">
+              <div class="product-image"><img src="assets/balon.png" alt="Balon de futbol profesional origen numero 5"></div>
+              <div class="product-body">
+                <div class="product-meta">Origen | Futbol</div>
+                <h3>Balon de futbol profesional origen #5</h3>
+                <div class="price">$119.900</div>
+                <div class="card-actions">
+                  <a class="small-btn" href="producto.html">Ver detalle</a>
+                  <button class="small-btn fill">WhatsApp</button>
+                </div>
+              </div>
+            </article>
+
+            <article class="product-card">
+              <div class="product-image"><img src="assets/raquetas.png" alt="Raqueta Cornilleau Sport 400"></div>
+              <div class="product-body">
+                <div class="product-meta">Cornilleau | Tenis de Mesa</div>
+                <h3>Raqueta Cornilleau Sport 400</h3>
+                <div class="price">$115.900</div>
+                <div class="card-actions">
+                  <a class="small-btn" href="producto.html">Ver detalle</a>
+                  <button class="small-btn fill">WhatsApp</button>
+                </div>
+              </div>
+            </article>
+
+            <article class="product-card">
+              <div class="product-image"><img src="assets/eliptica.png" alt="Bicicleta de Spinning Ferrara"></div>
+              <div class="product-body">
+                <div class="product-meta">Sport fitness | Fitness</div>
+                <h3>Bicicleta de Spinning Ferrara</h3>
+                <div class="price">$1.650.000</div>
+                <div class="card-actions">
+                  <a class="small-btn" href="producto.html">Ver detalle</a>
+                  <button class="small-btn fill">WhatsApp</button>
+                </div>
+              </div>
+            </article>
+
+            <article class="product-card">
+              <div class="product-image"><img src="assets/balon.png" alt="Balon molten BG4500 numero 7"></div>
+              <div class="product-body">
+                <div class="product-meta">Molten | Baloncesto</div>
+                <h3>Balon molten BG4500 #7</h3>
+                <div class="price">$439.900</div>
+                <div class="card-actions">
+                  <a class="small-btn" href="producto.html">Ver detalle</a>
+                  <button class="small-btn fill">WhatsApp</button>
+                </div>
+              </div>
+            </article>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      <div>
+        <img src="assets/logo.png" alt="Insudeportes">
+        <p>Footer transaccional: contacto, direccion, politicas y ayuda.</p>
+      </div>
+      <div>
+        <h3>Categorias</h3>
+        <p>Fitness, Tenis de Mesa, Futbol, Boxeo, Ciclismo, Baloncesto.</p>
+      </div>
+      <div>
+        <h3>Cotizacion</h3>
+        <p>Flujo recomendado para el primer lanzamiento antes de agregar pagos online.</p>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
