@@ -673,9 +673,12 @@ select {
 
 .thumb-row {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, minmax(72px, 88px));
+  justify-content: start;
   gap: 12px;
   margin-top: 12px;
+  overflow-x: auto;
+  padding-bottom: 2px;
 }
 
 .thumb {
@@ -693,8 +696,10 @@ select {
 }
 
 .thumb img {
-  max-width: 80%;
-  max-height: 80%;
+  width: auto;
+  height: auto;
+  max-width: 78%;
+  max-height: 78%;
   object-fit: contain;
 }
 
@@ -1008,6 +1013,11 @@ select {
     width: 42px;
     height: 40px;
     flex-basis: 42px;
+  }
+
+  .thumb-row {
+    grid-template-columns: repeat(4, minmax(62px, 76px));
+    gap: 8px;
   }
 
   .benefits,
