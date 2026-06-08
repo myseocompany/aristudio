@@ -616,7 +616,15 @@ class TasksPointsSummaryTest extends TestCase
         $response->assertSee('id="tasks-inline-quick-user-toggle"', false);
         $response->assertSee('id="tasks-inline-quick-name"', false);
         $response->assertSee('id="tasksRangeForm"', false);
+        $response->assertSeeInOrder([
+            'id="tasksRangeForm"',
+            'type="search"',
+            'name="q"',
+            'placeholder="Nombre, descripción o copia"',
+            'id="tasksRangePicker"',
+        ], false);
         $response->assertSee('id="tasksFiltersForm"', false);
+        $response->assertDontSee('<label class="text-sm text-gray-600">Buscar</label>', false);
         $response->assertSee('syncRangeFormFilters();', false);
         $response->assertSee('@submit.prevent="submitQuickTask"', false);
         $response->assertSee('@task-created="handleTaskCreated($event.detail.task)"', false);
@@ -839,5 +847,99 @@ class TasksPointsSummaryTest extends TestCase
             'value_generated' => true,
             'updator_user_id' => $editor->id,
         ]);
+    }
+
+    public function test_update_redirects_back_to_tasks_index_with_current_filters(): void
+    {
+        $editor = User::factory()->create([
+            'status_id' => 1,
+        ]);
+
+        $this->grantModulePermissions($editor, '/tasks', ['update']);
+        $this->actingAs($editor->refresh());
+
+        DB::table('task_statuses')->insert([
+            'id' => 1,
+            'name' => 'Pendiente',
+            'pending' => true,
+            'status_id' => 1,
+            'weight' => 1,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $task = Task::create([
+            'name' => 'Tarea filtrada',
+            'status_id' => 1,
+            'value_generated' => true,
+            'due_date' => now(),
+        ]);
+
+        $filters = [
+            'range' => '2026-05-01|2026-06-30',
+            'from_date' => '2026-05-01',
+            'to_date' => '2026-06-30',
+            'status_id' => '1',
+            'project_id' => '',
+            'user_id' => (string) $editor->id,
+            'q' => '',
+            'value_generated' => '0',
+        ];
+
+        $response = $this->put(route('tasks.update', $task).'?'.http_build_query($filters), [
+            'name' => 'Tarea filtrada actualizada',
+            'status_id' => 1,
+        ]);
+
+        $response->assertRedirect(route('tasks.index').'?'.http_build_query($filters));
+    }
+
+    public function test_task_sidebar_edit_flow_keeps_current_filters(): void
+    {
+        $editor = User::factory()->create([
+            'status_id' => 1,
+        ]);
+
+        $this->grantModulePermissions($editor, '/tasks', ['read', 'update']);
+        $this->actingAs($editor->refresh());
+
+        DB::table('task_statuses')->insert([
+            'id' => 1,
+            'name' => 'Pendiente',
+            'pending' => true,
+            'status_id' => 1,
+            'weight' => 1,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $task = Task::create([
+            'name' => 'Tarea con panel',
+            'status_id' => 1,
+            'value_generated' => true,
+            'due_date' => now(),
+        ]);
+
+        $filters = [
+            'range' => '2026-05-01|2026-06-30',
+            'from_date' => '2026-05-01',
+            'to_date' => '2026-06-30',
+            'status_id' => '1',
+            'project_id' => '',
+            'user_id' => (string) $editor->id,
+            'q' => '',
+            'value_generated' => '0',
+            'sidebar' => '1',
+        ];
+
+        $showResponse = $this->get(route('tasks.show', $task).'?'.http_build_query($filters));
+
+        $showResponse->assertOk();
+        $showResponse->assertSee(route('tasks.edit', $task).'?'.http_build_query($filters));
+
+        $editResponse = $this->get(route('tasks.edit', $task).'?'.http_build_query($filters));
+
+        $editResponse->assertOk();
+        $editResponse->assertSee(route('tasks.update', $task).'?'.http_build_query(collect($filters)->except('sidebar')->all()));
     }
 }

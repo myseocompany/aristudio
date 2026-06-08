@@ -263,8 +263,24 @@
             $currentRangeValue = $filters['from_date'] && $filters['to_date']
                 ? $filters['from_date'].'|'.$filters['to_date']
                 : $defaultRangeStart.'|'.$defaultRangeEnd;
-            $activeFilterQuery = request()->query();
+            $activeFilterQuery = [];
+            parse_str((string) request()->server('QUERY_STRING', ''), $activeFilterQuery);
             unset($activeFilterQuery['page']);
+            $taskPanelQuery = array_merge(
+                collect($activeFilterQuery)->only([
+                    'range',
+                    'from_date',
+                    'to_date',
+                    'status_id',
+                    'project_id',
+                    'user_id',
+                    'q',
+                    'value_generated',
+                ])->all(),
+                ['sidebar' => 1],
+            );
+            $taskPanelQueryString = http_build_query($taskPanelQuery);
+            $taskShowPanelUrl = fn ($task) => route('tasks.show', $task).($taskPanelQueryString ? '?'.$taskPanelQueryString : '');
             $removeFilterUrl = function (array $keys) use ($activeFilterQuery) {
                 return route('tasks.index', collect($activeFilterQuery)->except($keys)->all());
             };
@@ -329,7 +345,8 @@
                             {{ $selectedPointsDisplay }} pts
                         </span>
                         <span class="inline-flex items-center px-2 py-1 rounded-full bg-emerald-50 text-emerald-700 font-semibold">{{ $tasks->where('status.pending', 1)->count() }} pendientes</span>
-                        <form method="GET" id="tasksRangeForm" class="flex items-center gap-2">
+                        <form method="GET" id="tasksRangeForm" class="flex flex-wrap items-center gap-2">
+                            <input type="search" name="q" value="{{ $filters['q'] }}" placeholder="Nombre, descripción o copia" class="w-64 max-w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
                             <input type="text" id="tasksRangePicker" class="w-56 px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white shadow-sm cursor-pointer" readonly>
                             <input type="hidden" name="range" id="tasksRangeValue" value="{{ $currentRangeValue }}">
                             <input type="hidden" name="from_date" id="tasksFromDate" value="{{ $filters['from_date'] }}">
@@ -337,7 +354,6 @@
                             <input type="hidden" name="status_id" value="{{ $filters['status_id'] }}">
                             <input type="hidden" name="project_id" value="{{ $filters['project_id'] }}">
                             <input type="hidden" name="user_id" value="{{ $filters['user_id'] }}">
-                            <input type="hidden" name="q" value="{{ $filters['q'] }}">
                             <input type="hidden" name="value_generated" value="{{ $filters['value_generated'] ? 1 : 0 }}">
                         </form>
                         <button type="button" @click="showFilters = !showFilters" class="px-3 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded border border-gray-200 text-gray-700">
@@ -384,10 +400,7 @@
                     }">
                         <input type="hidden" name="from_date" id="tasksFiltersFrom" value="{{ $filters['from_date'] }}">
                         <input type="hidden" name="to_date" id="tasksFiltersTo" value="{{ $filters['to_date'] }}">
-                        <div class="md:col-span-2">
-                            <label class="text-sm text-gray-600">Buscar</label>
-                            <input type="search" name="q" value="{{ $filters['q'] }}" placeholder="Nombre, descripción o copia" class="mt-1 w-full rounded border-gray-300 text-sm px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500">
-                        </div>
+                        <input type="hidden" name="q" value="{{ $filters['q'] }}">
                         <div>
                             <label class="text-sm text-gray-600">Estado</label>
                             <select name="status_id" class="mt-1 w-full rounded border-gray-300 text-sm px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500">
@@ -421,7 +434,7 @@
                                 Solo generan valor
                             </label>
                         </div>
-                        <div class="flex items-center gap-2 md:col-span-3">
+                        <div class="flex items-center gap-2 md:col-span-4">
                             <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-500 text-sm">Aplicar filtros</button>
                             @php
                                 $hasFilters = $filters['status_id']
@@ -646,7 +659,7 @@
                                                         userInitials: this.selectedUserId ? this.selectedUserInitials : '—',
                                                         userAvatar: this.selectedUserId ? (this.selectedUserAvatar ?? null) : null,
                                                         valueGenerated: createdTask.value_generated ?? true,
-                                                        showUrl: `{{ url('tasks') }}/${createdTask.id}?sidebar=1`,
+                                                        showUrl: `{{ url('tasks') }}/${createdTask.id}{{ $taskPanelQueryString ? '?'.$taskPanelQueryString : '' }}`,
                                                     },
                                                 });
 
@@ -1180,7 +1193,7 @@
                                                 </div>
                                             </div>
                                             <div>
-                                                <button type="button" class="font-semibold text-gray-900 hover:underline text-left" @click="loadPanel('{{ route('tasks.show', $task) }}?sidebar=1')">
+                                                <button type="button" class="font-semibold text-gray-900 hover:underline text-left" @click="loadPanel('{{ $taskShowPanelUrl($task) }}')">
                                                     {{ $task->name }}
                                                 </button>
                                                 <div class="text-xs text-gray-500 leading-relaxed">
@@ -1471,7 +1484,7 @@
                                     <div class="flex-1">
                                         <div class="flex items-start justify-between gap-2">
         <div>
-                                            <button type="button" class="font-semibold text-gray-900 text-left hover:underline" @click="loadPanel('{{ route('tasks.show', $task) }}?sidebar=1')">
+                                            <button type="button" class="font-semibold text-gray-900 text-left hover:underline" @click="loadPanel('{{ $taskShowPanelUrl($task) }}')">
                                                 {{ $task->name }}
                                             </button>
             <p class="text-xs text-gray-500">

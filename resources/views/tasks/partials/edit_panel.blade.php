@@ -5,6 +5,20 @@
     $parentTypes = $parentTypes ?? collect();
     $subTypes = $subTypes ?? collect();
     $defaultStatusId = $defaultStatusId ?? null;
+    $rawTaskFilterQuery = [];
+    parse_str((string) request()->server('QUERY_STRING', ''), $rawTaskFilterQuery);
+    $taskFilterQuery = collect($rawTaskFilterQuery)->only([
+        'range',
+        'from_date',
+        'to_date',
+        'status_id',
+        'project_id',
+        'user_id',
+        'q',
+        'value_generated',
+    ])->all();
+    $taskFilterQueryString = http_build_query($taskFilterQuery);
+    $taskUpdateUrl = route('tasks.update', $task).($taskFilterQueryString ? '?'.$taskFilterQueryString : '');
 @endphp
 
 <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
@@ -16,7 +30,7 @@
 </div>
 
 <div class="px-5 py-4 max-h-[80vh] overflow-y-auto">
-    <form action="{{ route('tasks.update', $task) }}" method="POST" enctype="multipart/form-data" class="space-y-4">
+    <form action="{{ $taskUpdateUrl }}" method="POST" enctype="multipart/form-data" class="space-y-4">
         @csrf
         @method('PUT')
         <div class="grid gap-3">

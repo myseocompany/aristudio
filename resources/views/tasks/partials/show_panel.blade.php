@@ -17,6 +17,23 @@
             ->take(2)
             ->implode('')
         : '?';
+    $rawTaskPanelQuery = [];
+    parse_str((string) request()->server('QUERY_STRING', ''), $rawTaskPanelQuery);
+    $taskPanelQuery = array_merge(
+        collect($rawTaskPanelQuery)->only([
+            'range',
+            'from_date',
+            'to_date',
+            'status_id',
+            'project_id',
+            'user_id',
+            'q',
+            'value_generated',
+        ])->all(),
+        ['sidebar' => 1],
+    );
+    $taskPanelQueryString = http_build_query($taskPanelQuery);
+    $taskEditPanelUrl = route('tasks.edit', $task).($taskPanelQueryString ? '?'.$taskPanelQueryString : '');
 @endphp
 
 <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
@@ -35,7 +52,7 @@
                 {{ $status->name }}
             </span>
         @endif
-        <a href="{{ route('tasks.edit', $task) }}?sidebar=1" data-task-panel-url="{{ route('tasks.edit', $task) }}?sidebar=1" class="text-sm text-indigo-600 hover:text-indigo-800 font-semibold">Editar</a>
+        <a href="{{ $taskEditPanelUrl }}" data-task-panel-url="{{ $taskEditPanelUrl }}" class="text-sm text-indigo-600 hover:text-indigo-800 font-semibold">Editar</a>
         <button type="button" class="text-sm text-gray-600 hover:text-gray-800" @click="$dispatch('close-task-panel')">Cerrar</button>
     </div>
 </div>

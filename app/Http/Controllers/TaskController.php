@@ -409,7 +409,9 @@ class TaskController extends Controller
 
         $task->update($data);
 
-        return redirect()->route('tasks.index')->with('status', 'Tarea actualizada.');
+        return redirect()
+            ->route('tasks.index', $this->taskFilterQueryFromRequest($request))
+            ->with('status', 'Tarea actualizada.');
     }
 
     public function destroy(Task $task)
@@ -621,5 +623,26 @@ class TaskController extends Controller
             'user_id' => $filters['user_id'] ?? '',
             'value_generated' => $filters['value_generated'] ? 1 : 0,
         ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    protected function taskFilterQueryFromRequest(Request $request): array
+    {
+        parse_str((string) $request->server('QUERY_STRING', ''), $query);
+
+        return collect($query)
+            ->only([
+                'range',
+                'from_date',
+                'to_date',
+                'status_id',
+                'project_id',
+                'user_id',
+                'q',
+                'value_generated',
+            ])
+            ->all();
     }
 }
