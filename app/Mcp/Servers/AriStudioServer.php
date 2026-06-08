@@ -4,6 +4,7 @@ namespace App\Mcp\Servers;
 
 use App\Mcp\Tools\CreateTask;
 use App\Mcp\Tools\ListTasks;
+use App\Mcp\Tools\UpdateProject;
 use App\Mcp\Tools\UpdateTask;
 use Laravel\Mcp\Server;
 
@@ -34,6 +35,7 @@ class AriStudioServer extends Server
     protected array $tools = [
         CreateTask::class,
         ListTasks::class,
+        UpdateProject::class,
         UpdateTask::class,
     ];
 
