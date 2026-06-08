@@ -124,6 +124,46 @@ class ListProjectsTest extends TestCase
             ->assertDontSee('Otro proyecto');
     }
 
+    public function test_it_lists_active_projects_by_default(): void
+    {
+        DB::table('project_statuses')->insert([
+            [
+                'id' => 3,
+                'name' => 'Running',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'id' => 4,
+                'name' => 'Paused',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+        ]);
+
+        Project::query()->create([
+            'name' => 'Proyecto activo',
+            'status_id' => 3,
+            'weight' => 1,
+        ]);
+
+        Project::query()->create([
+            'name' => 'Proyecto pausado',
+            'status_id' => 4,
+            'weight' => 2,
+        ]);
+
+        AriStudioServer::tool(ListProjects::class, [
+            'limit' => 10,
+        ])
+            ->assertOk()
+            ->assertSee([
+                '"count": 1',
+                'Proyecto activo',
+            ])
+            ->assertDontSee('Proyecto pausado');
+    }
+
     public function test_it_validates_limit(): void
     {
         AriStudioServer::tool(ListProjects::class, [

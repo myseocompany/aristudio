@@ -16,7 +16,9 @@ use Laravel\Mcp\Server\Tools\Annotations\IsReadOnly;
 #[IsReadOnly]
 class ListProjects extends Tool
 {
-    protected string $description = 'List Ari Studio projects with optional filters. Returns id, name, description, status, type, dates, budget fields and assigned user count.';
+    private const DEFAULT_ACTIVE_STATUS_ID = 3;
+
+    protected string $description = 'List active Ari Studio projects by default, with optional filters. Returns id, name, description, status, type, dates, budget fields and assigned user count.';
 
     /**
      * @return array<string, mixed>
@@ -26,7 +28,7 @@ class ListProjects extends Tool
         return [
             'status_id' => $schema->integer()
                 ->min(1)
-                ->description('Filter by project status ID.'),
+                ->description('Filter by project status ID. Defaults to 3 for active/running projects.'),
             'type_id' => $schema->integer()
                 ->min(1)
                 ->description('Filter by project type ID.'),
@@ -110,9 +112,7 @@ class ListProjects extends Tool
             ])
             ->withCount('users');
 
-        if ($statusId = $validated['status_id'] ?? null) {
-            $query->where('projects.status_id', $statusId);
-        }
+        $query->where('projects.status_id', $validated['status_id'] ?? self::DEFAULT_ACTIVE_STATUS_ID);
 
         if ($typeId = $validated['type_id'] ?? null) {
             $query->where('projects.type_id', $typeId);
