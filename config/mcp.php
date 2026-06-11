@@ -16,7 +16,7 @@ return [
     */
 
     'redirect_domains' => [
-        'https://claude.ai',
+        '*',
     ],
 
 ];

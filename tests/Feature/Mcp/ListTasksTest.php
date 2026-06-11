@@ -437,14 +437,19 @@ class ListTasksTest extends TestCase
         $response->assertJsonPath('token_endpoint_auth_method', 'none');
     }
 
-    public function test_oauth_dynamic_client_registration_rejects_untrusted_redirects(): void
+    public function test_oauth_dynamic_client_registration_accepts_codex_loopback_redirects(): void
     {
-        $this->postJson('/oauth/register', [
-            'client_name' => 'Untrusted',
+        $response = $this->postJson('/oauth/register', [
+            'client_name' => 'Codex',
             'redirect_uris' => [
-                'https://example.com/callback',
+                'http://127.0.0.1:1455/oauth/callback',
             ],
-        ])->assertUnprocessable();
+        ]);
+
+        $response->assertOk();
+        $response->assertJsonPath('response_types.0', 'code');
+        $response->assertJsonPath('scope', 'mcp:use');
+        $response->assertJsonPath('token_endpoint_auth_method', 'none');
     }
 
     /**
