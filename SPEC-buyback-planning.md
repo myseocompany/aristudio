@@ -1,12 +1,147 @@
-# SPEC: Planeacion AriStudio con BuybackSystem
+# SPEC: Nuevo subsistema de planeacion AriStudio con BuybackSystem
 
 ## Objetivo
 
-Actualizar el sistema de planeacion de AriStudio para corregir contexto operativo, incorporar el proyecto COOTILCA y agregar una capa obligatoria de decision basada en el framework Buy Back Your Time.
+Crear un subsistema nuevo de planeacion en AriStudio para corregir contexto operativo, incorporar el proyecto COOTILCA y agregar una capa obligatoria de decision basada en el framework Buy Back Your Time.
 
 El sistema debe ayudar a decidir que entra en el calendario de Nicolas, que debe delegarse, que debe documentarse, que debe automatizarse y que apoyo externo debe buscarse primero con base en datos.
 
+El repo actual no tiene un modulo `planning`, rutas `/api/planning/*`, seeds con Laura/Luisa/COOTILCA/teatro, ni modelo de calendario. Por tanto, este SPEC no debe interpretarse como una modificacion incremental de un planner existente, sino como la creacion gradual de un subsistema sobre las entidades reales ya disponibles: `users`, `tasks`, `projects`, `roles`, `modules` y las tools MCP actuales.
+
+## Decisiones v3 contra el repo real
+
+- Este trabajo se implementa como subsistema nuevo, no como actualizacion de un modulo existente.
+- Fase 1 no debe crear endpoints REST `/api/planning/*` ni MCP nuevo; debe concentrarse en datos, servicios, seeds y tests.
+- Si se agregan endpoints REST en una fase posterior, primero debe crearse y decidirse la capa API porque el repo no tiene `routes/api.php`.
+- Las reglas compartidas deben vivir en servicios de dominio reutilizables por MCP, controladores futuros y tests. Nombre sugerido: `App\Services\Planning\BuybackService`.
+- Las tools MCP deben seguir convenciones reales del repo: clases PascalCase en `App\Mcp\Tools`, annotations, `schema()`, `outputSchema()`, `handle()`, permisos por `hasModulePermission()`, y registro en `App\Mcp\Servers\AriStudioServer` salvo que se cree un server nuevo explicitamente.
+- El sistema debe reutilizar señales existentes de `tasks`, `users` y `projects` antes de crear campos duplicados.
+- El calendario/bloques protegidos no existe. Ninguna regla de "no desplazar bloques" es implementable hasta crear `protected_blocks` o integrar una fuente externa de calendario.
+
+## Mapping repo actual vs SPEC
+
+| Necesidad del SPEC | Repo actual | Decision extender vs duplicar |
+| --- | --- | --- |
+| Valor economico de tarea | `tasks.value_generated` boolean, `tasks.points`, `tasks.estimated_points` | Extender. `economic_value_score` se guarda en `buyback_audits` como evaluacion contextual; no reemplaza `value_generated` ni `points`. La clasificacion debe usar `value_generated=true` y puntos altos como inputs sugeridos. |
+| Valor/criticidad de proyecto | `projects.weight`, `projects.budget`, `projects.monthly_points_goal`, `projects.sales` | Extender. `strategic_value_score` puede derivarse parcialmente de `projects.weight` y override manual en audit. |
+| Responsable actual | `tasks.user_id` FK a `users.id` | No duplicar como string. `DelegationCandidate` debe usar `current_owner_user_id` nullable FK; se puede exponer nombre serializado solo en responses. |
+| Salida probable de Luisa | `users.termination_date`, `users.status_id` | Extender. Usar `termination_date` y `status_id` como senales existentes; agregar solo campos operativos faltantes: `planning_exit_status`, `is_assignable_for_planning`, `continuity_risk`, `needs_transition`. |
+| Roles de apoyo | Tabla `roles` existe para RBAC y `role_modules` | No reutilizar `roles`. Para evitar colision semantica, renombrar entidad `SupportRole` a `SupportNeed` en implementacion o documentar que no es RBAC. Nombre recomendado: `support_needs`. |
+| Tipo de rol de apoyo | No existe catalogo funcional | Crear `support_areas` seedable/editable. Evitar enum rigido. |
+| Tiempo real dedicado | `tasks.started_at` y `tasks.finished_at` existen en casts pero no en `$fillable`; timer usa session y `TimerController` | Extender con cautela. `actual_minutes` en audit debe calcularse desde `started_at/finished_at` solo si existen columnas reales en BD; si no, queda nullable. No crear time tracking paralelo en Fase 1. |
+| Tenant / empresa | `users.enterprise_id`; proyectos se asignan por `project_users` | Extender. Las tablas de planning deben tener `enterprise_id` nullable ademas de `owner_user_id` cuando el dato sea organizacional. `owner_user_id` representa operador/creador, no tenant. |
+| Operador principal "Nicolas" | No existe `is_principal`, `operator_user_id` ni setting | Crear configuracion minima por empresa: `planning_operator_user_id` en una tabla de settings o config seedable. No hardcodear por nombre. |
+| Calendario / bloques protegidos | No hay modelo de eventos; solo `due_date` y `delivery_date` en tasks | Crear `protected_blocks` en Fase 4 o integrar Google Calendar como fuente externa. Fases previas no deben prometer proteccion de calendario real. |
+| Repeticion de tareas | No hay `template_id` ni recurrence | Fase 1 usa heuristica determinista exacta: nombre normalizado + `type_id` + `sub_type_id` + `project_id` en ventana de 30 dias. Semantica/embeddings quedan fuera. |
+
+## Landing tecnico por capas
+
+### Servicios compartidos obligatorios
+
+Crear servicios antes de MCP/endpoints para evitar divergencia:
+
+- `BuybackClassifier`: calcula DRIP y recommended action.
+- `BuybackAuditService`: crea/actualiza auditorias idempotentes.
+- `DelegationRecommendationService`: puntua `support_areas` y recomienda primer apoyo.
+- `PlanningContextService`: resuelve operador principal, empresa, COOTILCA y exclusiones de Laura.
+
+Los tests deben cubrir estos servicios directamente. MCP y endpoints futuros solo orquestan request/response.
+
+### REST
+
+El repo no tiene `routes/api.php`. Por eso:
+
+- Fase 1: sin endpoints REST.
+- Fase 3: decidir una de estas rutas antes de implementar:
+  - Crear `routes/api.php` con middleware `auth:api` porque el repo ya usa Passport y MCP web usa `auth:api`.
+  - O exponer rutas web autenticadas en `routes/web.php` si son pantallas internas con CSRF.
+- Si se crea API, usar prefijo versionado `/api/v1/planning/...`.
+- Todo request debe usar Form Request.
+- Todo response API debe usar Resources o arrays estructurados consistentes con los MCP outputs.
+
+### MCP
+
+Las tools se implementan en `app/Mcp/Tools` y se registran en `App\Mcp\Servers\AriStudioServer` en Fase 2.
+
+Naming de clases:
+
+| Nombre funcional | Clase MCP recomendada | Annotation | Permiso |
+| --- | --- | --- | --- |
+| run_buyback_audit | `RunBuybackAudit` | `#[IsDestructive(false)]`, `#[IsIdempotent(true)]` | `/planning`, `create` |
+| classify_task_buyback | `ClassifyTaskBuyback` | `#[IsReadOnly]` si `dry_run=true`; si persiste, `IsDestructive(false)` | `/planning`, `read` o `create` segun modo |
+| list_delegation_candidates | `ListDelegationCandidates` | `#[IsReadOnly]` | `/planning`, `read` |
+| create_delegation_candidate | `CreateDelegationCandidate` | `#[IsDestructive(false)]`, `#[IsIdempotent(false)]` | `/planning`, `create` |
+| create_playbook_from_task | `CreatePlaybookFromTask` | `#[IsDestructive(false)]`, `#[IsIdempotent(false)]` | `/planning`, `create` |
+| list_support_roles | `ListSupportNeeds` | `#[IsReadOnly]` | `/planning`, `read` |
+| recommend_first_support_role | `RecommendFirstSupportNeed` | `#[IsReadOnly]` | `/planning`, `read` |
+| mark_team_member_as_exiting | `MarkUserAsPlanningExit` | `#[IsDestructive(false)]`, `#[IsIdempotent(true)]` | `/users`, `update` |
+| get_cootilca_operating_profile | `GetCootilcaOperatingProfile` | `#[IsReadOnly]` | `/projects`, `read` |
+
+Los nombres snake_case pueden usarse solo como identificadores conceptuales en prompts; las clases deben ser PascalCase.
+
+### Identidad de Nicolas / operador principal
+
+No hardcodear "Nicolas" por nombre, email ni id.
+
+Fase 1 debe crear una forma explicita de resolver al operador principal:
+
+- Opcion preferida: tabla `planning_settings` con `enterprise_id`, `operator_user_id`, `one_thing_project_id` nullable.
+- Opcion minima: config seedable con email/id documentado solo para ambiente local.
+
+Regla:
+
+- En textos de negocio se puede decir Nicolas.
+- En codigo se usa `operator_user_id`.
+- `owner_user_id` es creador/dueno del registro de planning; no necesariamente operador principal ni tenant.
+
+### Calendario y bloques protegidos
+
+Hasta que exista `protected_blocks` o integracion Google Calendar:
+
+- El sistema solo puede clasificar tareas y recomendar prioridades.
+- No puede garantizar que COOTILCA no desplace bloques familiares/personales.
+- Los criterios sobre Wake 5:30, meditacion, carrera, bachata/salsa y Botanazo son seeds pendientes de Fase 4.
+
+Fase 4 debe escoger:
+
+- Tabla local `protected_blocks` como fuente de verdad.
+- Integracion Google Calendar como fuente de verdad externa.
+- Modelo hibrido: sincronizar Google Calendar hacia `protected_blocks`.
+
+Para este repo, la opcion local es mas verificable en tests; Google Calendar puede ser una integracion posterior.
+
+### Laura, Luisa y criticidad
+
+Laura:
+
+- Implementacion compatible con el repo: excluir de seeds, sugerencias y respuestas del planner.
+- No hard-delete porque `users` no usa SoftDeletes y `tasks.user_id` puede referenciar historico.
+- Si existe en BD, marcar no asignable para planning y no mostrarla como opcion futura.
+
+Luisa:
+
+- "Proceso critico" debe definirse de forma falsable.
+- Una tarea/proceso es critico si cumple cualquiera:
+  - proyecto con `projects.weight <= 3` si menor peso significa mayor prioridad visual en listas;
+  - proyecto marcado estrategico por planning metadata;
+  - tarea con `priority >= 4`;
+  - tarea asociada a COOTILCA, AriCRM o Reto21Vendo+;
+  - audit con `strategic_value_score >= 4`.
+- Luisa puede aparecer solo en tareas de cierre/transicion. Si una tarea critica queda asignada a ella, el servicio debe marcar riesgo y sugerir transferencia.
+
+### Naming
+
+- Clases PHP: PascalCase en ingles.
+- Tablas: snake_case plural en ingles.
+- Endpoints futuros: kebab-case bajo `/api/v1/planning`.
+- MCP classes: PascalCase; nombres conceptuales en documentacion pueden estar en snake_case.
+- Estados persistidos: snake_case en ingles.
+- Texto visible al usuario: espanol sin depender de nombres de clases.
+- `recommended_first_hire` y `recommend_first_support_role` se unifican como concepto `recommended_first_support_need`.
+
 ## Decisiones v2
+
+Estas decisiones siguen vigentes solo cuando no contradicen la seccion v3. Si hay conflicto, prevalece v3.
 
 - El Replacement Ladder no debe implementarse como enum hardcodeado. Debe existir como catalogo seedable y editable.
 - Las columnas JSON deben tener una forma canonica validada por Form Requests, herramientas MCP y tests.
@@ -71,8 +206,8 @@ La respuesta debe incluir los factores usados y el puntaje por factor. Los pesos
 
 ### Laura
 
-- Laura debe eliminarse completamente del sistema.
-- No debe existir como miembro del equipo, recurso, responsable, opcion de delegacion ni compromiso diario.
+- Laura debe quedar completamente excluida del subsistema de planning.
+- No debe existir como miembro asignable, recurso, responsable, opcion de delegacion ni compromiso diario dentro de planning.
 - Ninguna tarea, seed, sugerencia, herramienta MCP o regla de planificacion puede asignar o recomendar tareas a Laura.
 
 Politica historica:
@@ -217,7 +352,7 @@ Si una tarea se repite 3 veces o mas, AriStudio debe sugerir:
 
 - Crear `Playbook`
 - Crear `DelegationCandidate`
-- Crear `SupportRole`
+- Crear `SupportNeed`
 
 ## Entidades nuevas
 
@@ -286,10 +421,10 @@ Campos:
 - `project_id` nullable
 - `title`
 - `description`
-- `current_owner`
+- `current_owner_user_id` nullable
 - `recommended_owner_type`: `freelancer`, `contractor`, `employee`, `agency`, `automation`, `eliminate`
 - `support_area_id` nullable
-- `support_role_id` nullable
+- `support_need_id` nullable
 - `role_needed`
 - `required_skills_json`
 - `estimated_hours_per_week`
@@ -301,15 +436,17 @@ Campos:
 - `created_at`
 - `updated_at`
 
-Relacion con SupportRole:
+Relacion con SupportNeed:
 
-- Un `DelegationCandidate` puede sugerir o vincular un `SupportRole`.
+- Un `DelegationCandidate` puede sugerir o vincular un `SupportNeed`.
 - Delegar o automatizar un candidato no cierra automaticamente el rol.
-- Un `SupportRole` se marca `active`, `paused` o `rejected` segun el estado real de contratacion/experimento.
+- Un `SupportNeed` se marca `active`, `paused` o `rejected` segun el estado real de contratacion/experimento.
 
-### SupportRole
+### SupportNeed
 
-Tabla: `support_roles`
+Nombre de producto: rol de apoyo. Nombre tecnico recomendado: `SupportNeed` para no confundirse con `Role` RBAC.
+
+Tabla: `support_needs`
 
 Campos:
 
@@ -369,7 +506,7 @@ Campos:
 
 ### ProtectedBlock
 
-Fase 2, salvo que ya exista una entidad equivalente.
+Fase 4, salvo que ya exista una entidad equivalente.
 
 Tabla sugerida: `protected_blocks`
 
@@ -390,7 +527,7 @@ Campos:
 
 ### PersonalCommitment
 
-Fase 2, salvo que los compromisos personales se modelen como `protected_blocks`.
+Fase 4, salvo que los compromisos personales se modelen como `protected_blocks`.
 
 Tabla sugerida: `personal_commitments`
 
@@ -487,17 +624,19 @@ Nombres sugeridos:
 
 - `create_support_areas_table`
 - `create_buyback_audits_table`
-- `create_support_roles_table`
+- `create_support_needs_table`
 - `create_delegation_candidates_table`
 - `create_playbooks_table`
 - `add_planning_status_fields_to_users_table`
-- Fase 2: `create_protected_blocks_table`
-- Fase 2: `create_personal_commitments_table`
+- `create_planning_settings_table`
+- Fase 4: `create_protected_blocks_table`
+- Fase 4: `create_personal_commitments_table`
 
 Convenciones:
 
-- Usar FKs para `owner_user_id`, `task_id`, `project_id`, `support_area_id` y `support_role_id`.
+- Usar FKs para `owner_user_id`, `operator_user_id`, `enterprise_id` cuando aplique, `task_id`, `project_id`, `support_area_id` y `support_need_id`.
 - `owner_user_id` debe apuntar a `users.id`.
+- `current_owner_user_id` debe apuntar a `users.id` y reemplaza cualquier `current_owner` string persistido.
 - `task_id` y `project_id` deben ser nullable con `nullOnDelete()`.
 - No usar enum de base de datos para areas editables.
 - Para estados cerrados y pequenos, se permiten strings validados por Form Request y constantes de modelo.
@@ -530,10 +669,10 @@ Acciones de salida validas para Replacement:
 
 ## Auth y visibilidad
 
-- Todos los endpoints `/api/planning/...` requieren usuario autenticado.
+- Todos los endpoints futuros `/api/v1/planning/...` requieren usuario autenticado.
 - `owner_user_id` se deriva exclusivamente del token/session del usuario autenticado.
 - El body no puede definir `owner_user_id`.
-- Por defecto, Nicolas ve sus datos y administradores pueden ver datos de otros usuarios con filtros explicitos.
+- Por defecto, el operador principal configurado ve sus datos y administradores pueden ver datos de otros usuarios con filtros explicitos.
 - Usuarios no administradores solo pueden listar/crear recursos propios.
 - Las herramientas MCP deben usar `$request->user()` y los permisos existentes del modulo correspondiente.
 - Para crear o modificar tareas: permiso `/tasks` con `create` o `update`.
@@ -564,20 +703,24 @@ La recomendacion debe devolver:
 - Riesgo de no contratar/delegar.
 - Primer experimento sugerido.
 
-## Endpoints nuevos
+## Endpoints futuros
 
-- `GET /api/planning/buyback-audit`
-- `POST /api/planning/buyback-audit`
-- `POST /api/planning/tasks/{id}/buyback-classify`
-- `GET /api/planning/delegation-candidates`
-- `POST /api/planning/delegation-candidates`
-- `GET /api/planning/support-roles`
-- `POST /api/planning/support-roles`
-- `GET /api/planning/playbooks`
-- `POST /api/planning/playbooks`
-- `POST /api/planning/playbooks/from-task`
-- `GET /api/planning/recommended-first-hire`
-- `GET /api/planning/buyback-metrics`
+Estos endpoints son Fase 3. No forman parte del MVP porque el repo actual no tiene `routes/api.php`.
+
+Forma final recomendada si se habilita API:
+
+- `GET /api/v1/planning/buyback-audit`
+- `POST /api/v1/planning/buyback-audit`
+- `POST /api/v1/planning/tasks/{task}/buyback-classify`
+- `GET /api/v1/planning/delegation-candidates`
+- `POST /api/v1/planning/delegation-candidates`
+- `GET /api/v1/planning/support-needs`
+- `POST /api/v1/planning/support-needs`
+- `GET /api/v1/planning/playbooks`
+- `POST /api/v1/planning/playbooks`
+- `POST /api/v1/planning/playbooks/from-task`
+- `GET /api/v1/planning/recommended-first-support-need`
+- `GET /api/v1/planning/buyback-metrics`
 
 Reglas de listado:
 
@@ -585,7 +728,7 @@ Reglas de listado:
 - Listados grandes deben aceptar filtros por `project_id`, `task_id`, `support_area_id`, `status`, `from`, `to` segun aplique.
 - Ningun endpoint debe devolver todas las tareas abiertas sin limite.
 
-Metricas esperadas en `GET /api/planning/buyback-metrics`:
+Metricas esperadas en `GET /api/v1/planning/buyback-metrics`:
 
 - `% tiempo Production`
 - `% tiempo Investment`
@@ -709,7 +852,7 @@ Output schema:
 
 ### list_support_roles
 
-Lista roles de apoyo necesarios.
+Alias conceptual heredado. La clase implementable debe llamarse `ListSupportNeeds`.
 
 Input schema:
 
@@ -721,11 +864,16 @@ Input schema:
 Output schema:
 
 - `count` integer.
-- `roles` array con `id`, `title`, `support_area`, `role_type`, `priority`, `status`, `estimated_hours_weekly`.
+- `support_needs` array con `id`, `title`, `support_area`, `role_type`, `priority`, `status`, `estimated_hours_weekly`.
+
+Implementacion recomendada:
+
+- Clase: `ListSupportNeeds`.
+- Output key: `support_needs`, no `roles`, para evitar confusion con RBAC.
 
 ### recommend_first_support_role
 
-Recomienda el primer apoyo a buscar con base en datos de tareas, energia, valor y urgencia.
+Alias conceptual heredado. La clase implementable debe llamarse `RecommendFirstSupportNeed` y el concepto canonico es `recommended_first_support_need`.
 
 Input schema:
 
@@ -737,13 +885,18 @@ Input schema:
 
 Output schema:
 
-- `recommended_role` object.
+- `recommended_support_need` object.
 - `support_area` object.
 - `score` integer.
 - `factor_scores` object.
 - `evidence_tasks` array limitado.
 - `risk_if_not_hired` string.
 - `first_experiment` string.
+
+Implementacion recomendada:
+
+- Clase: `RecommendFirstSupportNeed`.
+- Concepto canonico: `recommended_first_support_need`.
 
 ### mark_team_member_as_exiting
 
@@ -837,22 +990,40 @@ Estas filas pueden modificarse desde admin o seeders futuros sin cambiar codigo.
 
 ### Fase 1
 
-- Correcciones de contexto: Laura, teatro musical, Luisa.
+- Reencuadre como subsistema nuevo.
+- Mapping contra `users`, `tasks` y `projects`.
+- Correcciones de contexto verificables: Laura, teatro musical, Luisa.
 - COOTILCA en seeds.
 - `support_areas`.
 - `buyback_audits`.
 - `delegation_candidates`.
-- `support_roles`.
+- `support_needs`.
 - `playbooks`.
-- Endpoints principales de CRUD/listado.
-- MCP tools con limites y schemas.
-- Metricas basicas de BuybackSystem.
+- `planning_settings` para resolver `operator_user_id`.
+- Servicios compartidos de clasificacion y auditoria.
+- DRIP manual con tests.
+- Sin endpoints REST.
+- Sin calendario real.
 
 ### Fase 2
 
-- `protected_blocks` si no existe una entidad equivalente.
+- MCP tools principales registradas en `AriStudioServer`.
+- Listados con limites y filtros.
+- `RunBuybackAudit`, `ClassifyTaskBuyback`, `ListDelegationCandidates`, `CreateDelegationCandidate`, `CreatePlaybookFromTask`, `ListSupportNeeds`, `RecommendFirstSupportNeed`, `MarkUserAsPlanningExit`, `GetCootilcaOperatingProfile`.
+- Metricas basicas desde servicios compartidos.
+
+### Fase 3
+
+- Crear `routes/api.php` con `auth:api` o decidir rutas web internas.
+- Endpoints `/api/v1/planning/*`.
+- Form Requests, Resources y controladores.
+- Recomendador de primer apoyo expuesto por API.
+
+### Fase 4
+
+- `protected_blocks` o integracion Google Calendar.
 - `personal_commitments` si no se modelan como protected blocks.
-- Reportes avanzados.
+- Proteccion real de calendario.
 - Recalculo historico por version de framework.
 - Admin UI para editar Replacement Ladder, pesos y umbrales.
 
@@ -876,6 +1047,12 @@ Estas filas pueden modificarse desde admin o seeders futuros sin cambiar codigo.
 - `owner_user_id` no se acepta desde el body.
 - Las areas del Replacement Ladder son seedables/editables, no enums hardcodeados.
 - Las columnas JSON se validan contra el schema canonico.
+- El SPEC se implementa como subsistema nuevo y ningun test debe asumir que ya existia `/api/planning`.
+- La clasificacion DRIP usa un servicio compartido consumible por MCP y endpoints futuros.
+- `current_owner` no se persiste como string; se usa `current_owner_user_id`.
+- `SupportNeed` no reutiliza ni modifica la tabla `roles` de RBAC.
+- El operador principal se resuelve por configuracion, no por nombre "Nicolas".
+- Las reglas de calendario quedan fuera de Fase 1 salvo que exista `protected_blocks` o integracion de calendario.
 
 ## Pruebas esperadas
 
@@ -891,3 +1068,8 @@ Estas filas pueden modificarse desde admin o seeders futuros sin cambiar codigo.
 - Tests de autorizacion y derivacion de `owner_user_id` desde el usuario autenticado.
 - Tests de limites/paginacion en endpoints y MCP tools.
 - Tests de validacion de schemas JSON.
+- Tests del mapping contra `tasks.value_generated`, `tasks.points`, `projects.weight`, `users.termination_date` y `users.status_id`.
+- Tests de exclusion de Laura sin hard-delete.
+- Tests de criticidad de Luisa con reglas falsables.
+- Tests de servicios compartidos para evitar divergencia MCP/API.
+- Tests de resolucion de `operator_user_id`.
