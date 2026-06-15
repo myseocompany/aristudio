@@ -14,9 +14,202 @@ El repo actual no tiene un modulo `planning`, rutas `/api/planning/*`, seeds con
 - Fase 1 no debe crear endpoints REST `/api/planning/*` ni MCP nuevo; debe concentrarse en datos, servicios, seeds y tests.
 - Si se agregan endpoints REST en una fase posterior, primero debe crearse y decidirse la capa API porque el repo no tiene `routes/api.php`.
 - Las reglas compartidas deben vivir en servicios de dominio reutilizables por MCP, controladores futuros y tests. Nombre sugerido: `App\Services\Planning\BuybackService`.
-- Las tools MCP deben seguir convenciones reales del repo: clases PascalCase en `App\Mcp\Tools`, annotations, `schema()`, `outputSchema()`, `handle()`, permisos por `hasModulePermission()`, y registro en `App\Mcp\Servers\AriStudioServer` salvo que se cree un server nuevo explicitamente.
+- Las tools MCP deben seguir convenciones reales del repo: clases PascalCase en `App\Mcp\Tools`, annotations, `schema()`, `outputSchema()`, `handle()`, permisos por `hasModulePermission()`, y registro en `App\Mcp\Servers\BuybackPlannerServer`.
 - El sistema debe reutilizar señales existentes de `tasks`, `users` y `projects` antes de crear campos duplicados.
 - El calendario/bloques protegidos no existe. Ninguna regla de "no desplazar bloques" es implementable hasta crear `protected_blocks` o integrar una fuente externa de calendario.
+
+## Decisiones v4 de implementabilidad
+
+- Este SPEC debe cumplir explicitamente las Laravel Boost Guidelines del repo.
+- Las tools Buyback deben vivir en un MCP server separado, salvo decision explicita contraria.
+- La Fase 1 no debe cambiar dependencias.
+- La Fase 1 no debe crear carpetas base nuevas fuera de convenciones Laravel existentes.
+- Las reglas de planning deben reusar `task_statuses`, `tasks.parent_id`, `users.termination_date`, `users.status_id`, `users.enterprise_id`, `project_users`, `tasks.points` y el flujo real de `TimerController`.
+- `BuybackAudit` debe separar quien audita de quien es auditado.
+- El ciclo Buyback debe incluir Review, no solo Audit/Transfer/Fill.
+- Las sugerencias automaticas deben tener canal visible; si no hay UI/notificaciones, deben quedar como registros consultables.
+- `MarkUserAsPlanningExit` es una operacion destructiva y no debe ejecutarse sin confirmacion explicita.
+
+## Cumplimiento Laravel Boost
+
+- No cambiar dependencias sin aprobacion. Fase 1 no requiere paquetes nuevos.
+- No crear nuevas carpetas base sin aprobacion. Usar `app/Models`, `app/Services/Planning`, `app/Mcp/Servers`, `app/Mcp/Tools`, `app/Http/Requests`, `app/Http/Resources` y `database/*`.
+- Crear modelos con `php artisan make:model` cuando pase a implementacion.
+- Cada modelo nuevo debe tener factory util y seeder cuando aplique.
+- Endpoints REST futuros deben usar Form Requests para validacion.
+- Endpoints REST futuros deben usar API Resources y versionado `/api/v1`.
+- Preferir `Model::query()` y relaciones Eloquent; no usar `DB::` para logica de dominio salvo queries administrativas puntuales.
+- Las pruebas deben ser PHPUnit Feature/Unit tests, no Pest.
+- Los tests MCP deben seguir el patron actual: montar schemas necesarios en `setUp()` cuando la suite lo requiera.
+- Cada cambio de implementacion debe incrementar `VERSION` y commitearlo.
+- Antes de finalizar implementacion PHP, correr `vendor/bin/pint --dirty` y tests minimos afectados.
+
+## MCP server
+
+Crear un server separado para Buyback:
+
+- Clase: `App\Mcp\Servers\BuybackPlannerServer`.
+- Registro local: `Mcp::local('buyback-planner', BuybackPlannerServer::class)`.
+- Registro web futuro: `Mcp::web('/mcp/buyback-planner', BuybackPlannerServer::class)->middleware('auth:api')`.
+- Instrucciones del server: usar filtros estrechos, limites pequenos y operar solo sobre clasificacion, delegacion, playbooks y recomendaciones Buyback.
+
+Motivo:
+
+- `AriStudioServer` actual esta orientado a leer/crear/actualizar tareas operativas.
+- Buyback es un framework de planeacion y delegacion; mezclarlo con tools operativas diluye las instrucciones del LLM.
+- Si una tool Buyback necesita crear/actualizar tareas, debe hacerlo mediante servicios compartidos y permisos explicitos, no por pertenecer al server operativo.
+
+## RBAC y modulos
+
+Agregar seeds/migraciones de modulos antes de exponer UI, API o MCP:
+
+- `/planning`: lectura y gestion general de Buyback.
+- `/planning/buyback-audits`: auditorias.
+- `/planning/delegation-candidates`: candidatos de delegacion.
+- `/planning/support-needs`: necesidades de apoyo.
+- `/planning/playbooks`: playbooks.
+- `/planning/settings`: operador principal y configuracion.
+
+Permisos minimos:
+
+- Admin/role_id 1: todos.
+- Operador principal configurado: `list`, `read`, `create`, `update`.
+- Otros usuarios: ninguno por defecto salvo asignacion explicita.
+
+Las MCP tools deben fallar con `No autorizado.` si el usuario no tiene permiso, siguiendo las tools actuales.
+
+## Estados, subtareas y dependencia
+
+### Estados planificables
+
+Una tarea es planificable si:
+
+- Tiene `status_id` asociado a `task_statuses.pending = true`, cuando esa columna exista.
+- O su `status.alias` esta en `pending`, `in_progress`, `todo`, `doing`.
+- O, en instalaciones sin esos metadatos, su `status_id` no corresponde al estado de completado usado por Timer (`6`) ni a estados cerrados configurados.
+
+Fase 1 debe definir un helper `PlanningContextService::isTaskPlannable(Task $task): bool`.
+
+### Subtareas
+
+`tasks.parent_id` ya existe. Regla:
+
+- Si una tarea tiene subtareas abiertas, clasificar cada subtarea cuando tenga responsable, puntos o vencimiento propio.
+- La tarea padre puede recibir una clasificacion agregada solo para reporte.
+- No duplicar auditorias para padre e hijos si el padre es solo contenedor.
+- `BuybackAudit` debe guardar `task_id` real auditado y opcionalmente `parent_task_id` derivado para reportes.
+
+### Dependencia de Luisa
+
+Una tarea/proyecto depende de Luisa si Luisa aparece en cualquiera:
+
+- `tasks.user_id`.
+- `tasks.creator_user_id`.
+- `tasks.updator_user_id`.
+- `project_users.user_id` para el proyecto de la tarea.
+- Futuras relaciones watcher/commenter si existen.
+
+La dependencia por `creator_user_id` o `updator_user_id` no implica asignacion actual, pero si debe elevar revision de continuidad cuando la tarea sea critica.
+
+## Timer y actual_minutes
+
+El repo tiene `TimerController` y tests de persistencia. El flujo actual guarda tiempo como `tasks.points = round(seconds / 3600, 2)` al hacer `timer.store`; no persiste `started_at`/`finished_at` desde el timer.
+
+Decision:
+
+- Fase 1: `BuybackAudit.actual_minutes` se calcula desde `tasks.points * 60` cuando `points` proviene del timer o no hay mejor fuente.
+- Si en el futuro se agregan columnas persistentes `started_at`/`finished_at`, el calculo puede preferir diferencia real de timestamps.
+- No crear un segundo sistema de tracking de tiempo.
+
+## Auditoria: sujeto vs auditor
+
+`BuybackAudit` debe distinguir:
+
+- `subject_user_id`: persona cuyo trabajo se audita, normalmente `operator_user_id`.
+- `auditor_user_id`: persona o usuario autenticado que registra la auditoria.
+- `owner_user_id`: mantener solo si se necesita compatibilidad con patron anterior; si existe, debe representar creador/dueno administrativo del registro, no sujeto.
+
+Regla:
+
+- Las recomendaciones sobre "Nicolas" usan `subject_user_id`.
+- Las autorizaciones usan `auditor_user_id` o usuario autenticado.
+- Los filtros multiempresa usan `enterprise_id`.
+
+## Review loop y outcomes
+
+El ciclo Buyback implementable es:
+
+1. Audit.
+2. Replace/Transfer.
+3. Refill.
+4. Review.
+
+Agregar seguimiento de outcomes:
+
+- `delegation_outcomes` o campos equivalentes en `delegation_candidates`.
+- Campos minimos: `delegation_candidate_id`, `reviewed_by_user_id`, `reviewed_at`, `outcome`: `working`, `failed`, `returned_to_operator`, `needs_playbook_update`, `paused`, `completed`, `notes`.
+- `playbooks.last_reviewed_at` nullable.
+- `support_needs.last_reviewed_at` nullable.
+
+Cadencia:
+
+- Revisar candidatos delegados cada 14 dias.
+- Revisar playbooks `ready` cada 60 dias.
+- Revisar support needs activos cada 30 dias.
+
+## Taxonomia unica
+
+Usar `support_areas` como tabla maestra para:
+
+- Replacement Ladder.
+- `Playbook.process_area`.
+- `SupportNeed.role_type`/area funcional.
+- Delegation candidates.
+
+Cambios:
+
+- `playbooks.process_area` debe ser `support_area_id` nullable y un `process_area_label` opcional solo para migracion/importacion.
+- `support_needs.role_type` no debe ser enum rigido; debe derivarse de `support_area_id` o de un catalogo editable relacionado.
+- `problem_solved` puede mantenerse como texto, pero para queries debe existir `problem_category` o `support_area_id`.
+
+## Seguridad MCP destructiva
+
+`MarkUserAsPlanningExit`:
+
+- Debe llevar `#[IsDestructive(true)]`.
+- Debe ser `#[IsIdempotent(true)]` si repetir la misma marca no genera efectos adicionales.
+- Requiere permiso `/users`, `update` y `/planning/settings`, `update`.
+- Requiere parametros de confirmacion:
+  - `user_id`
+  - `confirm_user_id_match` igual a `user_id`
+  - `confirm_user_name` igual al nombre actual del usuario
+  - `exit_status`
+- Debe soportar `dry_run` default true.
+- Con `dry_run=true`, solo devuelve tareas/proyectos afectados.
+- Con `dry_run=false`, actualiza estado y crea registros de continuidad.
+- No debe propagar cambios masivos invisibles; debe devolver `affected_tasks_count`, `affected_projects_count` y muestras limitadas.
+
+## Canal de sugerencias
+
+Si una regla "sugiere" crear playbook/candidato/support need, la sugerencia debe persistir.
+
+Entidad recomendada: `planning_suggestions`.
+
+Campos:
+
+- `id`
+- `enterprise_id` nullable
+- `subject_user_id`
+- `source_type`: `repeated_task`, `replacement_task`, `luisa_continuity`, `cootilca_dependency`, `review_due`
+- `source_id` nullable
+- `title`
+- `description`
+- `recommended_action`: `create_playbook`, `create_delegation_candidate`, `create_support_need`, `review_delegation`, `update_playbook`
+- `status`: `open`, `accepted`, `dismissed`, `done`
+- `created_at`
+- `updated_at`
+
+Sin esta tabla o UI equivalente, las sugerencias quedan invisibles y no deben contarse como implementadas.
 
 ## Mapping repo actual vs SPEC
 
@@ -28,7 +221,7 @@ El repo actual no tiene un modulo `planning`, rutas `/api/planning/*`, seeds con
 | Salida probable de Luisa | `users.termination_date`, `users.status_id` | Extender. Usar `termination_date` y `status_id` como senales existentes; agregar solo campos operativos faltantes: `planning_exit_status`, `is_assignable_for_planning`, `continuity_risk`, `needs_transition`. |
 | Roles de apoyo | Tabla `roles` existe para RBAC y `role_modules` | No reutilizar `roles`. Para evitar colision semantica, renombrar entidad `SupportRole` a `SupportNeed` en implementacion o documentar que no es RBAC. Nombre recomendado: `support_needs`. |
 | Tipo de rol de apoyo | No existe catalogo funcional | Crear `support_areas` seedable/editable. Evitar enum rigido. |
-| Tiempo real dedicado | `tasks.started_at` y `tasks.finished_at` existen en casts pero no en `$fillable`; timer usa session y `TimerController` | Extender con cautela. `actual_minutes` en audit debe calcularse desde `started_at/finished_at` solo si existen columnas reales en BD; si no, queda nullable. No crear time tracking paralelo en Fase 1. |
+| Tiempo real dedicado | Timer usa session y al guardar convierte segundos a `tasks.points`; `started_at` y `finished_at` aparecen en casts pero no son fuente persistida del timer actual | Extender con cautela. Fase 1 calcula `actual_minutes` desde `tasks.points * 60` cuando aplique. No crear time tracking paralelo. |
 | Tenant / empresa | `users.enterprise_id`; proyectos se asignan por `project_users` | Extender. Las tablas de planning deben tener `enterprise_id` nullable ademas de `owner_user_id` cuando el dato sea organizacional. `owner_user_id` representa operador/creador, no tenant. |
 | Operador principal "Nicolas" | No existe `is_principal`, `operator_user_id` ni setting | Crear configuracion minima por empresa: `planning_operator_user_id` en una tabla de settings o config seedable. No hardcodear por nombre. |
 | Calendario / bloques protegidos | No hay modelo de eventos; solo `due_date` y `delivery_date` en tasks | Crear `protected_blocks` en Fase 4 o integrar Google Calendar como fuente externa. Fases previas no deben prometer proteccion de calendario real. |
@@ -61,7 +254,7 @@ El repo no tiene `routes/api.php`. Por eso:
 
 ### MCP
 
-Las tools se implementan en `app/Mcp/Tools` y se registran en `App\Mcp\Servers\AriStudioServer` en Fase 2.
+Las tools se implementan en `app/Mcp/Tools` y se registran en `App\Mcp\Servers\BuybackPlannerServer` en Fase 2.
 
 Naming de clases:
 
@@ -74,7 +267,7 @@ Naming de clases:
 | create_playbook_from_task | `CreatePlaybookFromTask` | `#[IsDestructive(false)]`, `#[IsIdempotent(false)]` | `/planning`, `create` |
 | list_support_roles | `ListSupportNeeds` | `#[IsReadOnly]` | `/planning`, `read` |
 | recommend_first_support_role | `RecommendFirstSupportNeed` | `#[IsReadOnly]` | `/planning`, `read` |
-| mark_team_member_as_exiting | `MarkUserAsPlanningExit` | `#[IsDestructive(false)]`, `#[IsIdempotent(true)]` | `/users`, `update` |
+| mark_team_member_as_exiting | `MarkUserAsPlanningExit` | `#[IsDestructive(true)]`, `#[IsIdempotent(true)]` | `/users`, `update` + `/planning/settings`, `update` |
 | get_cootilca_operating_profile | `GetCootilcaOperatingProfile` | `#[IsReadOnly]` | `/projects`, `read` |
 
 Los nombres snake_case pueden usarse solo como identificadores conceptuales en prompts; las clases deben ser PascalCase.
@@ -137,7 +330,7 @@ Luisa:
 - MCP classes: PascalCase; nombres conceptuales en documentacion pueden estar en snake_case.
 - Estados persistidos: snake_case en ingles.
 - Texto visible al usuario: espanol sin depender de nombres de clases.
-- `recommended_first_hire` y `recommend_first_support_role` se unifican como concepto `recommended_first_support_need`.
+- `recommended_first_hire` queda como nombre descartado; `recommend_first_support_role` queda como alias conceptual; el concepto canonico es `recommended_first_support_need`.
 
 ## Decisiones v2
 
@@ -381,9 +574,13 @@ Tabla: `buyback_audits`
 Campos:
 
 - `id`
+- `enterprise_id` nullable
 - `owner_user_id`
+- `subject_user_id`
+- `auditor_user_id`
 - `audit_date`
 - `task_id` nullable
+- `parent_task_id` nullable
 - `project_id` nullable
 - `title`
 - `description`
@@ -433,6 +630,7 @@ Campos:
 - `risk_if_not_delegated`
 - `documentation_status`: `none`, `partial`, `ready`
 - `status`: `candidate`, `approved`, `sourcing`, `delegated`, `automated`, `eliminated`
+- `last_reviewed_at` nullable
 - `created_at`
 - `updated_at`
 
@@ -456,6 +654,7 @@ Campos:
 - `support_area_id` nullable
 - `role_type`: texto validado contra catalogo seedable, no enum rigido de codigo
 - `problem_solved`
+- `problem_category` nullable
 - `responsibilities_json`
 - `not_responsible_for_json`
 - `required_skills_json`
@@ -463,6 +662,7 @@ Campos:
 - `budget_range`
 - `priority`
 - `status`: `needed`, `sourcing`, `testing`, `active`, `paused`, `rejected`
+- `last_reviewed_at` nullable
 - `created_at`
 - `updated_at`
 
@@ -476,15 +676,15 @@ Campos:
 - `owner_user_id`
 - `title`
 - `process_area`
+- `support_area_id` nullable
 - `related_task_id` nullable
 - `related_project_id` nullable
 - `description`
 - `checklist_json`
-- `loom_url` nullable
-- `video_url` nullable
-- `template_url` nullable
+- `assets_json` nullable
 - `sop_body`
-- `status`: `draft`, `usable`, `tested`, `deprecated`
+- `status`: `draft`, `ready`, `tested`, `deprecated`
+- `last_reviewed_at` nullable
 - `created_at`
 - `updated_at`
 
@@ -618,6 +818,26 @@ Reglas:
 - `area`: string requerido.
 - `boundary`: string requerido.
 
+### assets_json
+
+```json
+[
+  {
+    "type": "loom",
+    "url": "https://www.loom.com/share/example",
+    "title": "Ejecucion grabada",
+    "notes": "Primera version del proceso"
+  }
+]
+```
+
+Reglas:
+
+- `type`: `loom`, `video`, `template`, `doc`, `sheet`, `other`.
+- `url`: string URL requerido.
+- `title`: string nullable.
+- `notes`: string nullable.
+
 ## Migraciones esperadas
 
 Nombres sugeridos:
@@ -627,6 +847,8 @@ Nombres sugeridos:
 - `create_support_needs_table`
 - `create_delegation_candidates_table`
 - `create_playbooks_table`
+- `create_planning_suggestions_table`
+- `create_delegation_outcomes_table`
 - `add_planning_status_fields_to_users_table`
 - `create_planning_settings_table`
 - Fase 4: `create_protected_blocks_table`
@@ -634,12 +856,18 @@ Nombres sugeridos:
 
 Convenciones:
 
-- Usar FKs para `owner_user_id`, `operator_user_id`, `enterprise_id` cuando aplique, `task_id`, `project_id`, `support_area_id` y `support_need_id`.
+- Usar FKs para `owner_user_id`, `subject_user_id`, `auditor_user_id`, `operator_user_id`, `enterprise_id` cuando aplique, `task_id`, `parent_task_id`, `project_id`, `support_area_id` y `support_need_id`.
 - `owner_user_id` debe apuntar a `users.id`.
 - `current_owner_user_id` debe apuntar a `users.id` y reemplaza cualquier `current_owner` string persistido.
 - `task_id` y `project_id` deben ser nullable con `nullOnDelete()`.
 - No usar enum de base de datos para areas editables.
 - Para estados cerrados y pequenos, se permiten strings validados por Form Request y constantes de modelo.
+
+Factories y seeders requeridos:
+
+- Factory para `BuybackAudit`, `DelegationCandidate`, `SupportNeed`, `Playbook`, `PlanningSuggestion`, `DelegationOutcome`.
+- Seeder para `support_areas`, modulos RBAC de planning, COOTILCA, planning settings y contexto Luisa/Laura cuando aplique.
+- Los seeders no deben crear Laura.
 
 ## Reglas de planificacion
 
@@ -679,9 +907,11 @@ Acciones de salida validas para Replacement:
 - Para leer planeacion: permiso futuro `/planning` con `read` o rol admin.
 - Para crear auditorias, candidatos, roles y playbooks: permiso futuro `/planning` con `create` o rol admin.
 
-## Recomendacion de primer apoyo
+## Recomendacion de primera necesidad de apoyo
 
-El sistema debe recomendar el primer apoyo a buscar desde datos, no desde intuicion.
+El sistema debe recomendar la primera necesidad de apoyo a resolver desde datos, no desde intuicion.
+
+No usar "hire" como concepto canonico porque la accion puede ser contratar, delegar, automatizar o eliminar.
 
 Factores de decision:
 
@@ -695,7 +925,7 @@ Factores de decision:
 
 La recomendacion debe devolver:
 
-- Rol recomendado.
+- Support need recomendado.
 - Area del Replacement Ladder.
 - Problema principal que resuelve.
 - Evidencia usada.
@@ -890,7 +1120,7 @@ Output schema:
 - `score` integer.
 - `factor_scores` object.
 - `evidence_tasks` array limitado.
-- `risk_if_not_hired` string.
+- `risk_if_not_resolved` string.
 - `first_experiment` string.
 
 Implementacion recomendada:
@@ -905,18 +1135,27 @@ Marca a una persona como salida probable y activa riesgo de continuidad.
 Input schema:
 
 - `user_id` integer required.
+- `confirm_user_id_match` integer required; debe ser igual a `user_id`.
+- `confirm_user_name` string required; debe coincidir con el nombre actual del usuario.
 - `exit_status` string required: `probable_exit` o `exited`.
 - `transition_notes` string nullable.
+- `dry_run` boolean default true.
 
 Output schema:
 
 - `message` string.
 - `user` object con `id`, `name`, `exit_status`, `is_assignable`, `continuity_risk`, `needs_transition`.
+- `dry_run` boolean.
+- `affected_tasks_count` integer.
+- `affected_projects_count` integer.
+- `affected_tasks` array limitado.
 
 Regla:
 
 - Opera sobre `users`; no requiere entidad `TeamMember`.
 - Si el usuario tiene tareas abiertas, marca esas tareas para revision de continuidad segun el mecanismo existente o una tabla de metadata de planeacion.
+- No debe modificar datos cuando `dry_run=true`.
+- Debe rechazar la ejecucion si `confirm_user_id_match` o `confirm_user_name` no coinciden.
 
 ### get_cootilca_operating_profile
 
@@ -994,20 +1233,25 @@ Estas filas pueden modificarse desde admin o seeders futuros sin cambiar codigo.
 - Mapping contra `users`, `tasks` y `projects`.
 - Correcciones de contexto verificables: Laura, teatro musical, Luisa.
 - COOTILCA en seeds.
+- Modulos RBAC de planning.
 - `support_areas`.
 - `buyback_audits`.
 - `delegation_candidates`.
 - `support_needs`.
 - `playbooks`.
+- `planning_suggestions`.
+- `delegation_outcomes`.
 - `planning_settings` para resolver `operator_user_id`.
 - Servicios compartidos de clasificacion y auditoria.
 - DRIP manual con tests.
 - Sin endpoints REST.
 - Sin calendario real.
+- Sin MCP nuevo salvo que Fase 1 se amplie explicitamente.
 
 ### Fase 2
 
-- MCP tools principales registradas en `AriStudioServer`.
+- `BuybackPlannerServer` separado.
+- MCP tools principales registradas en `BuybackPlannerServer`.
 - Listados con limites y filtros.
 - `RunBuybackAudit`, `ClassifyTaskBuyback`, `ListDelegationCandidates`, `CreateDelegationCandidate`, `CreatePlaybookFromTask`, `ListSupportNeeds`, `RecommendFirstSupportNeed`, `MarkUserAsPlanningExit`, `GetCootilcaOperatingProfile`.
 - Metricas basicas desde servicios compartidos.
@@ -1035,13 +1279,13 @@ Estas filas pueden modificarse desde admin o seeders futuros sin cambiar codigo.
 - Luisa puede existir solo como recurso transitorio y salida probable.
 - Las tareas dependientes de Luisa quedan marcadas con riesgo de continuidad y necesidad de transicion.
 - COOTILCA existe como proyecto estrategico de alta importancia.
-- COOTILCA no puede desplazar completamente AriCRM / Reto21Vendo+ ni bloques protegidos.
+- Fase 1 solo registra que COOTILCA no debe desplazar AriCRM / Reto21Vendo+ ni bloques protegidos; la proteccion real de calendario queda para Fase 4.
 - Cada tarea planificable puede evaluarse con DRIP Matrix.
-- Las tareas Delegation no entran al dia de Nicolas salvo emergencia.
-- Las tareas Replacement generan una accion de salida.
-- Las tareas repetidas 3 veces o mas disparan sugerencias de playbook, candidato de delegacion y rol de soporte.
-- El endpoint de primer apoyo entrega una recomendacion basada en evidencia de tareas, energia, valor, urgencia y bloqueos.
-- Las herramientas MCP nuevas reflejan las mismas reglas que los endpoints.
+- Las tareas Delegation quedan marcadas como no recomendadas para el operador principal salvo emergencia.
+- Las tareas Replacement generan una sugerencia persistida de salida.
+- Las tareas repetidas 3 veces o mas crean o sugieren persistentemente playbook, candidato de delegacion y support need.
+- Fase 2: las herramientas MCP usan los mismos servicios compartidos que usaran los endpoints futuros.
+- Fase 3: el endpoint de primera necesidad de apoyo entrega una recomendacion basada en evidencia de tareas, energia, valor, urgencia y bloqueos.
 - Los listados y tools MCP respetan `limit` default 30 y maximo 100.
 - `run_buyback_audit` es idempotente para mismos inputs y mismo dia operativo.
 - `owner_user_id` no se acepta desde el body.
@@ -1053,10 +1297,15 @@ Estas filas pueden modificarse desde admin o seeders futuros sin cambiar codigo.
 - `SupportNeed` no reutiliza ni modifica la tabla `roles` de RBAC.
 - El operador principal se resuelve por configuracion, no por nombre "Nicolas".
 - Las reglas de calendario quedan fuera de Fase 1 salvo que exista `protected_blocks` o integracion de calendario.
+- `MarkUserAsPlanningExit` es destructiva, requiere confirmacion y corre en `dry_run` por defecto.
+- `BuybackAudit` distingue `subject_user_id` y `auditor_user_id`.
+- Las sugerencias automaticas quedan en `planning_suggestions` o canal equivalente verificable.
 
 ## Pruebas esperadas
 
-- Feature tests para los endpoints nuevos.
+- Unit tests para servicios de dominio: classifier, audit idempotente, recomendador, contexto planning.
+- Feature tests MCP en Fase 2 siguiendo el patron de `tests/Feature/Mcp/*`.
+- Feature tests API solo en Fase 3, cuando exista `routes/api.php`.
 - Tests de clasificacion DRIP para los cuatro cuadrantes.
 - Tests de reglas de planificacion diaria para Production, Investment, Replacement y Delegation.
 - Tests de exclusion total de Laura.
@@ -1073,3 +1322,10 @@ Estas filas pueden modificarse desde admin o seeders futuros sin cambiar codigo.
 - Tests de criticidad de Luisa con reglas falsables.
 - Tests de servicios compartidos para evitar divergencia MCP/API.
 - Tests de resolucion de `operator_user_id`.
+- Tests de modulos RBAC `/planning/*` y permisos `hasModulePermission()`.
+- Tests de estados planificables usando `task_statuses`.
+- Tests de subtareas con `tasks.parent_id`.
+- Tests de dependencia de Luisa por assignee, creator, updator y `project_users`.
+- Tests de `actual_minutes` derivado del flujo real del timer/puntos.
+- Tests de `MarkUserAsPlanningExit` con `dry_run`, confirmacion fallida y confirmacion exitosa.
+- Tests de review/outcomes y sugerencias persistidas.
