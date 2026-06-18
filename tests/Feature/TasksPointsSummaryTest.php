@@ -621,6 +621,8 @@ class TasksPointsSummaryTest extends TestCase
             'type="search"',
             'name="q"',
             'placeholder="Nombre, descripción o copia"',
+            'type="submit"',
+            'Buscar',
             'id="tasksRangePicker"',
         ], false);
         $response->assertSee('id="tasksFiltersForm"', false);

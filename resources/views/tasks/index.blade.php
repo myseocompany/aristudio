@@ -347,6 +347,9 @@
                         <span class="inline-flex items-center px-2 py-1 rounded-full bg-emerald-50 text-emerald-700 font-semibold">{{ $tasks->where('status.pending', 1)->count() }} pendientes</span>
                         <form method="GET" id="tasksRangeForm" class="flex flex-wrap items-center gap-2">
                             <input type="search" name="q" value="{{ $filters['q'] }}" placeholder="Nombre, descripción o copia" class="w-64 max-w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                            <button type="submit" class="px-3 py-2 text-sm bg-indigo-600 hover:bg-indigo-500 rounded border border-indigo-600 text-white">
+                                Buscar
+                            </button>
                             <input type="text" id="tasksRangePicker" class="w-56 px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white shadow-sm cursor-pointer" readonly>
                             <input type="hidden" name="range" id="tasksRangeValue" value="{{ $currentRangeValue }}">
                             <input type="hidden" name="from_date" id="tasksFromDate" value="{{ $filters['from_date'] }}">
