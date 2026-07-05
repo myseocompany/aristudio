@@ -8,6 +8,7 @@ use App\Mcp\Tools\ListTasks;
 use App\Mcp\Tools\UpdateProject;
 use App\Mcp\Tools\UpdateTask;
 use Laravel\Mcp\Server;
+use Laravel\Mcp\Server\Contracts\Transport;
 
 class AriStudioServer extends Server
 {
@@ -19,7 +20,7 @@ class AriStudioServer extends Server
     /**
      * The MCP server's version.
      */
-    protected string $version = '1.0.0';
+    protected string $version = '0.0.1';
 
     /**
      * The MCP server's instructions for the LLM.
@@ -58,4 +59,15 @@ class AriStudioServer extends Server
     protected array $prompts = [
         //
     ];
+
+    public function __construct(Transport $transport)
+    {
+        parent::__construct($transport);
+
+        $version = trim((string) file_get_contents(base_path('VERSION')));
+
+        if ($version !== '') {
+            $this->version = $version;
+        }
+    }
 }

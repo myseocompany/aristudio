@@ -408,6 +408,7 @@ class ListTasksTest extends TestCase
 
         $response->assertOk();
         $response->assertJsonPath('result.serverInfo.name', 'Ari Studio Server');
+        $response->assertJsonPath('result.serverInfo.version', trim((string) file_get_contents(base_path('VERSION'))));
     }
 
     public function test_oauth_discovery_routes_are_available(): void

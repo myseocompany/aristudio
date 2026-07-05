@@ -210,6 +210,18 @@ class ListProjectsTest extends TestCase
             ]);
     }
 
+    public function test_output_schema_marks_numeric_project_fields_as_numbers(): void
+    {
+        $tool = app(ListProjects::class)->toArray();
+
+        $projectProperties = $tool['outputSchema']['properties']['projects']['items']['properties'];
+
+        $this->assertSame(['number', 'null'], $projectProperties['weight']['type']);
+        $this->assertSame(['number', 'null'], $projectProperties['budget']['type']);
+        $this->assertSame(['number', 'null'], $projectProperties['ads_budget']['type']);
+        $this->assertSame(['number', 'null'], $projectProperties['sales']['type']);
+    }
+
     public function test_remote_server_requires_oauth_access_token(): void
     {
         $this->postJson('/mcp/aristudio', $this->initializePayload())
