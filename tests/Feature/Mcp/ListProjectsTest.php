@@ -173,6 +173,43 @@ class ListProjectsTest extends TestCase
         ]);
     }
 
+    public function test_it_returns_numeric_project_fields_without_stringifying_them(): void
+    {
+        DB::table('project_statuses')->insert([
+            'id' => 3,
+            'name' => 'Running',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        Project::query()->create([
+            'name' => 'MS Cash - Admin',
+            'status_id' => 3,
+            'weight' => -2040,
+            'budget' => 4000000,
+            'ads_budget' => 2000000,
+            'sales' => 1500000,
+        ]);
+
+        AriStudioServer::tool(ListProjects::class, [
+            'limit' => 10,
+        ])
+            ->assertOk()
+            ->assertSee([
+                '"name": "MS Cash - Admin"',
+                '"weight": -2040',
+                '"budget": 4000000',
+                '"ads_budget": 2000000',
+                '"sales": 1500000',
+            ])
+            ->assertDontSee([
+                '"weight": "-2040"',
+                '"budget": "4000000"',
+                '"ads_budget": "2000000"',
+                '"sales": "1500000"',
+            ]);
+    }
+
     public function test_remote_server_requires_oauth_access_token(): void
     {
         $this->postJson('/mcp/aristudio', $this->initializePayload())
