@@ -634,6 +634,8 @@ class TasksPointsSummaryTest extends TestCase
         $response->assertSee("rangeForm.addEventListener('submit', syncRangeFormFilters);", false);
         $response->assertSee("filtersForm.addEventListener('submit', syncFiltersFormSearch);", false);
         $response->assertSee('filtersForm.querySelector(\'input[type="checkbox"][name="value_generated"]\')', false);
+        $response->assertDontSee("['q', 'status_id', 'project_id', 'user_id']", false);
+        $response->assertSee("['status_id', 'project_id', 'user_id']", false);
         $response->assertSee('@submit.prevent="submitQuickTask"', false);
         $response->assertSee('@task-created="handleTaskCreated($event.detail.task)"', false);
         $response->assertSee('x-for="recentTask in recentTasks"', false);

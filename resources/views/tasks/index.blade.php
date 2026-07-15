@@ -1825,7 +1825,7 @@
                 return;
             }
 
-            ['q', 'status_id', 'project_id', 'user_id'].forEach((fieldName) => {
+            ['status_id', 'project_id', 'user_id'].forEach((fieldName) => {
                 const filterField = filtersForm.elements[fieldName];
                 const rangeField = rangeForm.elements[fieldName];
 
