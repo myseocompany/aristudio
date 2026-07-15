@@ -433,6 +433,7 @@
                         </div>
                         <div class="flex items-end">
                             <label class="inline-flex items-center gap-2 text-sm text-gray-600">
+                                <input type="hidden" name="value_generated" value="0">
                                 <input type="checkbox" name="value_generated" value="1" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" @checked($filters['value_generated'])>
                                 Solo generan valor
                             </label>
@@ -1830,10 +1831,29 @@
                 }
             });
 
-            const valueGeneratedField = filtersForm.elements.value_generated;
+            const valueGeneratedField = filtersForm.querySelector('input[type="checkbox"][name="value_generated"]');
             if (rangeForm.elements.value_generated) {
                 rangeForm.elements.value_generated.value = valueGeneratedField?.checked ? '1' : '0';
             }
+        }
+
+        function syncFiltersFormSearch() {
+            if (!filtersForm) {
+                return;
+            }
+
+            const rangeSearchField = rangeForm.elements.q;
+            const filtersSearchField = filtersForm.elements.q;
+
+            if (rangeSearchField && filtersSearchField) {
+                filtersSearchField.value = rangeSearchField.value;
+            }
+        }
+
+        rangeForm.addEventListener('submit', syncRangeFormFilters);
+
+        if (filtersForm) {
+            filtersForm.addEventListener('submit', syncFiltersFormSearch);
         }
 
         rangeInput.daterangepicker({
@@ -1865,5 +1885,7 @@
         });
 
         updateDisplay(startDate, endDate);
+        syncRangeFormFilters();
+        syncFiltersFormSearch();
     });
 </script>

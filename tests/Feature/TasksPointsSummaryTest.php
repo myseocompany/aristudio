@@ -627,7 +627,12 @@ class TasksPointsSummaryTest extends TestCase
         ], false);
         $response->assertSee('id="tasksFiltersForm"', false);
         $response->assertDontSee('<label class="text-sm text-gray-600">Buscar</label>', false);
+        $response->assertSee('name="value_generated" value="0"', false);
         $response->assertSee('syncRangeFormFilters();', false);
+        $response->assertSee('syncFiltersFormSearch();', false);
+        $response->assertSee("rangeForm.addEventListener('submit', syncRangeFormFilters);", false);
+        $response->assertSee("filtersForm.addEventListener('submit', syncFiltersFormSearch);", false);
+        $response->assertSee('filtersForm.querySelector(\'input[type="checkbox"][name="value_generated"]\')', false);
         $response->assertSee('@submit.prevent="submitQuickTask"', false);
         $response->assertSee('@task-created="handleTaskCreated($event.detail.task)"', false);
         $response->assertSee('x-for="recentTask in recentTasks"', false);
