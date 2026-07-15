@@ -281,8 +281,11 @@
             );
             $taskPanelQueryString = http_build_query($taskPanelQuery);
             $taskShowPanelUrl = fn ($task) => route('tasks.show', $task).($taskPanelQueryString ? '?'.$taskPanelQueryString : '');
-            $removeFilterUrl = function (array $keys) use ($activeFilterQuery) {
-                return route('tasks.index', collect($activeFilterQuery)->except($keys)->all());
+            $removeFilterUrl = function (array $keys, array $overrides = []) use ($activeFilterQuery) {
+                return route('tasks.index', array_merge(
+                    collect($activeFilterQuery)->except($keys)->all(),
+                    $overrides,
+                ));
             };
             $activeFilterChips = [];
 
@@ -322,7 +325,7 @@
                 $activeFilterChips[] = [
                     'label' => 'Responsable',
                     'value' => $users->firstWhere('id', (int) $filters['user_id'])?->name ?? $filters['user_id'],
-                    'url' => $removeFilterUrl(['user_id']),
+                    'url' => $removeFilterUrl(['user_id'], ['user_id' => '']),
                 ];
             }
 

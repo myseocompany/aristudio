@@ -481,6 +481,7 @@ class TasksPointsSummaryTest extends TestCase
         $response->assertSee('Responsable: Responsable Demo');
         $response->assertSee('Valor: Genera valor');
         $response->assertSee('Quitar filtro Proyecto');
+        $response->assertSee('from_date=2026-01-01&amp;to_date=2026-12-31&amp;q=Alpha&amp;status_id=1&amp;project_id=278&amp;value_generated=1&amp;user_id=', false);
         $response->assertSee('Limpiar todos');
     }
 
