@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AriStudio Planning + BuybackSystem</title>
+    <style>
+        :root {
+            color-scheme: light;
+            --bg: #f5efe4;
+            --panel: rgba(255, 252, 245, 0.9);
+            --panel-strong: #fffaf0;
+            --ink: #1f2937;
+            --muted: #5b6473;
+            --line: rgba(61, 73, 97, 0.16);
+            --accent: #0f766e;
+            --accent-2: #c2410c;
+            --accent-3: #1d4ed8;
+            --shadow: 0 20px 45px rgba(31, 41, 55, 0.12);
+            --radius: 24px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+            color: var(--ink);
+            background:
+                radial-gradient(circle at top left, rgba(15, 118, 110, 0.18), transparent 32%),
+                radial-gradient(circle at top right, rgba(194, 65, 12, 0.18), transparent 26%),
+                linear-gradient(180deg, #fbf7ef 0%, var(--bg) 100%);
+        }
+
+        .page {
+            width: min(1180px, calc(100% - 32px));
+            margin: 0 auto;
+            padding: 32px 0 64px;
+        }
+
+        .hero,
+        .panel {
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(12px);
+        }
+
+        .hero {
+            position: relative;
+            overflow: hidden;
+            padding: 36px;
+        }
+
+        .hero::after {
+            content: "";
+            position: absolute;
+            inset: auto -60px -60px auto;
+            width: 220px;
+            height: 220px;
+            border-radius: 999px;
+            background: radial-gradient(circle, rgba(29, 78, 216, 0.18), transparent 68%);
+        }
+
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            border-radius: 999px;
+            background: rgba(15, 118, 110, 0.1);
+            color: var(--accent);
+            font-size: 13px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        h1,
+        h2,
+        h3 {
+            margin: 0;
+            font-weight: 700;
+            line-height: 1.05;
+        }
+
+        h1 {
+            margin-top: 18px;
+            font-size: clamp(2.5rem, 6vw, 4.8rem);
+            max-width: 10ch;
+        }
+
+        h2 {
+            font-size: clamp(1.6rem, 3vw, 2.2rem);
+            margin-bottom: 18px;
+        }
+
+        h3 {
+            font-size: 1.2rem;
+            margin-bottom: 12px;
+        }
+
+        p {
+            margin: 0;
+            line-height: 1.65;
+            color: var(--muted);
+        }
+
+        .hero-grid,
+        .grid-2,
+        .grid-3,
+        .cards {
+            display: grid;
+            gap: 18px;
+        }
+
+        .hero-grid {
+            grid-template-columns: 1.6fr 1fr;
+            align-items: end;
+            margin-top: 28px;
+        }
+
+        .metric,
+        .card,
+        .flow-step,
+        .matrix-cell,
+        .phase,
+        .entity {
+            background: var(--panel-strong);
+            border: 1px solid var(--line);
+            border-radius: 20px;
+        }
+
+        .metric {
+            padding: 18px;
+        }
+
+        .metric strong {
+            display: block;
+            font-size: 2rem;
+            color: var(--ink);
+        }
+
+        .section {
+            margin-top: 22px;
+            padding: 28px;
+        }
+
+        .grid-2 {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .grid-3,
+        .cards {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+        .card,
+        .flow-step,
+        .phase,
+        .entity {
+            padding: 20px;
+        }
+
+        .card ul,
+        .phase ul,
+        .entity ul {
+            margin: 14px 0 0;
+            padding-left: 18px;
+            color: var(--muted);
+            line-height: 1.7;
+        }
+
+        .flow {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 14px;
+            margin-top: 18px;
+        }
+
+        .flow-step span,
+        .phase span,
+        .entity span,
+        .matrix-cell span {
+            display: inline-block;
+            margin-bottom: 10px;
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+
+        .accent-a {
+            background: rgba(15, 118, 110, 0.12);
+            color: var(--accent);
+        }
+
+        .accent-b {
+            background: rgba(194, 65, 12, 0.12);
+            color: var(--accent-2);
+        }
+
+        .accent-c {
+            background: rgba(29, 78, 216, 0.12);
+            color: var(--accent-3);
+        }
+
+        .matrix {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
+            margin-top: 18px;
+        }
+
+        .matrix-cell {
+            padding: 18px;
+        }
+
+        .matrix-cell strong {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+        }
+
+        .timeline {
+            display: grid;
+            gap: 14px;
+            margin-top: 18px;
+        }
+
+        .phase {
+            display: grid;
+            grid-template-columns: 120px 1fr;
+            gap: 18px;
+            align-items: start;
+        }
+
+        .phase-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--ink);
+        }
+
+        .entity-list {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
+            margin-top: 18px;
+        }
+
+        .highlight {
+            margin-top: 18px;
+            padding: 18px;
+            border-radius: 20px;
+            background: linear-gradient(135deg, rgba(15, 118, 110, 0.12), rgba(29, 78, 216, 0.1));
+            border: 1px solid var(--line);
+        }
+
+        .footer-note {
+            margin-top: 22px;
+            text-align: center;
+            font-size: 0.95rem;
+        }
+
+        @media (max-width: 960px) {
+            .hero-grid,
+            .grid-2,
+            .grid-3,
+            .cards,
+            .flow,
+            .entity-list,
+            .matrix {
+                grid-template-columns: 1fr;
+            }
+
+            .phase {
+                grid-template-columns: 1fr;
+            }
+
+            .hero {
+                padding: 28px;
+            }
+
+            .section {
+                padding: 22px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main class="page">
+        <section class="hero">
+            <div class="eyebrow">AriStudio • Planning • BuybackSystem</div>
+            <h1>Así va a funcionar el nuevo subsistema de planeación.</h1>
+            <p>
+                El sistema no nace como agenda automática. Primero ordena datos, clasifica trabajo y deja evidencia clara
+                sobre qué debe seguir haciendo Nicolas, qué debe documentarse, qué debe delegarse y qué soporte externo
+                conviene resolver primero.
+            </p>
+
+            <div class="hero-grid">
+                <div class="metric">
+                    <strong>Fase 1</strong>
+                    <p>Datos, servicios, seeds y reglas DRIP. Sin API pública, sin MCP nuevo y sin protección real de calendario.</p>
+                </div>
+                <div class="metric">
+                    <strong>4 loops</strong>
+                    <p>Audit, Transfer, Fill y Review. El sistema no termina al clasificar: obliga a revisar outcomes.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="panel section">
+            <h2>Idea central</h2>
+            <div class="grid-3">
+                <article class="card">
+                    <h3>1. Decide con datos</h3>
+                    <p>Reutiliza tareas, usuarios, proyectos, estados, puntos del timer y relaciones reales del repo antes de inventar campos duplicados.</p>
+                </article>
+                <article class="card">
+                    <h3>2. Separa intención y ejecución</h3>
+                    <p>En Fase 1 puede haber preferencias y sugerencias. La protección efectiva del calendario llega después, cuando exista modelo verificable.</p>
+                </article>
+                <article class="card">
+                    <h3>3. Fuerza salida operativa</h3>
+                    <p>Si algo drena o depende demasiado de Nicolas o de Luisa, el sistema debe dejar una acción visible de salida, no solo una etiqueta.</p>
+                </article>
+            </div>
+        </section>
+
+        <section class="panel section">
+            <h2>Cómo fluye una tarea</h2>
+            <div class="flow">
+                <article class="flow-step">
+                    <span class="accent-a">Paso 1</span>
+                    <h3>Se detecta</h3>
+                    <p>La tarea entra si es planificable según su estado real, responsable, puntos, proyecto y contexto operativo.</p>
+                </article>
+                <article class="flow-step">
+                    <span class="accent-b">Paso 2</span>
+                    <h3>Se clasifica</h3>
+                    <p>El servicio Buyback calcula DRIP, acción recomendada, riesgo de continuidad y prioridad contextual.</p>
+                </article>
+                <article class="flow-step">
+                    <span class="accent-c">Paso 3</span>
+                    <h3>Se decide salida</h3>
+                    <p>Si la tarea drena o se repite, genera sugerencias persistidas: playbook, delegación, soporte o revisión.</p>
+                </article>
+                <article class="flow-step">
+                    <span class="accent-a">Paso 4</span>
+                    <h3>Se revisa</h3>
+                    <p>Después de delegar o documentar, el sistema revisa outcome, actualiza playbooks y recalibra prioridades.</p>
+                </article>
+            </div>
+        </section>
+
+        <section class="panel section">
+            <h2>Matriz DRIP</h2>
+            <p>La pregunta no es solo si la tarea es urgente. La pregunta es si genera valor y si energiza o drena.</p>
+            <div class="matrix">
+                <article class="matrix-cell">
+                    <span class="accent-a">Bajo valor + drena</span>
+                    <strong>Delegation</strong>
+                    <p>No debería entrar al día de Nicolas salvo emergencia. El sistema debe empujarla fuera del operador principal.</p>
+                </article>
+                <article class="matrix-cell">
+                    <span class="accent-b">Alto valor + drena</span>
+                    <strong>Replacement</strong>
+                    <p>Puede seguir entrando temporalmente, pero obliga a crear salida: SOP, soporte, automatización o rediseño.</p>
+                </article>
+                <article class="matrix-cell">
+                    <span class="accent-c">Bajo valor + energiza</span>
+                    <strong>Investment</strong>
+                    <p>Puede quedarse si no desplaza trabajo de más valor y si ayuda a construir capacidades futuras.</p>
+                </article>
+                <article class="matrix-cell">
+                    <span class="accent-a">Alto valor + energiza</span>
+                    <strong>Production</strong>
+                    <p>Es donde Nicolas debería pasar la mayor parte del tiempo. Aquí se protege el foco estratégico.</p>
+                </article>
+            </div>
+        </section>
+
+        <section class="panel section">
+            <h2>Entidades principales</h2>
+            <div class="entity-list">
+                <article class="entity">
+                    <span class="accent-a">Auditoría</span>
+                    <h3>BuybackAudit</h3>
+                    <p>Guarda la clasificación DRIP, scores, acción sugerida y huella de idempotencia para no duplicar auditorías iguales.</p>
+                </article>
+                <article class="entity">
+                    <span class="accent-b">Delegación</span>
+                    <h3>DelegationCandidate</h3>
+                    <p>Representa trabajo que debería salir del operador principal, con urgencia, documentación y tipo de dueño recomendado.</p>
+                </article>
+                <article class="entity">
+                    <span class="accent-c">Apoyo</span>
+                    <h3>SupportNeed</h3>
+                    <p>Describe la necesidad real de soporte por área funcional. No reutiliza la tabla de roles RBAC.</p>
+                </article>
+                <article class="entity">
+                    <span class="accent-a">Sistema</span>
+                    <h3>Playbook</h3>
+                    <p>Convierte trabajo repetido en checklist, SOP, assets y documentación delegable conectada a un área de soporte.</p>
+                </article>
+                <article class="entity">
+                    <span class="accent-b">Visibilidad</span>
+                    <h3>PlanningSuggestion</h3>
+                    <p>Evita sugerencias invisibles. Si el sistema recomienda algo, queda persistido y consultable.</p>
+                </article>
+                <article class="entity">
+                    <span class="accent-c">Continuidad</span>
+                    <h3>DelegationOutcome</h3>
+                    <p>Registra si una delegación funcionó, falló, volvió al operador o exige actualizar el playbook.</p>
+                </article>
+            </div>
+        </section>
+
+        <section class="panel section">
+            <h2>Reglas de contexto que el sistema debe respetar</h2>
+            <div class="grid-2">
+                <article class="card">
+                    <h3>Laura</h3>
+                    <ul>
+                        <li>No aparece como opción asignable dentro del subsistema.</li>
+                        <li>Se conserva histórico si existe, pero nunca se recomienda como responsable futuro.</li>
+                        <li>Las tareas abiertas heredadas deben quedar marcadas para reasignación.</li>
+                    </ul>
+                </article>
+                <article class="card">
+                    <h3>Luisa</h3>
+                    <ul>
+                        <li>Se trata como salida probable y riesgo de continuidad.</li>
+                        <li>No debe quedar a cargo de procesos críticos.</li>
+                        <li>Sus dependencias deben activar transición y revisión prioritaria.</li>
+                    </ul>
+                </article>
+                <article class="card">
+                    <h3>COOTILCA</h3>
+                    <ul>
+                        <li>Entra como proyecto estratégico.</li>
+                        <li>Puede elevar prioridad, pero no debería comerse todo el calendario.</li>
+                        <li>Su dependencia directa de Nicolas pesa fuerte en la recomendación de soporte.</li>
+                    </ul>
+                </article>
+                <article class="card">
+                    <h3>Calendario</h3>
+                    <ul>
+                        <li>Fase 1 solo maneja preferencias y reglas declarativas.</li>
+                        <li>No existe aún protección real de bloques familiares o personales.</li>
+                        <li>Eso queda para `protected_blocks` o integración externa en Fase 4.</li>
+                    </ul>
+                </article>
+            </div>
+        </section>
+
+        <section class="panel section">
+            <h2>Qué entrega cada fase</h2>
+            <div class="timeline">
+                <article class="phase">
+                    <div>
+                        <span class="accent-a">Base</span>
+                        <div class="phase-number">01</div>
+                    </div>
+                    <div>
+                        <h3>Fase 1: datos y dominio</h3>
+                        <ul>
+                            <li>Tablas de planning, settings, sugerencias y outcomes.</li>
+                            <li>Servicios compartidos para clasificar, auditar y recomendar soporte.</li>
+                            <li>Seeds de soporte, COOTILCA y configuración del operador principal.</li>
+                            <li>Tests del dominio y reglas de continuidad.</li>
+                        </ul>
+                    </div>
+                </article>
+                <article class="phase">
+                    <div>
+                        <span class="accent-b">Operación</span>
+                        <div class="phase-number">02</div>
+                    </div>
+                    <div>
+                        <h3>Fase 2: MCP especializado</h3>
+                        <ul>
+                            <li>Servidor MCP separado para planning Buyback.</li>
+                            <li>Tools para auditar, clasificar, listar candidatos y recomendar primer soporte.</li>
+                            <li>Permisos por módulos y salidas estructuradas reutilizando los mismos servicios.</li>
+                        </ul>
+                    </div>
+                </article>
+                <article class="phase">
+                    <div>
+                        <span class="accent-c">API</span>
+                        <div class="phase-number">03</div>
+                    </div>
+                    <div>
+                        <h3>Fase 3: endpoints</h3>
+                        <ul>
+                            <li>API versionada para planning, con Form Requests y Resources.</li>
+                            <li>Listados con límites, filtros y contratos consistentes con MCP.</li>
+                            <li>Métricas Buyback para consumo interno.</li>
+                        </ul>
+                    </div>
+                </article>
+                <article class="phase">
+                    <div>
+                        <span class="accent-a">Agenda</span>
+                        <div class="phase-number">04</div>
+                    </div>
+                    <div>
+                        <h3>Fase 4: protección real de calendario</h3>
+                        <ul>
+                            <li>Bloques protegidos o integración con calendario externo.</li>
+                            <li>Revisión histórica por versión del framework.</li>
+                            <li>UI administrativa para pesos, umbrales y ladder de soporte.</li>
+                        </ul>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <section class="panel section">
+            <h2>Ejemplo práctico</h2>
+            <div class="cards">
+                <article class="card">
+                    <h3>Tarea repetida</h3>
+                    <p>“Seguimiento administrativo COOTILCA” aparece tres veces en 30 días. El sistema la detecta como repetida, drena y tiene bajo valor económico.</p>
+                </article>
+                <article class="card">
+                    <h3>Decisión</h3>
+                    <p>La clasifica como `Delegation`, crea sugerencia persistida, propone `SupportNeed` de project management y deja candidato de delegación.</p>
+                </article>
+                <article class="card">
+                    <h3>Salida</h3>
+                    <p>Cuando alguien asume esa función, el sistema revisa outcome. Si falla, devuelve la tarea, actualiza el playbook y recalcula la recomendación.</p>
+                </article>
+            </div>
+
+            <div class="highlight">
+                <h3>Resumen ejecutivo</h3>
+                <p>
+                    AriStudio Planning no es un planner decorativo. Es una capa de decisión que transforma tareas reales del repo
+                    en evidencia operativa: qué debe sostener Nicolas, qué debe salir de él, qué soporte hace falta primero y qué
+                    procesos necesitan documentación para no depender de una sola persona.
+                </p>
+            </div>
+        </section>
+
+        <p class="footer-note">
+            Archivo pensado para abrirse directamente en navegador o servirlo desde `public/`.
+        </p>
+    </main>
+</body>
+</html>

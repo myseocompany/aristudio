@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arquitectura Técnica · AriStudio Planning Buyback</title>
+    <style>
+        :root {
+            --bg: #f4f1ea;
+            --paper: #fffdf8;
+            --ink: #18212f;
+            --muted: #586272;
+            --line: #d8d2c7;
+            --teal: #0f766e;
+            --blue: #1d4ed8;
+            --orange: #c2410c;
+            --slate: #334155;
+            --shadow: 0 18px 40px rgba(24, 33, 47, 0.10);
+            --radius: 22px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: "Iowan Old Style", Georgia, serif;
+            color: var(--ink);
+            background:
+                radial-gradient(circle at top left, rgba(15, 118, 110, 0.14), transparent 28%),
+                radial-gradient(circle at top right, rgba(29, 78, 216, 0.14), transparent 24%),
+                linear-gradient(180deg, #fbf8f2 0%, var(--bg) 100%);
+        }
+
+        .page {
+            width: min(1220px, calc(100% - 32px));
+            margin: 0 auto;
+            padding: 28px 0 56px;
+        }
+
+        .hero,
+        .section {
+            background: rgba(255, 253, 248, 0.92);
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+        }
+
+        .hero {
+            padding: 34px;
+        }
+
+        .section {
+            margin-top: 18px;
+            padding: 26px;
+        }
+
+        .eyebrow,
+        .tag {
+            display: inline-block;
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .eyebrow {
+            background: rgba(15, 118, 110, 0.10);
+            color: var(--teal);
+        }
+
+        .tag-teal {
+            background: rgba(15, 118, 110, 0.10);
+            color: var(--teal);
+        }
+
+        .tag-blue {
+            background: rgba(29, 78, 216, 0.10);
+            color: var(--blue);
+        }
+
+        .tag-orange {
+            background: rgba(194, 65, 12, 0.10);
+            color: var(--orange);
+        }
+
+        .tag-slate {
+            background: rgba(51, 65, 85, 0.10);
+            color: var(--slate);
+        }
+
+        h1,
+        h2,
+        h3 {
+            margin: 0;
+            line-height: 1.05;
+        }
+
+        h1 {
+            margin-top: 16px;
+            font-size: clamp(2.2rem, 5.5vw, 4.4rem);
+            max-width: 11ch;
+        }
+
+        h2 {
+            font-size: clamp(1.5rem, 3vw, 2rem);
+            margin-bottom: 16px;
+        }
+
+        h3 {
+            font-size: 1.12rem;
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+
+        p {
+            margin: 0;
+            color: var(--muted);
+            line-height: 1.65;
+        }
+
+        .hero-grid,
+        .grid-2,
+        .grid-3,
+        .stack,
+        .lane-grid,
+        .entity-grid {
+            display: grid;
+            gap: 16px;
+        }
+
+        .hero-grid {
+            grid-template-columns: 1.35fr 1fr;
+            margin-top: 22px;
+        }
+
+        .grid-2 {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .grid-3,
+        .entity-grid {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+        .card,
+        .lane,
+        .entity,
+        .code-block,
+        .note,
+        .step {
+            background: var(--paper);
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            padding: 18px;
+        }
+
+        .card ul,
+        .entity ul,
+        .note ul {
+            margin: 12px 0 0;
+            padding-left: 18px;
+            color: var(--muted);
+            line-height: 1.65;
+        }
+
+        .lane-grid {
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            align-items: start;
+        }
+
+        .lane {
+            min-height: 100%;
+        }
+
+        .arrow {
+            text-align: center;
+            color: var(--muted);
+            font-size: 24px;
+            padding-top: 8px;
+        }
+
+        .entity-grid {
+            margin-top: 16px;
+        }
+
+        .entity strong,
+        .step strong {
+            display: block;
+            margin-top: 10px;
+            margin-bottom: 8px;
+            font-size: 1.05rem;
+        }
+
+        .code-block {
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+            font-size: 13px;
+            line-height: 1.7;
+            color: #112033;
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+            background:
+                linear-gradient(180deg, rgba(29, 78, 216, 0.04), rgba(15, 118, 110, 0.03)),
+                var(--paper);
+        }
+
+        .steps {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 14px;
+        }
+
+        .step-index {
+            display: inline-flex;
+            width: 34px;
+            height: 34px;
+            border-radius: 999px;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            background: rgba(15, 118, 110, 0.10);
+            color: var(--teal);
+        }
+
+        .footer {
+            margin-top: 18px;
+            text-align: center;
+            color: var(--muted);
+            font-size: 0.94rem;
+        }
+
+        @media (max-width: 980px) {
+            .hero-grid,
+            .grid-2,
+            .grid-3,
+            .lane-grid,
+            .entity-grid,
+            .steps {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main class="page">
+        <section class="hero">
+            <span class="eyebrow">Arquitectura Técnica</span>
+            <h1>Cómo está pensada la propuesta por dentro.</h1>
+            <p>
+                Este diagrama narrado está orientado a un programador. La idea es mostrar capas, tablas, servicios,
+                puntos de entrada y orden de implementación sin quedarse en lenguaje de negocio.
+            </p>
+
+            <div class="hero-grid">
+                <article class="card">
+                    <span class="tag tag-teal">Principio</span>
+                    <h3>El dominio vive primero</h3>
+                    <p>
+                        La lógica no debe nacer en controllers ni en tools MCP. Primero se modelan datos y servicios;
+                        después se agregan adaptadores de entrada y salida.
+                    </p>
+                </article>
+                <article class="card">
+                    <span class="tag tag-blue">Objetivo técnico</span>
+                    <h3>Evitar duplicación</h3>
+                    <p>
+                        API futura, MCP y tests deben usar exactamente los mismos servicios de dominio para que no existan
+                        dos implementaciones del clasificador o del recomendador.
+                    </p>
+                </article>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>Capas de la arquitectura</h2>
+            <div class="lane-grid">
+                <article class="lane">
+                    <span class="tag tag-slate">Entrada</span>
+                    <h3>Interfaces</h3>
+                    <p>MCP tools en Fase 2 y API/HTTP en Fase 3. Solo validan input, autorizan y serializan output.</p>
+                </article>
+                <div class="arrow">→</div>
+                <article class="lane">
+                    <span class="tag tag-teal">Dominio</span>
+                    <h3>Servicios</h3>
+                    <p>`BuybackClassifier`, `BuybackAuditService`, `DelegationRecommendationService`, `PlanningContextService`.</p>
+                </article>
+                <div class="arrow">→</div>
+                <article class="lane">
+                    <span class="tag tag-orange">Persistencia</span>
+                    <h3>Modelos + tablas</h3>
+                    <p>`buyback_audits`, `delegation_candidates`, `support_needs`, `playbooks`, `planning_suggestions`, `delegation_outcomes`.</p>
+                </article>
+            </div>
+
+            <div class="note" style="margin-top:16px;">
+                <span class="tag tag-blue">Regla clave</span>
+                <h3>Los adaptadores no piensan</h3>
+                <p>
+                    Si una MCP tool o un controller necesita saber si una tarea es `Delegation` o `Replacement`, no debe
+                    reimplementar la regla. Debe llamar al servicio de dominio.
+                </p>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>Fuentes de datos que ya existen</h2>
+            <div class="grid-3">
+                <article class="card">
+                    <span class="tag tag-slate">Repo actual</span>
+                    <h3>`tasks`</h3>
+                    <ul>
+                        <li>`user_id`, `project_id`, `parent_id`</li>
+                        <li>`points`, `estimated_points`</li>
+                        <li>`value_generated`, `priority`</li>
+                        <li>Estados vía `task_statuses`</li>
+                    </ul>
+                </article>
+                <article class="card">
+                    <span class="tag tag-slate">Repo actual</span>
+                    <h3>`users`</h3>
+                    <ul>
+                        <li>`enterprise_id`</li>
+                        <li>`status_id`</li>
+                        <li>`termination_date`</li>
+                        <li>Permisos vía `hasModulePermission()`</li>
+                    </ul>
+                </article>
+                <article class="card">
+                    <span class="tag tag-slate">Repo actual</span>
+                    <h3>`projects` + pivots</h3>
+                    <ul>
+                        <li>`weight`, `budget`, `monthly_points_goal`</li>
+                        <li>`project_users` para dependencia transversal</li>
+                        <li>COOTILCA como proyecto estratégico seedado</li>
+                    </ul>
+                </article>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>Tablas nuevas y responsabilidad de cada una</h2>
+            <div class="entity-grid">
+                <article class="entity">
+                    <span class="tag tag-teal">Catálogo</span>
+                    <strong>`support_areas`</strong>
+                    <p>Tabla maestra funcional. Evita enums rígidos y sirve como punto de unión para delegación, soporte y playbooks.</p>
+                </article>
+                <article class="entity">
+                    <span class="tag tag-blue">Snapshot</span>
+                    <strong>`buyback_audits`</strong>
+                    <p>Persistencia del resultado DRIP. Guarda sujeto, auditor, scores, cuadrante, acción y `audit_fingerprint`.</p>
+                </article>
+                <article class="entity">
+                    <span class="tag tag-orange">Backlog</span>
+                    <strong>`delegation_candidates`</strong>
+                    <p>Trabajo que debería salir del operador principal. Todavía no implica contratación o automatización ejecutada.</p>
+                </article>
+                <article class="entity">
+                    <span class="tag tag-teal">Need</span>
+                    <strong>`support_needs`</strong>
+                    <p>Describe la necesidad de apoyo real. No toca `roles` de RBAC y puede nacer de varios candidatos.</p>
+                </article>
+                <article class="entity">
+                    <span class="tag tag-blue">SOP</span>
+                    <strong>`playbooks`</strong>
+                    <p>Documentación operativa reusable. Normalmente nace desde trabajo repetido o desde `Replacement`.</p>
+                </article>
+                <article class="entity">
+                    <span class="tag tag-orange">Visibilidad</span>
+                    <strong>`planning_suggestions`</strong>
+                    <p>Hace visibles las recomendaciones del motor. Si no existe esta capa, el sistema “piensa” pero nadie lo ve.</p>
+                </article>
+            </div>
+
+            <div class="entity-grid">
+                <article class="entity">
+                    <span class="tag tag-slate">Review</span>
+                    <strong>`delegation_outcomes`</strong>
+                    <p>Registra qué pasó después de delegar: funcionó, falló, volvió al operador o pide actualizar playbook.</p>
+                </article>
+                <article class="entity">
+                    <span class="tag tag-slate">Config</span>
+                    <strong>`planning_settings`</strong>
+                    <p>Resuelve `operator_user_id` y evita hardcodear a Nicolas por nombre, email o id.</p>
+                </article>
+                <article class="entity">
+                    <span class="tag tag-slate">Extensión</span>
+                    <strong>`users`</strong>
+                    <p>Se amplía con `exit_status`, `is_assignable`, `continuity_risk`, `needs_transition`, `transition_notes`.</p>
+                </article>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>Relaciones conceptuales</h2>
+            <div class="code-block">support_areas
+ ├─ hasMany support_needs
+ ├─ hasMany delegation_candidates
+ └─ hasMany playbooks
+
+users
+ ├─ hasMany buyback_audits as subject_user_id
+ ├─ hasMany buyback_audits as auditor_user_id
+ ├─ hasMany delegation_candidates as current_owner_user_id
+ └─ owns planning records via owner_user_id
+
+tasks
+ ├─ hasMany buyback_audits
+ ├─ hasMany delegation_candidates
+ └─ hasOne/Many playbooks (por related_task_id)
+
+projects
+ ├─ hasMany buyback_audits
+ ├─ hasMany delegation_candidates
+ └─ hasMany playbooks
+
+delegation_candidates
+ ├─ belongsTo support_area
+ ├─ belongsTo support_need (nullable)
+ └─ hasMany delegation_outcomes</div>
+        </section>
+
+        <section class="section">
+            <h2>Servicios y responsabilidad puntual</h2>
+            <div class="grid-2">
+                <article class="card">
+                    <span class="tag tag-teal">Servicio 1</span>
+                    <h3>`PlanningContextService`</h3>
+                    <ul>
+                        <li>Resolver `operator_user_id`.</li>
+                        <li>Excluir a Laura del universo asignable.</li>
+                        <li>Calcular dependencia de Luisa.</li>
+                        <li>Definir `isTaskPlannable()`.</li>
+                    </ul>
+                </article>
+                <article class="card">
+                    <span class="tag tag-blue">Servicio 2</span>
+                    <h3>`BuybackClassifier`</h3>
+                    <ul>
+                        <li>Recibir scores y contexto.</li>
+                        <li>Determinar cuadrante DRIP.</li>
+                        <li>Emitir `recommended_action`.</li>
+                        <li>Generar `classification_hash`.</li>
+                    </ul>
+                </article>
+                <article class="card">
+                    <span class="tag tag-orange">Servicio 3</span>
+                    <h3>`BuybackAuditService`</h3>
+                    <ul>
+                        <li>Persistir auditorías idempotentes.</li>
+                        <li>Construir `audit_fingerprint`.</li>
+                        <li>Versionar cambios de clasificación.</li>
+                        <li>Disparar sugerencias de salida.</li>
+                    </ul>
+                </article>
+                <article class="card">
+                    <span class="tag tag-slate">Servicio 4</span>
+                    <h3>`DelegationRecommendationService`</h3>
+                    <ul>
+                        <li>Puntuar `support_areas`.</li>
+                        <li>Recomendar primer soporte.</li>
+                        <li>Explicar factores y pesos usados.</li>
+                        <li>Priorizar continuidad y bloqueos estratégicos.</li>
+                    </ul>
+                </article>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>Flujo de ejecución</h2>
+            <div class="steps">
+                <article class="step">
+                    <div class="step-index">1</div>
+                    <strong>Entrada</strong>
+                    <p>Una task entra por seed, proceso batch, MCP o API futura.</p>
+                </article>
+                <article class="step">
+                    <div class="step-index">2</div>
+                    <strong>Contexto</strong>
+                    <p>`PlanningContextService` valida si es planificable y qué restricciones contextuales aplican.</p>
+                </article>
+                <article class="step">
+                    <div class="step-index">3</div>
+                    <strong>Clasificación</strong>
+                    <p>`BuybackClassifier` devuelve DRIP y acción recomendada.</p>
+                </article>
+                <article class="step">
+                    <div class="step-index">4</div>
+                    <strong>Persistencia</strong>
+                    <p>`BuybackAuditService` guarda snapshot, crea sugerencias y evita duplicados.</p>
+                </article>
+            </div>
+
+            <div class="steps" style="margin-top:14px;">
+                <article class="step">
+                    <div class="step-index">5</div>
+                    <strong>Delegación</strong>
+                    <p>Si aplica, se crea o sugiere `delegation_candidate` y/o `support_need`.</p>
+                </article>
+                <article class="step">
+                    <div class="step-index">6</div>
+                    <strong>Playbook</strong>
+                    <p>Si el trabajo es repetido o crítico, se propone documentación operativa.</p>
+                </article>
+                <article class="step">
+                    <div class="step-index">7</div>
+                    <strong>Review</strong>
+                    <p>Más adelante, `delegation_outcomes` mide si la salida funcionó.</p>
+                </article>
+                <article class="step">
+                    <div class="step-index">8</div>
+                    <strong>Exposición</strong>
+                    <p>MCP o API leen el mismo estado persistido y no recalculan lógica por su cuenta.</p>
+                </article>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>Puntos de entrada técnicos</h2>
+            <div class="grid-2">
+                <article class="card">
+                    <span class="tag tag-blue">Fase 2</span>
+                    <h3>MCP server</h3>
+                    <p>`BuybackPlannerServer` expone tools como `RunBuybackAudit`, `ClassifyTaskBuyback`, `ListSupportNeeds` y `MarkUserAsPlanningExit`.</p>
+                </article>
+                <article class="card">
+                    <span class="tag tag-orange">Fase 3</span>
+                    <h3>API</h3>
+                    <p>Endpoints `/api/v1/planning/*` usarían Form Requests, Resources y exactamente los mismos servicios internos.</p>
+                </article>
+            </div>
+
+            <div class="code-block" style="margin-top:16px;">Request -> Authorization -> Validation -> Service -> Eloquent Models -> Response::structured / API Resource</div>
+        </section>
+
+        <section class="section">
+            <h2>Orden recomendado de implementación</h2>
+            <div class="code-block">1. Migraciones + modelos
+2. support_areas seeder + planning_settings
+3. PlanningContextService
+4. BuybackClassifier
+5. BuybackAuditService
+6. DelegationRecommendationService
+7. Tests unitarios de dominio
+8. MCP tools
+9. API versionada
+10. protected_blocks / calendario real</div>
+        </section>
+
+        <section class="section">
+            <h2>Qué no hace la Fase 1</h2>
+            <div class="grid-3">
+                <article class="card">
+                    <span class="tag tag-orange">No</span>
+                    <h3>No agenda automáticamente</h3>
+                    <p>Puede clasificar y sugerir, pero no proteger bloques reales de calendario todavía.</p>
+                </article>
+                <article class="card">
+                    <span class="tag tag-orange">No</span>
+                    <h3>No mezcla dominio con UI</h3>
+                    <p>La pantalla puede llegar después. La primera inversión es en reglas y persistencia confiables.</p>
+                </article>
+                <article class="card">
+                    <span class="tag tag-orange">No</span>
+                    <h3>No duplica lógica</h3>
+                    <p>Ni MCP ni API deben tener forks del clasificador o del recomendador.</p>
+                </article>
+            </div>
+        </section>
+
+        <p class="footer">Archivo standalone para abrir directamente desde `public/` y entender la propuesta técnica.</p>
+    </main>
+</body>
+</html>

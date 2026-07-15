@@ -127,7 +127,7 @@ Decision:
 
 - `subject_user_id`: persona cuyo trabajo se audita, normalmente `operator_user_id`.
 - `auditor_user_id`: persona o usuario autenticado que registra la auditoria.
-- `owner_user_id`: mantener solo si se necesita compatibilidad con patron anterior; si existe, debe representar creador/dueno administrativo del registro, no sujeto.
+- `owner_user_id`: se mantiene como campo canonico y representa creador/dueno administrativo del registro, no sujeto.
 
 Regla:
 
@@ -168,7 +168,7 @@ Usar `support_areas` como tabla maestra para:
 
 Cambios:
 
-- `playbooks.process_area` debe ser `support_area_id` nullable y un `process_area_label` opcional solo para migracion/importacion.
+- `playbooks` no debe depender de `process_area` como campo canonico. Debe usar `support_area_id` nullable y `process_area_label` opcional solo para migracion/importacion.
 - `support_needs.role_type` no debe ser enum rigido; debe derivarse de `support_area_id` o de un catalogo editable relacionado.
 - `problem_solved` puede mantenerse como texto, pero para queries debe existir `problem_category` o `support_area_id`.
 
@@ -218,7 +218,7 @@ Sin esta tabla o UI equivalente, las sugerencias quedan invisibles y no deben co
 | Valor economico de tarea | `tasks.value_generated` boolean, `tasks.points`, `tasks.estimated_points` | Extender. `economic_value_score` se guarda en `buyback_audits` como evaluacion contextual; no reemplaza `value_generated` ni `points`. La clasificacion debe usar `value_generated=true` y puntos altos como inputs sugeridos. |
 | Valor/criticidad de proyecto | `projects.weight`, `projects.budget`, `projects.monthly_points_goal`, `projects.sales` | Extender. `strategic_value_score` puede derivarse parcialmente de `projects.weight` y override manual en audit. |
 | Responsable actual | `tasks.user_id` FK a `users.id` | No duplicar como string. `DelegationCandidate` debe usar `current_owner_user_id` nullable FK; se puede exponer nombre serializado solo en responses. |
-| Salida probable de Luisa | `users.termination_date`, `users.status_id` | Extender. Usar `termination_date` y `status_id` como senales existentes; agregar solo campos operativos faltantes: `planning_exit_status`, `is_assignable_for_planning`, `continuity_risk`, `needs_transition`. |
+| Salida probable de Luisa | `users.termination_date`, `users.status_id` | Extender. Usar `termination_date` y `status_id` como senales existentes; agregar solo campos operativos faltantes: `exit_status`, `is_assignable`, `continuity_risk`, `needs_transition`. |
 | Roles de apoyo | Tabla `roles` existe para RBAC y `role_modules` | No reutilizar `roles`. Para evitar colision semantica, renombrar entidad `SupportRole` a `SupportNeed` en implementacion o documentar que no es RBAC. Nombre recomendado: `support_needs`. |
 | Tipo de rol de apoyo | No existe catalogo funcional | Crear `support_areas` seedable/editable. Evitar enum rigido. |
 | Tiempo real dedicado | Timer usa session y al guardar convierte segundos a `tasks.points`; `started_at` y `finished_at` aparecen en casts pero no son fuente persistida del timer actual | Extender con cautela. Fase 1 calcula `actual_minutes` desde `tasks.points * 60` cuando aplique. No crear time tracking paralelo. |
@@ -261,7 +261,7 @@ Naming de clases:
 | Nombre funcional | Clase MCP recomendada | Annotation | Permiso |
 | --- | --- | --- | --- |
 | run_buyback_audit | `RunBuybackAudit` | `#[IsDestructive(false)]`, `#[IsIdempotent(true)]` | `/planning`, `create` |
-| classify_task_buyback | `ClassifyTaskBuyback` | `#[IsReadOnly]` si `dry_run=true`; si persiste, `IsDestructive(false)` | `/planning`, `read` o `create` segun modo |
+| classify_task_buyback | `ClassifyTaskBuyback` | `#[IsReadOnly]` si `dry_run=true`; si persiste, `#[IsDestructive(false)]` | `/planning`, `read` o `create` segun modo |
 | list_delegation_candidates | `ListDelegationCandidates` | `#[IsReadOnly]` | `/planning`, `read` |
 | create_delegation_candidate | `CreateDelegationCandidate` | `#[IsDestructive(false)]`, `#[IsIdempotent(false)]` | `/planning`, `create` |
 | create_playbook_from_task | `CreatePlaybookFromTask` | `#[IsDestructive(false)]`, `#[IsIdempotent(false)]` | `/planning`, `create` |
@@ -293,7 +293,7 @@ Hasta que exista `protected_blocks` o integracion Google Calendar:
 
 - El sistema solo puede clasificar tareas y recomendar prioridades.
 - No puede garantizar que COOTILCA no desplace bloques familiares/personales.
-- Los criterios sobre Wake 5:30, meditacion, carrera, bachata/salsa y Botanazo son seeds pendientes de Fase 4.
+- Los criterios sobre Wake 5:30, meditacion, carrera, bachata/salsa y Botanazo solo pueden existir en Fase 1 como preferencias seed/configuradas; no como proteccion efectiva de agenda hasta Fase 4.
 
 Fase 4 debe escoger:
 
@@ -480,6 +480,7 @@ El sistema debe aplicar el ciclo:
 1. Audit: registrar y clasificar tareas por valor, energia, habilidad, disfrute y valor estrategico.
 2. Transfer: mover tareas hacia delegacion, automatizacion, eliminacion o documentacion.
 3. Fill: liberar calendario para trabajo de mayor valor, principalmente Production y algo de Investment.
+4. Review: revisar outcomes, actualizar playbooks, validar delegaciones y recalibrar prioridades.
 
 ### DRIP Matrix
 
@@ -591,17 +592,20 @@ Campos:
 - `skill_fit_score` integer 1-5
 - `enjoyment_score` integer 1-5
 - `strategic_value_score` integer 1-5
+- Todos los scores manuales deben ser nullable para permitir estado `unclassified` cuando falten datos.
 - `drip_quadrant`: `delegation`, `replacement`, `investment`, `production`
-- `recommended_action`: `keep`, `delegate`, `automate`, `eliminate`, `document`, `hire_for`
+- `recommended_action`: `keep`, `delegate`, `automate`, `eliminate`, `document`, `create_support_need`
 - `framework_version`
 - `classification_hash`
+- `audit_fingerprint`
 - `notes`
 - `created_at`
 - `updated_at`
 
 Idempotencia:
 
-- Debe existir indice unico compuesto por `owner_user_id`, `audit_date`, `task_id`, `project_id`, `classification_hash`.
+- Debe existir una clave idempotente no nullable, por ejemplo `audit_fingerprint`, derivada de `owner_user_id`, `subject_user_id`, `audit_date`, `task_id`, `project_id` y `classification_hash`.
+- `audit_fingerprint` debe tener indice unico. No depender de un `UNIQUE` con columnas nullable porque permitiria duplicados en motores como MySQL.
 - Si se corre el mismo audit dos veces el mismo dia con los mismos datos de entrada, se actualiza el registro existente.
 - Si cambian scores o inputs relevantes, se crea una nueva version con `classification_hash` distinto.
 - `audit_date` no reemplaza `created_at`: permite auditar un dia operativo aunque el registro se cree despues.
@@ -652,7 +656,7 @@ Campos:
 - `owner_user_id`
 - `title`
 - `support_area_id` nullable
-- `role_type`: texto validado contra catalogo seedable, no enum rigido de codigo
+- `role_type` nullable: etiqueta visible o borrador humano derivable de `support_area_id`; no es enum rigido ni el campo canonico de clasificacion
 - `problem_solved`
 - `problem_category` nullable
 - `responsibilities_json`
@@ -675,8 +679,8 @@ Campos:
 - `id`
 - `owner_user_id`
 - `title`
-- `process_area`
 - `support_area_id` nullable
+- `process_area_label` nullable
 - `related_task_id` nullable
 - `related_project_id` nullable
 - `description`
@@ -1016,6 +1020,7 @@ Input schema:
 - `enjoyment_score` integer nullable 1-5.
 - `strategic_value_score` integer nullable 1-5.
 - `notes` string nullable.
+- `dry_run` boolean default true.
 
 Output schema:
 
@@ -1071,7 +1076,7 @@ Crea un borrador de playbook desde una tarea repetida.
 Input schema:
 
 - `task_id` integer required.
-- `process_area` string nullable.
+- `process_area_label` string nullable; solo para migracion/importacion o borrador humano antes de mapear `support_area_id`.
 - `support_area_id` integer nullable.
 - `include_task_description` boolean default true.
 
@@ -1186,12 +1191,12 @@ Output schema:
 
 ### Mantener
 
-- Wake 5:30 am.
-- Meditacion.
-- Carrera.
-- Bachata / salsa.
-- Botanazo como bloque familiar protegido.
-- AriCRM / Reto21Vendo+ como One Thing.
+- Wake 5:30 am como preferencia/configuracion inicial.
+- Meditacion como preferencia/configuracion inicial.
+- Carrera como preferencia/configuracion inicial.
+- Bachata / salsa como preferencia/configuracion inicial.
+- Botanazo como preferencia/configuracion inicial; no como bloque efectivamente protegido en Fase 1.
+- AriCRM / Reto21Vendo+ como preferencia de One Thing en configuracion; no como proteccion efectiva de agenda en Fase 1.
 
 ### Agregar
 
@@ -1283,7 +1288,7 @@ Estas filas pueden modificarse desde admin o seeders futuros sin cambiar codigo.
 - Cada tarea planificable puede evaluarse con DRIP Matrix.
 - Las tareas Delegation quedan marcadas como no recomendadas para el operador principal salvo emergencia.
 - Las tareas Replacement generan una sugerencia persistida de salida.
-- Las tareas repetidas 3 veces o mas crean o sugieren persistentemente playbook, candidato de delegacion y support need.
+- Las tareas repetidas 3 veces o mas generan sugerencias persistidas de playbook, candidato de delegacion y support need; la autocreacion solo aplica si la fase implementada la habilita explicitamente.
 - Fase 2: las herramientas MCP usan los mismos servicios compartidos que usaran los endpoints futuros.
 - Fase 3: el endpoint de primera necesidad de apoyo entrega una recomendacion basada en evidencia de tareas, energia, valor, urgencia y bloqueos.
 - Los listados y tools MCP respetan `limit` default 30 y maximo 100.
